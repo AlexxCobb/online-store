@@ -1,0 +1,10 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: online-store
+  datasource:
+    url: jdbc:postgresql://localhost:5432/online_store
+    username: postgres
+    password: qweqwe
+    driver-class-name: org.postgresql.Driver
