@@ -1,6 +1,8 @@
 package ru.zinovev.online.store.dao.entity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -8,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Getter
 @Builder
@@ -29,6 +33,9 @@ public class Product {
     @Column(name = "product_id")
     private Long id;
 
+    @Column(name = "public_product_id")
+    private String publicProductId;
+
     @Column(name = "product_name")
     private String name;
 
@@ -39,7 +46,11 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    private String parameters; // решить как хранить множество параметров товара, удобство настройки фильтра по ним
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "product_parameters", joinColumns = {@JoinColumn(name = "product_id")})
+    @MapKeyColumn(name = "param_key")
+    @Column(name = "param_value")
+    private Map<String, String> parameters;
 
     @Column(name = "product_weight")
     private Double weight;
@@ -47,6 +58,6 @@ public class Product {
     @Column(name = "product_volume")
     private Double volume;
 
-    @Column(name = "product_stockQuantity")
+    @Column(name = "product_stock_quantity")
     private Integer stockQuantity;
 }

@@ -33,6 +33,9 @@ public class Order {
     @Column(name = "order_id")
     private Long id;
 
+    @Column(name = "public_order_id")
+    private String publicOrderId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -42,9 +45,11 @@ public class Order {
     private DeliveryAddress address;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "delivery_method")
     private DeliveryMethod deliveryMethod;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,8 +57,10 @@ public class Order {
     private Product product;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "delivery_status")
     private DeliveryStatus deliveryStatus;
 }
