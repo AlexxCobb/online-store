@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - include:
+      file: classpath:db/changelog/changeset/1749561854-add-user-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1749563205-add-category-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1749568486-add-product-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1749570393-add-delivery-address-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1749573597-add-product-parameters-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1749574458-add-order-table.yaml

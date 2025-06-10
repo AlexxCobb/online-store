@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1749568486-add-product-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1749568486-add-product-table.sql

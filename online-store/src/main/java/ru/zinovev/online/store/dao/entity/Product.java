@@ -33,7 +33,7 @@ public class Product {
     @Column(name = "product_id")
     private Long id;
 
-    @Column(name = "public_product_id")
+    @Column(name = "product_public_id")
     private String publicProductId;
 
     @Column(name = "product_name")

@@ -26,7 +26,7 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "public_user_id")
+    @Column(name = "user_public_id")
     private String publicUserId;
 
     @Column(name = "user_name")

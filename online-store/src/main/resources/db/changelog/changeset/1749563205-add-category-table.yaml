@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1749563205-add-category-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1749563205-add-category-table.sql
