@@ -24,6 +24,9 @@ public class Category {
     @Column(name = "category_id")
     private Long id;
 
+    @Column(name = "category_public_id")
+    private String publicCategoryId;
+
     @Column(name = "category_name")
     private String name;
 }

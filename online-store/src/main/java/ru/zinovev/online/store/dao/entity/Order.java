@@ -15,10 +15,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import ru.zinovev.online.store.dao.entity.enums.DeliveryMethod;
 import ru.zinovev.online.store.dao.entity.enums.DeliveryStatus;
 import ru.zinovev.online.store.dao.entity.enums.PaymentMethod;
 import ru.zinovev.online.store.dao.entity.enums.PaymentStatus;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
 
 @Getter
 @Builder
@@ -33,6 +38,9 @@ public class Order {
     @Column(name = "order_id")
     private Long id;
 
+    @Column(name = "order_public_id")
+    private String publicOrderId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -42,9 +50,11 @@ public class Order {
     private DeliveryAddress address;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "delivery_method")
     private DeliveryMethod deliveryMethod;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,8 +62,18 @@ public class Order {
     private Product product;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "payment_status")
     private PaymentStatus paymentStatus;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(name = "delivery_status")
     private DeliveryStatus deliveryStatus;
+
+    @Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    private OffsetDateTime updatedAt;
 }

@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1749561854-add-user-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1749561854-add-user-table.sql

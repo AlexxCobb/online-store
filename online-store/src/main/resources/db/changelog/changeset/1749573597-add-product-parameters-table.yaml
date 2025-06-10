@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1749573597-add-product-parameters-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1749573597-add-product-parameters-table.sql
