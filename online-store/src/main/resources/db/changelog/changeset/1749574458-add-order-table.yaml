@@ -1,7 +1,0 @@
-databaseChangeLog:
-  - changeSet:
-      id: 1749574458-add-order-table
-      author: a.zinovev
-      changes:
-        - sqlFile:
-            path: classpath:db/changelog/sql/1749574458-add-order-table.sql

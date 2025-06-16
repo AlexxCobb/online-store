@@ -1,11 +1,11 @@
 CREATE TABLE product (
                         product_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                         product_public_id VARCHAR(255) NOT NULL UNIQUE,
-                        product_name VARCHAR(40) NOT NULL,
-                        product_price DECIMAL(10,2) NOT NULL,
+                        product_name VARCHAR(255) NOT NULL,
+                        product_price numeric(10,2) NOT NULL,
                         category_id INTEGER NOT NULL,
-                        product_weight DOUBLE PRECISION NOT NULL,
-                        product_volume DOUBLE PRECISION NOT NULL,
+                        product_weight numeric(10,2) NOT NULL,
+                        product_volume numeric(10,2) NOT NULL,
                         product_stock_quantity INTEGER NOT NULL,
 
 CONSTRAINT fk_product_category FOREIGN KEY (category_id) REFERENCES "category"(category_id)

@@ -53,11 +53,25 @@ public class Product {
     private Map<String, String> parameters;
 
     @Column(name = "product_weight")
-    private Double weight;
+    private BigDecimal weight;
 
     @Column(name = "product_volume")
-    private Double volume;
+    private BigDecimal volume;
 
     @Column(name = "product_stock_quantity")
     private Integer stockQuantity;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof Product product))
+            return false;
+        return id != null && id.equals(product.id);
+    }
 }

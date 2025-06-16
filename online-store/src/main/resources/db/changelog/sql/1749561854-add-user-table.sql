@@ -1,8 +1,8 @@
 CREATE TABLE "user" (
                         user_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                         user_public_id VARCHAR(255) NOT NULL UNIQUE,
-                        user_name VARCHAR(20) NOT NULL,
-                        user_lastname VARCHAR(30) NOT NULL,
+                        user_name VARCHAR(100) NOT NULL,
+                        user_lastname VARCHAR(100) NOT NULL,
                         user_birthday DATE NOT NULL,
                         user_email VARCHAR(255) NOT NULL UNIQUE,
                         user_password_hash VARCHAR(255) NOT NULL
