@@ -6,8 +6,18 @@ databaseChangeLog:
   - include:
       file: classpath:db/changelog/changeset/1749568486-add-product-table.yaml
   - include:
+      file: classpath:db/changelog/changeset/1749570004-add-address-type-table.yaml
+  - include:
       file: classpath:db/changelog/changeset/1749570393-add-delivery-address-table.yaml
   - include:
       file: classpath:db/changelog/changeset/1749573597-add-product-parameters-table.yaml
   - include:
-      file: classpath:db/changelog/changeset/1749574458-add-order-table.yaml
+      file: classpath:db/changelog/changeset/1750002816-add-delivery-method-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1750002816-add-order-status-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1750002816-add-payment-method-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1750002816-add-payment-status-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1750003567-add-order-table.yaml

@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1750002816-add-delivery-method-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1750002816-add-delivery-method-table.sql

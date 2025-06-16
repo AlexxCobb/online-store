@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1750002816-add-payment-status-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1750002816-add-payment-status-table.sql

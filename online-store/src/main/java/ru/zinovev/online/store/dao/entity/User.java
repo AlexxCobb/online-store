@@ -43,4 +43,18 @@ public class User {
 
     @Column(name = "user_password_hash")
     private String passwordHash;
+
+    @Override
+    public int hashCode() {
+        return publicUserId != null ? publicUserId.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof User user))
+            return false;
+        return publicUserId != null && publicUserId.equals(user.publicUserId);
+    }
 }

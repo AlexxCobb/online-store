@@ -2,6 +2,8 @@ package ru.zinovev.online.store.dao.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -10,25 +12,26 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "category")
-public class Category {
-
+@Table(name = "address_type")
+public class AddressType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
-    private Long id;
+    @Column(name = "address_type_id")
+    private Integer id;
 
-    @Column(name = "category_public_id")
-    private String publicCategoryId;
+    @Column(name = "address_type_name")
+    @Enumerated(EnumType.STRING)
+    private AddressTypeName name;
 
-    @Column(name = "category_name")
-    private String name;
+    @Column(name = "address_type_description")
+    private String description;
 
     @Override
     public int hashCode() {
@@ -39,8 +42,8 @@ public class Category {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!(obj instanceof Category category))
+        if (!(obj instanceof AddressType addressType))
             return false;
-        return id != null && id.equals(category.id);
+        return id != null && id.equals(addressType.id);
     }
 }

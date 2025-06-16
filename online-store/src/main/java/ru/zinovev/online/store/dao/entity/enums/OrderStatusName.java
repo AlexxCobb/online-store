@@ -1,6 +1,6 @@
 package ru.zinovev.online.store.dao.entity.enums;
 
-public enum DeliveryStatus {
+public enum OrderStatusName {
     PENDING_PAYMENT,
     PENDING_DELIVERY,
     SHIPPED,

@@ -1,7 +1,7 @@
 create TABLE product_parameters (
                         product_id BIGINT NOT NULL,
-                        param_key VARCHAR(50) NOT NULL,
-                        param_value VARCHAR(100) NOT NULL,
+                        param_key VARCHAR(100) NOT NULL,
+                        param_value VARCHAR(255) NOT NULL,
                         PRIMARY KEY (product_id, param_key),
 
 CONSTRAINT fk_product_parameters_product FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE

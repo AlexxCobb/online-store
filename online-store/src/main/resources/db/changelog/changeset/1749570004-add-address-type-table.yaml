@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1749570004-add-address-type-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1749570004-add-address-type-table.sql
