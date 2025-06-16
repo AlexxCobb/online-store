@@ -29,4 +29,18 @@ public class Category {
 
     @Column(name = "category_name")
     private String name;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof Category category))
+            return false;
+        return id != null && id.equals(category.id);
+    }
 }
