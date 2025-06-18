@@ -15,7 +15,9 @@ public class CategoryService {
 
     public CategoryDetails createCategory(CategoryDto categoryDto) {
         categoryDaoService.findByNameIgnoreCase(categoryDto)
-                .ifPresent(categoryDetails -> {throw new RuntimeException();}); //400
+                .ifPresent(categoryDetails -> {
+                    throw new RuntimeException("Category with name - " + categoryDto.name() + " already exist");
+                }); //400
         return categoryDaoService.createCategory(categoryDto);
     }
 
@@ -24,7 +26,7 @@ public class CategoryService {
         if (!categoryDetails.name().equalsIgnoreCase(categoryDto.name())) {
             return categoryDaoService.updateCategory(categoryDetails, categoryDto);
         } else {
-            return categoryDetails; // либо 400
+            throw new RuntimeException("Category with name - " + categoryDto.name() + " already exist"); // 400
         }
     }
 
@@ -34,6 +36,7 @@ public class CategoryService {
 
     private CategoryDetails existCategoryDetails(String publicCategoryId) {
         var currentCategoryDetails = categoryDaoService.findByPublicId(publicCategoryId);
-        return currentCategoryDetails.orElseThrow(() -> new RuntimeException()); // 404
+        return currentCategoryDetails.orElseThrow(
+                () -> new RuntimeException("Category with id - " + publicCategoryId + " not found")); // 404
     }
 }

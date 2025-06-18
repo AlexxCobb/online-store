@@ -31,8 +31,8 @@ public class CategoryDaoService {
 
     @Transactional
     public CategoryDetails updateCategory(CategoryDetails categoryDetails, CategoryDto categoryDto) {
-        var updateCategory = Category.builder()
-                .publicCategoryId(categoryDetails.publicCategoryId())
+        var category = categoryRepository.findByPublicCategoryId(categoryDetails.publicCategoryId()).get();
+        var updateCategory = category.toBuilder()
                 .name(categoryDto.name())
                 .build();
         return categoryMapper.toCategoryDetails(categoryRepository.save(updateCategory));
