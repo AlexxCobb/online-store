@@ -2,9 +2,12 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.dao.CategoryDaoService;
+import ru.zinovev.online.store.exception.model.BadRequestException;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CategoryDetails;
 
 @Service
@@ -16,8 +19,8 @@ public class CategoryService {
     public CategoryDetails createCategory(CategoryDto categoryDto) {
         categoryDaoService.findByNameIgnoreCase(categoryDto)
                 .ifPresent(categoryDetails -> {
-                    throw new RuntimeException("Category with name - " + categoryDto.name() + " already exist");
-                }); //400
+                    throw new BadRequestException("Category with name - " + categoryDto.name() + " already exist");
+                });
         return categoryDaoService.createCategory(categoryDto);
     }
 
@@ -26,7 +29,7 @@ public class CategoryService {
         if (!categoryDetails.name().equalsIgnoreCase(categoryDto.name())) {
             return categoryDaoService.updateCategory(categoryDetails, categoryDto);
         } else {
-            throw new RuntimeException("Category with name - " + categoryDto.name() + " already exist"); // 400
+            throw new BadRequestException("Category with name - " + categoryDto.name() + " already exist");
         }
     }
 
@@ -37,6 +40,6 @@ public class CategoryService {
     public CategoryDetails existCategoryDetails(String publicCategoryId) {
         var currentCategoryDetails = categoryDaoService.findByPublicId(publicCategoryId);
         return currentCategoryDetails.orElseThrow(
-                () -> new RuntimeException("Category with id - " + publicCategoryId + " not found")); // 404
+                () -> new NotFoundException("Category with id - " + publicCategoryId + " not found")); // 404
     }
 }
