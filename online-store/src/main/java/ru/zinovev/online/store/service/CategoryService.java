@@ -34,7 +34,7 @@ public class CategoryService {
         categoryDaoService.deleteCategory(existCategoryDetails(publicCategoryId));
     }
 
-    private CategoryDetails existCategoryDetails(String publicCategoryId) {
+    public CategoryDetails existCategoryDetails(String publicCategoryId) {
         var currentCategoryDetails = categoryDaoService.findByPublicId(publicCategoryId);
         return currentCategoryDetails.orElseThrow(
                 () -> new RuntimeException("Category with id - " + publicCategoryId + " not found")); // 404

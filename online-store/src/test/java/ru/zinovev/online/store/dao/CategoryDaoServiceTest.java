@@ -99,7 +99,7 @@ class CategoryDaoServiceTest {
     }
 
     @Test
-    void findByNameIgnoreCase() {
+    void shouldFindCategoryByNameIgnoreCase() {
         var categoryDto = new CategoryDto("Phone");
         var currentCategory = Category.builder()
                 .id(1L)
@@ -120,7 +120,7 @@ class CategoryDaoServiceTest {
     }
 
     @Test
-    void findByPublicId() {
+    void shouldFindCategoryByPublicId() {
         var publicCategoryId = "publicId";
         var expectedCategory = Category.builder()
                 .id(1L)
