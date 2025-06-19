@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.dao.CategoryDaoService;
+import ru.zinovev.online.store.exception.model.BadRequestException;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CategoryDetails;
 
 import java.util.Optional;
@@ -49,7 +51,7 @@ class CategoryServiceTest {
 
         when(categoryDaoService.findByNameIgnoreCase(categoryDto)).thenReturn(Optional.of(expectedCategoryDetails));
 
-        assertThrows(RuntimeException.class,
+        assertThrows(BadRequestException.class,
                      () -> categoryService.createCategory(categoryDto));
         verify(categoryDaoService, never()).createCategory(categoryDto);
     }
@@ -80,7 +82,7 @@ class CategoryServiceTest {
 
         when(categoryDaoService.findByPublicId(publicId)).thenReturn(Optional.of(currentCategoryDetails));
 
-        assertThrows(RuntimeException.class,
+        assertThrows(BadRequestException.class,
                      () -> categoryService.updateCategory(publicId, categoryDto));
         verify(categoryDaoService, never()).updateCategory(currentCategoryDetails, categoryDto);
     }
@@ -115,7 +117,7 @@ class CategoryServiceTest {
 
         when(categoryDaoService.findByPublicId(publicId)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class,
+        assertThrows(NotFoundException.class,
                      () -> categoryService.existCategoryDetails(publicId));
     }
 }
