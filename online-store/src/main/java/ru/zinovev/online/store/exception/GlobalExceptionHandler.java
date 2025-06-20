@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 import ru.zinovev.online.store.exception.model.BadRequestException;
+import ru.zinovev.online.store.exception.model.InvalidPasswordException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 
 @Slf4j
@@ -44,4 +45,13 @@ public class GlobalExceptionHandler {
         return modelAndView;
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ModelAndView handleForbiddenException(InvalidPasswordException ex, Model model) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("error/403");
+        modelAndView.addObject("errorMessage", ex.getMessage());
+        log.warn("Bad Request with invalid data. {}", ex.getMessage(), ex);
+        return modelAndView;
+    }
 }
