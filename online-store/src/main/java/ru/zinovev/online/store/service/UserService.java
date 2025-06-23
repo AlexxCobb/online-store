@@ -52,8 +52,7 @@ public class UserService {
     }
 
     public UserDetails findUserDetails(String publicUserId) {
-        var currentUserDetails = userDaoService.findByPublicId(publicUserId);
-        return currentUserDetails.orElseThrow(
+        return userDaoService.findByPublicId(publicUserId).orElseThrow(
                 () -> new NotFoundException("User with id - " + publicUserId + " not found"));
     }
 }

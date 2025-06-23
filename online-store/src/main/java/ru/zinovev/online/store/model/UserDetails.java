@@ -5,5 +5,5 @@ public record UserDetails(
         String email,
         String name,
         String lastname
-        ) {
+) {
 }

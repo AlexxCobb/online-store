@@ -46,7 +46,16 @@ public class UserDaoService {
 
     @Transactional
     public void deleteUser(UserDetails userDetails) {
-        userRepository.delete(userMapper.toUser(userDetails));
+        userRepository.delete(userRepository.findByPublicUserId(userDetails.publicUserId()).get());
+    }
+
+    @Transactional
+    public UserDetails changePassword(UserDetails userDetails, ChangePasswordDto changePasswordDto) {
+        var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
+        var updateUser = user.toBuilder()
+                .passwordHash(passwordEncoder.encode(changePasswordDto.newPassword()))
+                .build();
+        return userMapper.toUserDetails(userRepository.save(updateUser));
     }
 
     public Optional<UserDetails> findByEmailIgnoreCase(UserRegistrationDto userRegistrationDto) {
@@ -59,13 +68,5 @@ public class UserDaoService {
 
     public Optional<String> findPasswordHashByPublicId(UserDetails userDetails) {
         return userRepository.findPasswordHashByPublicId(userDetails.publicUserId());
-    }
-
-    public UserDetails changePassword(UserDetails userDetails, ChangePasswordDto changePasswordDto) {
-        var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
-        var updateUser = user.toBuilder()
-                .passwordHash(passwordEncoder.encode(changePasswordDto.newPassword()))
-                .build();
-        return userMapper.toUserDetails(userRepository.save(updateUser));
     }
 }
