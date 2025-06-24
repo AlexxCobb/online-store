@@ -43,6 +43,7 @@ public class ProductDaoService {
         return productMapper.toProductDetails(productRepository.save(product));
     }
 
+    @Transactional
     public ProductDetails updateProduct(ProductUpdateDto updateDto, String publicProductId) {
         var existedProduct = productRepository.findByPublicProductId(publicProductId).get();
         productMapper.updateProductFromProductUpdateDto(existedProduct, updateDto);
@@ -53,7 +54,8 @@ public class ProductDaoService {
         return productRepository.findByPublicProductId(publicProductId).map(productMapper::toProductDetails);
     }
 
-    public void deleteProduct(String publicProductId) { //или настроить удаление по publicId
+    @Transactional
+    public void deleteProduct(String publicProductId) {
         var product = productRepository.findByPublicProductId(publicProductId).get();
         productRepository.delete(product);
     }
