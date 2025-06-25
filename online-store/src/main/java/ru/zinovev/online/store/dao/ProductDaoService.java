@@ -10,6 +10,7 @@ import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.model.ProductDetails;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +35,7 @@ public class ProductDaoService {
                 .price(productDto.price())
                 .weight(productDto.weight())
                 .volume(productDto.volume())
+                .parameters(productDto.parameters() != null ? productDto.parameters() : new HashMap<>())
                 .stockQuantity(productDto.stockQuantity())
                 .build();
 

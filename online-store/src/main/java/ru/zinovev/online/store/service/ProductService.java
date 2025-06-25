@@ -1,5 +1,6 @@
 package ru.zinovev.online.store.service;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.ProductDto;
@@ -17,11 +18,11 @@ public class ProductService {
     private final ProductDaoService productDaoService;
     private final CategoryService categoryService;
 
-    public ProductDetails createProduct(ProductDto productDto) {
+    public ProductDetails createProduct(@NonNull ProductDto productDto) {
         return productDaoService.createProduct(productDto);
     }
 
-    public ProductDetails updateProduct(ProductUpdateDto productUpdateDto, String publicProductId) {
+    public ProductDetails updateProduct(@NonNull ProductUpdateDto productUpdateDto,@NonNull String publicProductId) {
         existByPublicId(publicProductId);
         if (productUpdateDto.categoryPublicId().isPresent()) {
             categoryService.existCategoryDetails(productUpdateDto.categoryPublicId().get());
@@ -29,7 +30,7 @@ public class ProductService {
         return productDaoService.updateProduct(productUpdateDto, publicProductId);
     }
 
-    public void deleteProduct(String publicProductId) {
+    public void deleteProduct(@NonNull String publicProductId) {
         existByPublicId(publicProductId);
         productDaoService.deleteProduct(publicProductId);
     }
@@ -40,7 +41,7 @@ public class ProductService {
                                                                  " , not found"));
     }
 
-    public List<ProductDetails> getProductsByCategoryId(String categoryPublicId) {
+    public List<ProductDetails> getProductsByCategoryId(@NonNull String categoryPublicId) { //замена на лист id категорий
         categoryService.existCategoryDetails(categoryPublicId);
         var products = productDaoService.findProductsByCategoryId(categoryPublicId);
         if (products.isEmpty()) {

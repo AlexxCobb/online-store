@@ -15,7 +15,7 @@ public class CategoryService {
 
     private final CategoryDaoService categoryDaoService;
 
-    public CategoryDetails createCategory(CategoryDto categoryDto) {
+    public CategoryDetails createCategory(@NonNull CategoryDto categoryDto) {
         categoryDaoService.findByNameIgnoreCase(categoryDto)
                 .ifPresent(categoryDetails -> {
                     throw new BadRequestException("Category with name - " + categoryDto.name() + " already exist");
@@ -23,7 +23,7 @@ public class CategoryService {
         return categoryDaoService.createCategory(categoryDto);
     }
 
-    public CategoryDetails updateCategory(@NonNull String publicCategoryId, CategoryDto categoryDto) {
+    public CategoryDetails updateCategory(@NonNull String publicCategoryId, @NonNull CategoryDto categoryDto) {
         var categoryDetails = existCategoryDetails(publicCategoryId);
         if (!categoryDetails.name().equalsIgnoreCase(categoryDto.name())) {
             return categoryDaoService.updateCategory(categoryDetails, categoryDto);

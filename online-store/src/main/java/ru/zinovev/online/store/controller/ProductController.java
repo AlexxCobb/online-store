@@ -35,21 +35,21 @@ public class ProductController {
         return productService.createProduct(productDto);
     }
 
-    @PatchMapping("/{productId}")
+    @PatchMapping("/{publicProductId}")
     public ProductDetails updateProduct(@PathVariable String publicProductId, @Valid @RequestBody
     ProductUpdateDto productUpdateDto) {
         log.debug("Received PATCH request to update product with id = {}", publicProductId);
         return productService.updateProduct(productUpdateDto, publicProductId);
     }
 
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("/{publicProductId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable String publicProductId) {
         log.debug("Received DELETE request to delete product with id = {}", publicProductId);
         productService.deleteProduct(publicProductId);
     }
 
-    @GetMapping("/{categoryId}")
+    @GetMapping("/{publicCategoryId}")
     public List<ProductDetails> getAllProductsByCategoryId(
             @PathVariable String publicCategoryId) {
         log.debug("Received GET request to get all products in categoryId = {}", publicCategoryId);

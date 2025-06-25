@@ -31,14 +31,14 @@ public class CategoryController {
         return categoryService.createCategory(categoryDto);
     }
 
-    @PatchMapping("/{categoryId}")
+    @PatchMapping("/{publicCategoryId}")
     public CategoryDetails updateCategory(@PathVariable String publicCategoryId, @Valid @RequestBody
     CategoryDto categoryDto) {
         log.debug("Received PATCH request to update category with id = {}", publicCategoryId);
         return categoryService.updateCategory(publicCategoryId, categoryDto);
     }
 
-    @DeleteMapping("/{categoryId}")
+    @DeleteMapping("/{publicCategoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable String publicCategoryId) {
         log.debug("Received DELETE request to delete category with id = {}", publicCategoryId);
