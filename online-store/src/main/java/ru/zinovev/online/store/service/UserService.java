@@ -20,7 +20,7 @@ public class UserService {
     private final UserDaoService userDaoService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserDetails createUser(UserRegistrationDto userRegistrationDto) {
+    public UserDetails createUser(@NonNull UserRegistrationDto userRegistrationDto) {
         userDaoService.findByEmailIgnoreCase(userRegistrationDto)
                 .ifPresent(userDetails -> {
                     throw new BadRequestException(
@@ -29,7 +29,7 @@ public class UserService {
         return userDaoService.createUser(userRegistrationDto);
     }
 
-    public UserDetails updateUser(@NonNull String publicUserId, UserUpdateDto userUpdateDto) {
+    public UserDetails updateUser(@NonNull String publicUserId, @NonNull UserUpdateDto userUpdateDto) {
         var userDetails = findUserDetails(publicUserId);
         return userDaoService.updateUser(userDetails, userUpdateDto);
     }
@@ -38,7 +38,7 @@ public class UserService {
         userDaoService.deleteUser(findUserDetails(publicUserId));
     }
 
-    public UserDetails changePassword(String publicUserId, ChangePasswordDto changePasswordDto) {
+    public UserDetails changePassword(@NonNull String publicUserId, @NonNull ChangePasswordDto changePasswordDto) {
         var userDetails = findUserDetails(publicUserId);
         var userPassword = userDaoService.findPasswordHashByPublicId(userDetails)
                 .orElseThrow(() -> new NotFoundException("Password not found"));
@@ -52,8 +52,7 @@ public class UserService {
     }
 
     public UserDetails findUserDetails(String publicUserId) {
-        var currentUserDetails = userDaoService.findByPublicId(publicUserId);
-        return currentUserDetails.orElseThrow(
+        return userDaoService.findByPublicId(publicUserId).orElseThrow(
                 () -> new NotFoundException("User with id - " + publicUserId + " not found"));
     }
 }

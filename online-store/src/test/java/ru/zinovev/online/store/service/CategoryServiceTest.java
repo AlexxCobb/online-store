@@ -63,7 +63,6 @@ class CategoryServiceTest {
         var currentCategoryDetails = new CategoryDetails("publicId", "Phone");
         var expectedCategoryDetails = new CategoryDetails("publicId", "Mobile phone");
 
-
         when(categoryDaoService.findByPublicId(publicId)).thenReturn(Optional.of(currentCategoryDetails));
         when(categoryDaoService.updateCategory(currentCategoryDetails, categoryDto)).thenReturn(
                 expectedCategoryDetails);

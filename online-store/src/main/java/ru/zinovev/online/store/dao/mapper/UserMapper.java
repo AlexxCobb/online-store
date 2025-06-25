@@ -11,7 +11,8 @@ import ru.zinovev.online.store.model.UserDetails;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    User toUser(UserDetails userDetails);
+
+    // User toUser(UserDetails userDetails);
 
     UserDetails toUserDetails(User user);
 

@@ -2,7 +2,6 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.dao.CategoryDaoService;
@@ -16,7 +15,7 @@ public class CategoryService {
 
     private final CategoryDaoService categoryDaoService;
 
-    public CategoryDetails createCategory(CategoryDto categoryDto) {
+    public CategoryDetails createCategory(@NonNull CategoryDto categoryDto) {
         categoryDaoService.findByNameIgnoreCase(categoryDto)
                 .ifPresent(categoryDetails -> {
                     throw new BadRequestException("Category with name - " + categoryDto.name() + " already exist");
@@ -24,7 +23,7 @@ public class CategoryService {
         return categoryDaoService.createCategory(categoryDto);
     }
 
-    public CategoryDetails updateCategory(@NonNull String publicCategoryId, CategoryDto categoryDto) {
+    public CategoryDetails updateCategory(@NonNull String publicCategoryId, @NonNull CategoryDto categoryDto) {
         var categoryDetails = existCategoryDetails(publicCategoryId);
         if (!categoryDetails.name().equalsIgnoreCase(categoryDto.name())) {
             return categoryDaoService.updateCategory(categoryDetails, categoryDto);
@@ -38,8 +37,7 @@ public class CategoryService {
     }
 
     public CategoryDetails existCategoryDetails(String publicCategoryId) {
-        var currentCategoryDetails = categoryDaoService.findByPublicId(publicCategoryId);
-        return currentCategoryDetails.orElseThrow(
-                () -> new NotFoundException("Category with id - " + publicCategoryId + " not found")); // 404
+        return categoryDaoService.findByPublicId(publicCategoryId).orElseThrow(
+                () -> new NotFoundException("Category with id - " + publicCategoryId + " not found"));
     }
 }

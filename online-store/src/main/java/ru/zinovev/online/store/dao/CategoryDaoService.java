@@ -7,6 +7,7 @@ import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CategoryDetails;
 
 import java.util.Optional;
@@ -40,7 +41,7 @@ public class CategoryDaoService {
 
     @Transactional
     public void deleteCategory(CategoryDetails categoryDetails) {
-        categoryRepository.delete(categoryMapper.toCategory(categoryDetails));
+        categoryRepository.delete(categoryRepository.findByPublicCategoryId(categoryDetails.publicCategoryId()).get());
     }
 
 
@@ -50,5 +51,10 @@ public class CategoryDaoService {
 
     public Optional<CategoryDetails> findByPublicId(String publicCategoryId) {
         return categoryRepository.findByPublicCategoryId(publicCategoryId).map(categoryMapper::toCategoryDetails);
+    }
+
+    public Category getByPublicId(String publicCategoryId) {
+        return categoryRepository.findByPublicCategoryId(publicCategoryId)
+                .orElseThrow(() -> new NotFoundException("Category with id - + publicCategoryId + not found"));
     }
 }

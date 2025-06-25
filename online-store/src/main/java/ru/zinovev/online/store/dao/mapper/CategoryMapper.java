@@ -8,5 +8,4 @@ import ru.zinovev.online.store.model.CategoryDetails;
 public interface CategoryMapper {
 
     CategoryDetails toCategoryDetails(Category category);
-    Category toCategory(CategoryDetails categoryDetails);
 }

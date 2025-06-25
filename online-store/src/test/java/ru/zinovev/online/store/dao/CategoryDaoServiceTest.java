@@ -86,15 +86,14 @@ class CategoryDaoServiceTest {
 
     @Test
     void shouldDeleteCategory() {
-        var currentCategoryDetails = new CategoryDetails("publicId", "Phone");
         var expectedCategory = Category.builder()
                 .id(1L)
                 .publicCategoryId("publicId")
                 .name("Phone")
                 .build();
-        when(categoryMapper.toCategory(currentCategoryDetails)).thenReturn(expectedCategory);
 
-        categoryRepository.delete(categoryMapper.toCategory(currentCategoryDetails));
+        categoryRepository.delete(Optional.of(expectedCategory).get());
+
         verify(categoryRepository, times(1)).delete(eq(expectedCategory));
     }
 

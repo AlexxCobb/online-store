@@ -20,7 +20,7 @@ import ru.zinovev.online.store.service.UserService;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("api/users/{userId}")
+@RequestMapping("api/users/{publicUserId}")
 public class UserProfileController {
 
     private final UserService userService;

@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 @Getter
@@ -50,7 +51,8 @@ public class Product {
     @CollectionTable(name = "product_parameters", joinColumns = {@JoinColumn(name = "product_id")})
     @MapKeyColumn(name = "param_key")
     @Column(name = "param_value")
-    private Map<String, String> parameters;
+    @Builder.Default
+    private Map<String, String> parameters = new HashMap<>();
 
     @Column(name = "product_weight")
     private BigDecimal weight;
