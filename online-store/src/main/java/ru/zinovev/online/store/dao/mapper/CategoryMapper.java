@@ -6,6 +6,5 @@ import ru.zinovev.online.store.model.CategoryDetails;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
-
     CategoryDetails toCategoryDetails(Category category);
 }

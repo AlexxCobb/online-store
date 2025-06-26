@@ -10,6 +10,7 @@ import ru.zinovev.online.store.controller.dto.UserUpdateDto;
 import ru.zinovev.online.store.dao.entity.User;
 import ru.zinovev.online.store.dao.mapper.UserMapper;
 import ru.zinovev.online.store.dao.repository.UserRepository;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
 
 import java.util.Optional;
@@ -68,5 +69,10 @@ public class UserDaoService {
 
     public Optional<String> findPasswordHashByPublicId(UserDetails userDetails) {
         return userRepository.findPasswordHashByPublicId(userDetails.publicUserId());
+    }
+
+    public User getByPublicId(String publicUserId) {
+        return userRepository.findByPublicUserId(publicUserId)
+                .orElseThrow(() -> new NotFoundException("User with id - + publicUserId + not found"));
     }
 }

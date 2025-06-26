@@ -5,5 +5,5 @@ insert into
         address_type_description
     )
 values  (1, 'USER_ADDRESS', 'Адрес для доставки пользователю'),
-        (1, 'STORE_ADDRESS', 'Адрес магазина'),
-        (1, 'PARCEL_LOCKER', 'Адрес пункта выдачи заказов');
+        (2, 'STORE_ADDRESS', 'Адрес магазина'),
+        (3, 'PARCEL_LOCKER', 'Адрес пункта выдачи заказов');
