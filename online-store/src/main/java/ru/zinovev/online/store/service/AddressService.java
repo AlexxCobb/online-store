@@ -55,7 +55,7 @@ public class AddressService {
                                                   + " , the address type does not match the one transmitted - "
                                                   + addressTypeName);
         }
-        return addressDaoService.updateSystemAddress(address, addressUpdateDto);
+        return addressDaoService.updateAddress(address, addressUpdateDto);
     }
 
     public List<AddressDetails> getUserAddresses(String publicUserId) {

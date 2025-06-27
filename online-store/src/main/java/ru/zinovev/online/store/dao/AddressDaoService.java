@@ -73,12 +73,6 @@ public class AddressDaoService {
     }
 
     @Transactional
-    public AddressDetails updateSystemAddress(DeliveryAddress address, AddressUpdateDto addressUpdateDto) {
-        addressMapper.updateAddressFromAddressUpdateDto(address, addressUpdateDto);
-        return addressMapper.toAddressDetails(addressRepository.save(address));
-    }
-
-    @Transactional
     public void deleteAddress(DeliveryAddress address) {
         addressRepository.delete(address);
     }
