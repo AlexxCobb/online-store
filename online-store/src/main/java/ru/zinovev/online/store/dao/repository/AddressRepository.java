@@ -17,4 +17,7 @@ public interface AddressRepository extends JpaRepository<DeliveryAddress, Long> 
 
     List<DeliveryAddress> findByAddressTypeNameAndActiveAndSystem(AddressTypeName name, Boolean active,
                                                                    Boolean system); // зашить в Query active/system?
+
+    List<DeliveryAddress> findByActiveAndSystem(Boolean active, Boolean system);
+
 }

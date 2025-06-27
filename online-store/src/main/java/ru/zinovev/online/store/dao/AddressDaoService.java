@@ -2,6 +2,7 @@ package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.zinovev.online.store.controller.dto.AddressDto;
 import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AddressDaoService {
 
     private final AddressRepository addressRepository;
@@ -26,6 +28,7 @@ public class AddressDaoService {
     private final AddressTypeRepository addressTypeRepository;
     private final AddressMapper addressMapper;
 
+    @Transactional
     public AddressDetails addAddress(UserDetails userDetails, AddressDto addressDto) {
         var user = userDaoService.getByPublicId(userDetails.publicUserId());
         var addressType = addressTypeRepository.getByName(AddressTypeName.USER_ADDRESS);
@@ -45,6 +48,7 @@ public class AddressDaoService {
         return addressMapper.toAddressDetails(addressRepository.save(address));
     }
 
+    @Transactional
     public AddressDetails addSystemAddress(AddressDto addressDto, AddressTypeName addressTypeName) {
         var addressType = addressTypeRepository.getByName(addressTypeName);
         var address = DeliveryAddress.builder()
@@ -61,14 +65,26 @@ public class AddressDaoService {
         return addressMapper.toAddressDetails(addressRepository.save(address));
     }
 
-    public Optional<DeliveryAddress> findByPublicId(String publicAddressId) {
-        return addressRepository.findByPublicDeliveryAddressId(publicAddressId);
-    }
-
+    @Transactional
     public AddressDetails updateAddress(DeliveryAddress deliveryAddress,
                                         AddressUpdateDto addressUpdateDto) {
         addressMapper.updateAddressFromAddressUpdateDto(deliveryAddress, addressUpdateDto);
         return addressMapper.toAddressDetails(addressRepository.save(deliveryAddress));
+    }
+
+    @Transactional
+    public AddressDetails updateSystemAddress(DeliveryAddress address, AddressUpdateDto addressUpdateDto) {
+        addressMapper.updateAddressFromAddressUpdateDto(address, addressUpdateDto);
+        return addressMapper.toAddressDetails(addressRepository.save(address));
+    }
+
+    @Transactional
+    public void deleteAddress(DeliveryAddress address) {
+        addressRepository.delete(address);
+    }
+
+    public Optional<DeliveryAddress> findByPublicId(String publicAddressId) {
+        return addressRepository.findByPublicDeliveryAddressId(publicAddressId);
     }
 
     public List<AddressDetails> findUserAddresses(UserDetails userDetails) {
@@ -80,6 +96,13 @@ public class AddressDaoService {
 
     public List<AddressDetails> findSystemAddresses(AddressTypeName addressTypeName) {
         return addressRepository.findByAddressTypeNameAndActiveAndSystem(addressTypeName, true, true)
+                .stream()
+                .map(addressMapper::toAddressDetails)
+                .collect(Collectors.toList());
+    }
+
+    public List<AddressDetails> findAllSystemAddresses() {
+        return addressRepository.findByActiveAndSystem(true, true)
                 .stream()
                 .map(addressMapper::toAddressDetails)
                 .collect(Collectors.toList());
