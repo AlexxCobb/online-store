@@ -57,18 +57,13 @@ public class AddressController {
     }
 
     @GetMapping("/user/{publicUserId}")
-    public List<AddressDetails> getUserAddresses(@PathVariable String publicUserId) {
-        log.debug("Received GET request to get user addresses");
-        return addressService.getUserAddresses(publicUserId);
-    }
-
-    @GetMapping("/user/system")
-    public List<AddressDetails> getSystemAddresses(@RequestParam(required = false) AddressTypeName name) {
+    public List<AddressDetails> getAddresses(@PathVariable String publicUserId,
+                                             @RequestParam(required = false) AddressTypeName name,
+                                             @RequestParam(required = false) Boolean isSystem) {
         log.debug("Received GET request to get system addresses");
-        if (name == null) {
-            return addressService.getAllSystemAddresses();
-        }
-        return addressService.getSystemAddresses(name);
+
+        return addressService.getAddresses(publicUserId, name, isSystem);
+
     }
 
     @DeleteMapping("/user/{publicUserId}/delete/{publicAddressId}")
@@ -76,13 +71,13 @@ public class AddressController {
     public void deleteAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId) {
         log.debug("Received DELETE request to delete address with id = {} from user id - {}", publicAddressId,
                   publicUserId);
-        addressService.deleteAddress(publicUserId, publicAddressId);
+        addressService.deleteAddress(publicUserId, publicAddressId, false);
     }
 
     @DeleteMapping("/system/{publicAddressId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteSystemAddress(@PathVariable String publicAddressId) {
         log.debug("Received DELETE request to delete system address with id = {}", publicAddressId);
-        addressService.deleteSystemAddress(publicAddressId);
+        addressService.deleteAddress(null, publicAddressId, true);
     }
 }
