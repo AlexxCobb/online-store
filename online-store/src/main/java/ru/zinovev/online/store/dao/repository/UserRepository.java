@@ -14,4 +14,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select u.passwordHash from User u where u.publicUserId = :publicUserId")
     Optional<String> findPasswordHashByPublicId(String publicUserId);
+
+
 }

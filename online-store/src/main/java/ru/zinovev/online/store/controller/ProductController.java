@@ -22,27 +22,27 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("api/admin/products")
+@RequestMapping("api/products")
 @Slf4j
 public class ProductController {
 
     private final ProductService productService;
 
-    @PostMapping
+    @PostMapping("/admin")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductDetails addProduct(@Valid @RequestBody ProductDto productDto) {
         log.debug("Received POST request to add product");
         return productService.createProduct(productDto);
     }
 
-    @PatchMapping("/{publicProductId}")
+    @PatchMapping("/admin/{publicProductId}")
     public ProductDetails updateProduct(@PathVariable String publicProductId, @Valid @RequestBody
     ProductUpdateDto productUpdateDto) {
         log.debug("Received PATCH request to update product with id = {}", publicProductId);
         return productService.updateProduct(productUpdateDto, publicProductId);
     }
 
-    @DeleteMapping("/{publicProductId}")
+    @DeleteMapping("/admin/{publicProductId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable String publicProductId) {
         log.debug("Received DELETE request to delete product with id = {}", publicProductId);
