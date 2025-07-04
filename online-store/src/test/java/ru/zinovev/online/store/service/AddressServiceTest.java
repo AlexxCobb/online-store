@@ -27,6 +27,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -290,23 +291,25 @@ class AddressServiceTest {
     }
 
     @Test
-    void shouldGetAddressByPublicId() {
-        when(addressDaoService.findByPublicId(mockSystemAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockSystemAddress));
+    void shouldReturnTrueWhenUserAddressExist() {
+        when(addressDaoService.findByPublicId(mockUserAddress.getPublicDeliveryAddressId())).thenReturn(
+                Optional.of(mockUserAddress));
+        when(addressDaoService.existUserAddress(mockUserAddress.getPublicDeliveryAddressId(),
+                                                mockUser.getPublicUserId())).thenReturn(true);
 
-        var result = addressService.getAddressByPublicId(mockSystemAddress.getPublicDeliveryAddressId());
-
-        assertNotNull(result);
-        assertEquals(mockSystemAddress.getPublicDeliveryAddressId(), result.getPublicDeliveryAddressId());
+        assertTrue(addressService.existUserAddress(mockUserAddress.getPublicDeliveryAddressId(),
+                                                   mockUser.getPublicUserId()));
     }
 
     @Test
     void shouldThrowExceptionWhenAddressNotFound() {
-        when(addressDaoService.findByPublicId(mockSystemAddress.getPublicDeliveryAddressId())).thenReturn(
+        when(addressDaoService.findByPublicId(mockUserAddress.getPublicDeliveryAddressId())).thenReturn(
                 Optional.empty());
 
         assertThrows(NotFoundException.class,
-                     () -> addressService.getAddressByPublicId(mockSystemAddress.getPublicDeliveryAddressId())
-        );
+                     () -> addressService.existUserAddress(mockUserAddress.getPublicDeliveryAddressId(),
+                                                           mockUser.getPublicUserId()));
+        verify(addressDaoService, never()).existUserAddress(mockUserAddress.getPublicDeliveryAddressId(),
+                                                            mockUser.getPublicUserId());
     }
 }

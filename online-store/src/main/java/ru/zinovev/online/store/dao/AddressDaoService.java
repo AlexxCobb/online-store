@@ -101,4 +101,8 @@ public class AddressDaoService {
                 .map(addressMapper::toAddressDetails)
                 .collect(Collectors.toList());
     }
+
+    public boolean existUserAddress(String publicAddressId, String publicUserId) {
+        return addressRepository.existsByPublicDeliveryAddressIdAndUserPublicUserId(publicAddressId, publicUserId);
+    }
 }

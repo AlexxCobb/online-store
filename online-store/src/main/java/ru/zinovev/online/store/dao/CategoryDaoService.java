@@ -52,9 +52,4 @@ public class CategoryDaoService {
     public Optional<CategoryDetails> findByPublicId(String publicCategoryId) {
         return categoryRepository.findByPublicCategoryId(publicCategoryId).map(categoryMapper::toCategoryDetails);
     }
-
-    public Category getByPublicId(String publicCategoryId) {
-        return categoryRepository.findByPublicCategoryId(publicCategoryId)
-                .orElseThrow(() -> new NotFoundException("Category with id - + publicCategoryId + not found"));
-    }
 }

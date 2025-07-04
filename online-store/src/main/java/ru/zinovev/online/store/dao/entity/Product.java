@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity

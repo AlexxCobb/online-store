@@ -31,20 +31,22 @@ public class AddressController {
 
     @PostMapping("/user/{publicUserId}")
     public AddressDetails addAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto) {
-        log.debug("Received POST request to add user delivery address");
+        log.debug("Received POST request to add user delivery address with userId - {}, dto - {}", publicUserId,
+                  addressDto);
         return addressService.addAddress(publicUserId, addressDto);
     }
 
     @PostMapping("/system")
     public AddressDetails addSystemAddress(@Valid AddressDto addressDto, @RequestParam AddressTypeName name) {
-        log.debug("Received POST request to add system address");
+        log.debug("Received POST request to add system address dto - {}, with type - {}", addressDto, name);
         return addressService.addSystemAddress(addressDto, name);
     }
 
     @PatchMapping("/user/{publicUserId}/update/{publicAddressId}")
     public AddressDetails updateAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
                                         @Valid AddressUpdateDto addressUpdateDto) {
-        log.debug("Received PATCH request to update user's delivery address");
+        log.debug("Received PATCH request to update user's (id - {}) delivery address (id - {}), dto - {}",
+                  publicUserId, publicAddressId, addressUpdateDto);
         return addressService.updateAddress(publicUserId, publicAddressId, addressUpdateDto);
     }
 
@@ -52,7 +54,8 @@ public class AddressController {
     public AddressDetails updateSystemAddress(@Valid AddressUpdateDto addressUpdateDto,
                                               @PathVariable String publicAddressId,
                                               @RequestParam AddressTypeName name) {
-        log.debug("Received PATCH request to update system address");
+        log.debug("Received PATCH request to update system address (id - {}), dto - {}, type - {}", publicAddressId,
+                  addressUpdateDto, name);
         return addressService.updateSystemAddress(publicAddressId, addressUpdateDto, name);
     }
 
@@ -63,7 +66,6 @@ public class AddressController {
         log.debug("Received GET request to get system addresses");
 
         return addressService.getAddresses(publicUserId, name, isSystem);
-
     }
 
     @DeleteMapping("/user/{publicUserId}/delete/{publicAddressId}")

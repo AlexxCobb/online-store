@@ -24,7 +24,7 @@ public class CategoryService {
     }
 
     public CategoryDetails updateCategory(@NonNull String publicCategoryId, @NonNull CategoryDto categoryDto) {
-        var categoryDetails = existCategoryDetails(publicCategoryId);
+        var categoryDetails = existCategory(publicCategoryId);
         if (!categoryDetails.name().equalsIgnoreCase(categoryDto.name())) {
             return categoryDaoService.updateCategory(categoryDetails, categoryDto);
         } else {
@@ -33,10 +33,10 @@ public class CategoryService {
     }
 
     public void deleteCategory(@NonNull String publicCategoryId) {
-        categoryDaoService.deleteCategory(existCategoryDetails(publicCategoryId));
+        categoryDaoService.deleteCategory(existCategory(publicCategoryId));
     }
 
-    public CategoryDetails existCategoryDetails(String publicCategoryId) {
+    public CategoryDetails existCategory(String publicCategoryId) {
         return categoryDaoService.findByPublicId(publicCategoryId).orElseThrow(
                 () -> new NotFoundException("Category with id - " + publicCategoryId + " not found"));
     }
