@@ -118,7 +118,7 @@ class ProductServiceTest {
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
-        verify(categoryService, times(1)).existCategoryDetails(categoryId);
+        verify(categoryService, times(1)).existCategory(categoryId);
     }
 
     @Test
@@ -136,7 +136,7 @@ class ProductServiceTest {
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
-        verify(categoryService, times(0)).existCategoryDetails(categoryId);
+        verify(categoryService, times(0)).existCategory(categoryId);
     }
 
     @Test
@@ -165,13 +165,13 @@ class ProductServiceTest {
 
         when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.empty());
 
-        assertThrows(NotFoundException.class, () -> productService.existByPublicId(publicId));
+        assertThrows(NotFoundException.class, () -> productService.getByPublicId(publicId));
     }
 
     @Test
     void shouldReturnListOfProductsByCategoryId() {
         var categoryId = mockCategory.getPublicCategoryId();
-        when(categoryService.existCategoryDetails(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
+        when(categoryService.existCategory(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
         when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(
                 List.of(mockProductDetails, mockUpdatedProductDetails));
 
@@ -185,7 +185,7 @@ class ProductServiceTest {
     @Test
     void shouldThrowExceptionWhenReturnEmptyList() {
         var categoryId = mockCategory.getPublicCategoryId();
-        when(categoryService.existCategoryDetails(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
+        when(categoryService.existCategory(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
         when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(Collections.emptyList());
 
         assertThrows(NotFoundException.class, () -> productService.getProductsByCategoryId(categoryId));

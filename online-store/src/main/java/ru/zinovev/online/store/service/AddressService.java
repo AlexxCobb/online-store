@@ -38,7 +38,7 @@ public class AddressService {
     public AddressDetails updateAddress(@NonNull String publicUserId, @NonNull String publicAddressId,
                                         @NonNull AddressUpdateDto addressUpdateDto) {
         var userDetails = userService.findUserDetails(publicUserId);
-        var address = getAddressByPublicId(publicAddressId);
+        var address = findByPublicId(publicAddressId);
         if (!userDetails.publicUserId().equals(address.getUser().getPublicUserId()) ||
                 !address.getAddressType().getName().equals(AddressTypeName.USER_ADDRESS)) {
             throw new BadRequestException(
@@ -50,7 +50,7 @@ public class AddressService {
     public AddressDetails updateSystemAddress(@NonNull String publicAddressId,
                                               @NonNull AddressUpdateDto addressUpdateDto,
                                               @NonNull AddressTypeName addressTypeName) {
-        var address = getAddressByPublicId(publicAddressId);
+        var address = findByPublicId(publicAddressId);
         if (!address.getAddressType().getName().equals(addressTypeName)) {
             throw new BadRequestException("In the address found by id - " + publicAddressId
                                                   + " , the address type does not match the one transmitted - "
@@ -72,8 +72,7 @@ public class AddressService {
     }
 
     public void deleteAddress(String publicUserId, @NonNull String publicAddressId, Boolean isSystem) {
-        var address = getAddressByPublicId(publicAddressId);
-
+        var address = findByPublicId(publicAddressId);
         if (publicUserId != null && !isSystem && address.getUser() != null) {
             var userDetails = userService.findUserDetails(publicUserId);
             if (!userDetails.publicUserId().equals(address.getUser().getPublicUserId()) ||
@@ -91,9 +90,13 @@ public class AddressService {
         }
     }
 
-    public DeliveryAddress getAddressByPublicId(@NonNull String publicAddressId) {
-        return addressDaoService.findByPublicId(
-                        publicAddressId) // подумать так оставить или показывать entity только на dao слое?
+    public boolean existUserAddress(String publicAddressId, String publicUserId) {
+        findByPublicId(publicAddressId);
+        return addressDaoService.existUserAddress(publicAddressId, publicUserId);
+    }
+
+    private DeliveryAddress findByPublicId(String publicAddressId) {
+        return addressDaoService.findByPublicId(publicAddressId)
                 .orElseThrow(() -> new NotFoundException("Address with id - " + publicAddressId + " + not found"));
     }
 }

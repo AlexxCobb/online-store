@@ -22,31 +22,36 @@ public class ProductService {
         return productDaoService.createProduct(productDto);
     }
 
-    public ProductDetails updateProduct(@NonNull ProductUpdateDto productUpdateDto,@NonNull String publicProductId) {
-        existByPublicId(publicProductId);
+    public ProductDetails updateProduct(@NonNull ProductUpdateDto productUpdateDto, @NonNull String publicProductId) {
+        getByPublicId(publicProductId);
         if (productUpdateDto.categoryPublicId().isPresent()) {
-            categoryService.existCategoryDetails(productUpdateDto.categoryPublicId().get());
+            categoryService.existCategory(productUpdateDto.categoryPublicId().get());
         }
         return productDaoService.updateProduct(productUpdateDto, publicProductId);
     }
 
     public void deleteProduct(@NonNull String publicProductId) {
-        existByPublicId(publicProductId);
+        getByPublicId(publicProductId);
         productDaoService.deleteProduct(publicProductId);
     }
 
-    public void existByPublicId(String publicProductId) {
-        productDaoService.findByPublicId(publicProductId)
+    public ProductDetails getByPublicId(String publicProductId) {
+        return productDaoService.findByPublicId(publicProductId)
                 .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId +
                                                                  " , not found"));
     }
 
-    public List<ProductDetails> getProductsByCategoryId(@NonNull String categoryPublicId) { //замена на лист id категорий
-        categoryService.existCategoryDetails(categoryPublicId);
+    public List<ProductDetails> getProductsByCategoryId(
+            @NonNull String categoryPublicId) { //замена на лист id категорий
+        categoryService.existCategory(categoryPublicId);
         var products = productDaoService.findProductsByCategoryId(categoryPublicId);
         if (products.isEmpty()) {
             throw new NotFoundException("Products in category with categoryId = " + categoryPublicId + " , not found");
         }
         return products;
+    }
+
+    public void reserveProduct(String publicProductId) { // добавить количество товаров
+        productDaoService.reserveProduct(publicProductId);
     }
 }

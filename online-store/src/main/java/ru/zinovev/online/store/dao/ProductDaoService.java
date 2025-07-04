@@ -7,7 +7,9 @@ import ru.zinovev.online.store.controller.dto.ProductDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
+import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.ProductDetails;
 
 import java.util.HashMap;
@@ -20,13 +22,14 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class ProductDaoService {
 
-    private final CategoryDaoService categoryDaoService;
+    private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
     @Transactional
     public ProductDetails createProduct(ProductDto productDto) {
-        var category = categoryDaoService.getByPublicId(productDto.categoryPublicId());
+        var category = categoryRepository.findByPublicCategoryId(productDto.categoryPublicId())
+                .orElseThrow(() -> new NotFoundException("Category with id - + publicCategoryId + not found"));
 
         var product = Product.builder()
                 .publicProductId(UUID.randomUUID().toString())
@@ -67,5 +70,12 @@ public class ProductDaoService {
                 .stream()
                 .map(productMapper::toProductDetails)
                 .toList();
+    }
+
+    @Transactional
+    public void reserveProduct(String publicProductId) {
+        var existedProduct = productRepository.findByPublicProductId(publicProductId).get();
+        var updatedProduct = existedProduct.toBuilder().stockQuantity(existedProduct.getStockQuantity() - 1).build();
+        productRepository.save(updatedProduct);
     }
 }

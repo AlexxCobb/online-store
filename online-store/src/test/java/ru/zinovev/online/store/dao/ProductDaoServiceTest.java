@@ -13,6 +13,7 @@ import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
+import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.ProductDetails;
@@ -37,7 +38,7 @@ import static org.mockito.Mockito.when;
 class ProductDaoServiceTest {
 
     @Mock
-    private CategoryDaoService categoryDaoService;
+    private CategoryRepository categoryRepository;
     @Mock
     private ProductRepository productRepository;
     @Mock
@@ -104,7 +105,8 @@ class ProductDaoServiceTest {
 
     @Test
     void shouldSaveNewProduct() {
-        when(categoryDaoService.getByPublicId(eq(mockProductDto.categoryPublicId()))).thenReturn(mockCategory);
+        when(categoryRepository.findByPublicCategoryId(eq(mockProductDto.categoryPublicId()))).thenReturn(
+                Optional.of(mockCategory));
         when(productMapper.toProductDetails(eq(mockProduct))).thenReturn(mockProductDetails);
         when(productRepository.save(productCaptor.capture())).thenReturn(mockProduct);
 
