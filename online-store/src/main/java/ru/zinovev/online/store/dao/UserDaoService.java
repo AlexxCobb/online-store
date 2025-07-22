@@ -1,7 +1,6 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
@@ -23,7 +22,7 @@ public class UserDaoService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
+    //  private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserDetails createUser(UserRegistrationDto userRegistrationDto) {
@@ -33,7 +32,7 @@ public class UserDaoService {
                 .email(userRegistrationDto.email())
                 .name(userRegistrationDto.name())
                 .lastname(userRegistrationDto.lastname())
-                .passwordHash(passwordEncoder.encode(userRegistrationDto.password()))
+                .passwordHash(userRegistrationDto.password())
                 .build();
         return userMapper.toUserDetails(userRepository.save(newUser));
     }
@@ -54,7 +53,7 @@ public class UserDaoService {
     public UserDetails changePassword(UserDetails userDetails, ChangePasswordDto changePasswordDto) {
         var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
         var updateUser = user.toBuilder()
-                .passwordHash(passwordEncoder.encode(changePasswordDto.newPassword()))
+                .passwordHash(changePasswordDto.newPassword())
                 .build();
         return userMapper.toUserDetails(userRepository.save(updateUser));
     }
