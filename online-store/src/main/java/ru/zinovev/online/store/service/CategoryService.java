@@ -3,7 +3,6 @@ package ru.zinovev.online.store.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.dao.CategoryDaoService;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
@@ -16,8 +15,10 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryDaoService categoryDaoService;
+    private final UserService userService;
 
-    public CategoryDetails createCategory(@NonNull CategoryDetails categoryDetails) {
+    public CategoryDetails createCategory(@NonNull String publicUserId, @NonNull CategoryDetails categoryDetails) {
+        userService.findUserDetails(publicUserId);
         categoryDaoService.findByNameIgnoreCase(categoryDetails)
                 .ifPresent(categoryDetailsExist -> {
                     throw new BadRequestException("Category with name - " + categoryDetails.name() + " already exist");
@@ -25,7 +26,9 @@ public class CategoryService {
         return categoryDaoService.createCategory(categoryDetails);
     }
 
-    public CategoryDetails updateCategory(@NonNull String publicCategoryId, @NonNull CategoryDetails categoryDetails) {
+    public CategoryDetails updateCategory(@NonNull String publicUserId, @NonNull String publicCategoryId,
+                                          @NonNull CategoryDetails categoryDetails) {
+        userService.findUserDetails(publicUserId);
         var categoryDetailsExist = existCategory(publicCategoryId);
         if (!categoryDetailsExist.name().equalsIgnoreCase(categoryDetails.name())) {
             return categoryDaoService.updateCategory(categoryDetailsExist, categoryDetails);
@@ -34,8 +37,14 @@ public class CategoryService {
         }
     }
 
-    public void deleteCategory(@NonNull String publicCategoryId) {
+    public void deleteCategory(@NonNull String publicUserId, @NonNull String publicCategoryId) {
+        userService.findUserDetails(publicUserId);
         categoryDaoService.deleteCategory(publicCategoryId);
+    }
+
+    public List<CategoryDetails> getCategories(String publicUserId){ //для чего Id применить
+        userService.findUserDetails(publicUserId);
+        return  categoryDaoService.getCategories();
     }
 
     public CategoryDetails existCategory(String publicCategoryId) {

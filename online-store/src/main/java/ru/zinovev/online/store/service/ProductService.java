@@ -18,13 +18,16 @@ public class ProductService {
 
     private final ProductDaoService productDaoService;
     private final CategoryService categoryService;
+    private final UserService userService;
 
-    public ProductDetails createProduct(@NonNull ProductDetails productDetails) {
+    public ProductDetails createProduct(@NonNull String publicUserId, @NonNull ProductDetails productDetails) {
+        userService.findUserDetails(publicUserId);
         return productDaoService.createProduct(productDetails);
     }
 
-    public ProductDetails updateProduct(@NonNull ProductUpdateDetails productUpdateDetails,
+    public ProductDetails updateProduct(@NonNull String publicUserId, @NonNull ProductUpdateDetails productUpdateDetails,
                                         @NonNull String publicProductId) {
+        userService.findUserDetails(publicUserId);
         getByPublicId(publicProductId);
         if (productUpdateDetails.categoryPublicId() != null) {
             categoryService.existCategory(productUpdateDetails.categoryPublicId());
@@ -32,7 +35,8 @@ public class ProductService {
         return productDaoService.updateProduct(productUpdateDetails, publicProductId);
     }
 
-    public void deleteProduct(@NonNull String publicProductId) {
+    public void deleteProduct(@NonNull String publicUserId, @NonNull String publicProductId) {
+        userService.findUserDetails(publicUserId);
         productDaoService.deleteProduct(publicProductId);
     }
 

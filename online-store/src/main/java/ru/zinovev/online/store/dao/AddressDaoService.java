@@ -3,8 +3,6 @@ package ru.zinovev.online.store.dao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.zinovev.online.store.controller.dto.AddressDto;
-import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;

@@ -20,32 +20,32 @@ import ru.zinovev.online.store.service.UserService;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("api/profile/users/{publicUserId}")
+@RequestMapping("api/profile/users")
 public class UserProfileController {
 
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping("/{publicUserId}")
     public UserDetails getUserDetails(@PathVariable String publicUserId) {
         log.debug("Received GET request to get user with id = {}", publicUserId);
         return userService.findUserDetails(publicUserId);
     }
 
-    @PatchMapping("/info") //смену email выделять в отдельный эндпоинт?
+    @PatchMapping("/{publicUserId}/info") //смену email выделять в отдельный эндпоинт?
     public UserDetails updateUser(@PathVariable String publicUserId, @Valid @RequestBody
     UserUpdateDto userUpdateDto) {
         log.debug("Received PATCH request to update user with id = {}", publicUserId);
         return userService.updateUser(publicUserId, userUpdateDto);
     }
 
-    @PatchMapping("/password")
+    @PatchMapping("/{publicUserId}/password")
     public UserDetails changePassword(@PathVariable String publicUserId, @Valid @RequestBody
     ChangePasswordDto changePasswordDto) {
         log.debug("Received PATCH request to update user password with id = {}", publicUserId);
         return userService.changePassword(publicUserId, changePasswordDto);
     }
 
-    @DeleteMapping()
+    @DeleteMapping("/{publicUserId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable String publicUserId) {
         log.debug("Received DELETE request to delete user with id = {}", publicUserId);
