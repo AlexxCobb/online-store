@@ -2,14 +2,12 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
 import ru.zinovev.online.store.controller.dto.UserRegistrationDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
 import ru.zinovev.online.store.dao.UserDaoService;
 import ru.zinovev.online.store.exception.model.BadRequestException;
-import ru.zinovev.online.store.exception.model.InvalidPasswordException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
 
@@ -18,7 +16,7 @@ import ru.zinovev.online.store.model.UserDetails;
 public class UserService {
 
     private final UserDaoService userDaoService;
-    private final PasswordEncoder passwordEncoder;
+   // private final PasswordEncoder passwordEncoder;
 
     public UserDetails createUser(@NonNull UserRegistrationDto userRegistrationDto) {
         userDaoService.findByEmailIgnoreCase(userRegistrationDto)
@@ -42,12 +40,12 @@ public class UserService {
         var userDetails = findUserDetails(publicUserId);
         var userPassword = userDaoService.findPasswordHashByPublicId(userDetails)
                 .orElseThrow(() -> new NotFoundException("Password not found"));
-        if (!passwordEncoder.matches(changePasswordDto.currentPassword(), userPassword)) {
+       /* if (!passwordEncoder.matches(changePasswordDto.currentPassword(), userPassword)) {
             throw new InvalidPasswordException("Current password is incorrect");
         }
         if (passwordEncoder.matches(changePasswordDto.newPassword(), userPassword)) {
             throw new InvalidPasswordException("New password cannot match current password");
-        }
+        }*/
         return userDaoService.changePassword(userDetails, changePasswordDto);
     }
 

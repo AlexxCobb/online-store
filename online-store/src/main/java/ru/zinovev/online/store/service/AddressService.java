@@ -7,7 +7,7 @@ import ru.zinovev.online.store.dao.AddressDaoService;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
-import ru.zinovev.online.store.exception.model.IllegalArgumentException;
+import ru.zinovev.online.store.exception.model.InvalidArgumentException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.AddressUpdateDetails;
@@ -27,8 +27,9 @@ public class AddressService {
         return addressDaoService.addAddress(userDetails, addressDetails);
     }
 
-    public AddressDetails addSystemAddress(@NonNull AddressDetails addressDetails,
+    public AddressDetails addSystemAddress(@NonNull String publicUserId, @NonNull AddressDetails addressDetails,
                                            @NonNull AddressTypeName addressTypeName) {
+        userService.findUserDetails(publicUserId);
         if (addressTypeName.equals(AddressTypeName.USER_ADDRESS)) {
             throw new BadRequestException("Administrator cannot create addresses of type USER_ADDRESS"); //403
         }
@@ -71,9 +72,9 @@ public class AddressService {
         }
     }
 
-    public void deleteAddress(String publicUserId, @NonNull String publicAddressId, Boolean isSystem) {
+    public void deleteAddress(@NonNull String publicUserId, @NonNull String publicAddressId, Boolean isSystem) {
         var address = findByPublicId(publicAddressId);
-        if (publicUserId != null && !isSystem && address.getUser() != null) {
+        if (!isSystem && address.getUser() != null) {
             var userDetails = userService.findUserDetails(publicUserId);
             if (!userDetails.publicUserId().equals(address.getUser().getPublicUserId()) ||
                     !address.getAddressType().getName().equals(AddressTypeName.USER_ADDRESS) || address.getSystem()
@@ -82,10 +83,10 @@ public class AddressService {
                         "User with id - " + publicUserId + " cannot delete address with id - " + publicAddressId);
             }
             addressDaoService.deleteAddress(address);
-        } else if (publicUserId == null && isSystem && address.getSystem().equals(true)) {
+        } else if (isSystem && address.getSystem().equals(true)) {
             addressDaoService.deleteAddress(address);
         } else {
-            throw new IllegalArgumentException(
+            throw new InvalidArgumentException(
                     "Invalid delete operation parameters - " + publicUserId + publicAddressId + isSystem);
         }
     }

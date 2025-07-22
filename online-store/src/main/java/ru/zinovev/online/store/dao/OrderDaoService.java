@@ -73,6 +73,13 @@ public class OrderDaoService {
                 .collect(Collectors.toList());
     }
 
+    public List<OrderShortDetails> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(orderMapper::toOrderShortDetails)
+                .collect(Collectors.toList());
+    }
+
     public Optional<OrderDetails> findByPublicOrderId(String publicOrderId) {
         return orderRepository.findByPublicOrderId(publicOrderId).map(orderMapper::toOrderDetails);
     }

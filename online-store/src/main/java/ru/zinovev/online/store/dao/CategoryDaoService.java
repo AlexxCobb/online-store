@@ -13,6 +13,7 @@ import ru.zinovev.online.store.model.CategoryDetails;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -47,6 +48,13 @@ public class CategoryDaoService {
         var category = categoryRepository.findByPublicCategoryId(publicCategoryId)
                 .orElseThrow(() -> new NotFoundException("Category with id - " + publicCategoryId + " not found"));
         categoryRepository.delete(category);
+    }
+
+    public List<CategoryDetails> getCategories() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(categoryMapper::toCategoryDetails)
+                .collect(Collectors.toList());
     }
 
     public Optional<CategoryDetails> findByNameIgnoreCase(CategoryDetails categoryDetails) {
