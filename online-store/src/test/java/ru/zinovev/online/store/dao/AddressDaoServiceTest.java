@@ -8,8 +8,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.zinovev.online.store.controller.dto.AddressDto;
-import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.dao.entity.AddressType;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.User;
@@ -18,6 +16,7 @@ import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.repository.AddressRepository;
 import ru.zinovev.online.store.dao.repository.AddressTypeRepository;
 import ru.zinovev.online.store.model.AddressDetails;
+import ru.zinovev.online.store.model.AddressUpdateDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
 import java.time.LocalDate;
@@ -54,8 +53,8 @@ class AddressDaoServiceTest {
     private AddressType mockSystemType;
     private DeliveryAddress mockUserAddress;
     private DeliveryAddress mockSystemAddress;
-    private AddressDto mockAddressDto;
-    private AddressUpdateDto mockAddressUpdateDto;
+    private AddressDetails mockAddressDetails;
+    private AddressUpdateDetails mockAddressUpdateDetails;
     private AddressDetails mockUserAddressDetails;
     private AddressDetails mockSystemDetails;
 
@@ -79,30 +78,30 @@ class AddressDaoServiceTest {
                 .id(2)
                 .name(AddressTypeName.STORE_ADDRESS)
                 .build();
-        mockAddressDto = new AddressDto("Russia", "SPb", 190000, "Nevsky", 1, null);
-        mockAddressUpdateDto =
-                new AddressUpdateDto(Optional.empty(), Optional.of("Nekrasov"), Optional.empty(), Optional.empty());
+        mockAddressDetails = new AddressDetails("publicId", "Russia", "SPb", 190000, "Nevsky", 1, null);
+        mockAddressUpdateDetails =
+                new AddressUpdateDetails(null, "Nekrasov", null, null);
         mockUserAddress = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
                 .addressType(mockUserType)
                 .user(mockUser)
-                .country(mockAddressDto.country())
-                .town(mockAddressDto.town())
-                .zipCode(mockAddressDto.zipCode())
-                .street(mockAddressDto.street())
-                .houseNumber(mockAddressDto.houseNumber())
-                .flatNumber(mockAddressDto.flatNumber() != null ? mockAddressDto.flatNumber() : null)
+                .country(mockAddressDetails.country())
+                .town(mockAddressDetails.town())
+                .zipCode(mockAddressDetails.zipCode())
+                .street(mockAddressDetails.street())
+                .houseNumber(mockAddressDetails.houseNumber())
+                .flatNumber(mockAddressDetails.flatNumber() != null ? mockAddressDetails.flatNumber() : null)
                 .active(false)
                 .system(false)
                 .build();
         mockSystemAddress = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
                 .addressType(mockSystemType)
-                .country(mockAddressDto.country())
-                .town(mockAddressDto.town())
-                .zipCode(mockAddressDto.zipCode())
-                .street(mockAddressDto.street())
-                .houseNumber(mockAddressDto.houseNumber())
+                .country(mockAddressDetails.country())
+                .town(mockAddressDetails.town())
+                .zipCode(mockAddressDetails.zipCode())
+                .street(mockAddressDetails.street())
+                .houseNumber(mockAddressDetails.houseNumber())
                 .active(true)
                 .system(true)
                 .build();
@@ -127,7 +126,7 @@ class AddressDaoServiceTest {
         when(addressMapper.toAddressDetails(mockUserAddress)).thenReturn(mockUserAddressDetails);
         when(addressRepository.save(addressCaptor.capture())).thenReturn(mockUserAddress);
 
-        var result = addressDaoService.addAddress(mockUserDetails, mockAddressDto);
+        var result = addressDaoService.addAddress(mockUserDetails, mockAddressDetails);
 
         assertNotNull(result);
         assertEquals(mockUserAddressDetails, result);
@@ -140,7 +139,7 @@ class AddressDaoServiceTest {
         when(addressMapper.toAddressDetails(mockSystemAddress)).thenReturn(mockSystemDetails);
         when(addressRepository.save(addressCaptor.capture())).thenReturn(mockSystemAddress);
 
-        var result = addressDaoService.addSystemAddress(mockAddressDto, mockSystemType.getName());
+        var result = addressDaoService.addSystemAddress(mockAddressDetails, mockSystemType.getName());
 
         assertNotNull(result);
         assertEquals(mockSystemDetails, result);
@@ -154,11 +153,12 @@ class AddressDaoServiceTest {
         when(addressMapper.toAddressDetails(updateAddress)).thenReturn(mockUserAddressDetails);
         when(addressRepository.save(addressCaptor.capture())).thenReturn(updateAddress);
 
-        var result = addressDaoService.updateAddress(mockUserAddress, mockAddressUpdateDto);
+        var result = addressDaoService.updateAddress(mockUserAddress, mockAddressUpdateDetails);
 
         assertNotNull(result);
         assertEquals(mockUserAddressDetails, result);
-        verify(addressMapper, times(1)).updateAddressFromAddressUpdateDto(mockUserAddress, mockAddressUpdateDto);
+        verify(addressMapper, times(1)).updateAddressFromAddressUpdateDetails(mockUserAddress,
+                                                                              mockAddressUpdateDetails);
     }
 
     @Test

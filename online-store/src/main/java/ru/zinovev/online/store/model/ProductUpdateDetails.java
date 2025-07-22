@@ -1,16 +1,11 @@
 package ru.zinovev.online.store.model;
 
 import java.math.BigDecimal;
-import java.util.Set;
 
-public record ProductDetails(
-        String publicProductId,
+public record ProductUpdateDetails(
         String name,
         BigDecimal price,
         String categoryPublicId,
-        Set<ParametersDetails> parameters,
-        BigDecimal weight,
-        BigDecimal volume,
         Integer stockQuantity
 ) {
 }

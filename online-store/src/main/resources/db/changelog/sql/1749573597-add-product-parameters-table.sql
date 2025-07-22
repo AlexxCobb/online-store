@@ -1,11 +1,12 @@
-create TABLE product_parameters (
+create TABLE
+    product_parameters (
+                        product_parameter_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
                         product_id BIGINT NOT NULL,
                         param_key VARCHAR(100) NOT NULL,
                         param_value VARCHAR(255) NOT NULL,
-                        PRIMARY KEY (product_id, param_key),
 
-CONSTRAINT fk_product_parameters_product FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE
-);
+        CONSTRAINT fk_product_parameters_product FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE
+    );
 
 comment on table product_parameters is 'Хранение динамических параметров товаров';
 comment on column product_parameters.product_id is 'ID товара';

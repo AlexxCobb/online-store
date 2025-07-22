@@ -6,7 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.Set;
 
 public record ProductDto(
         @NotBlank
@@ -16,8 +16,8 @@ public record ProductDto(
         @Positive
         BigDecimal price,
         @NotBlank
-        String categoryPublicId, //CategoryDetails?
-        Map<String, String> parameters,
+        String categoryPublicId,
+        Set<ParametersDto> parameters,
         @NotBlank
         @Positive
         BigDecimal weight,

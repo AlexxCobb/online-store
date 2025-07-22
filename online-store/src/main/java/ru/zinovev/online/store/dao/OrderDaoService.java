@@ -46,7 +46,7 @@ public class OrderDaoService {
                                     OrderDto orderDto) {
         var user = userDaoService.getByPublicId(userDetails.publicUserId());
         var address = addressRepository.findByPublicDeliveryAddressId(orderDto.publicAddressId())
-                .get(); //верхнеуровнево есть проверки существования. так оставить или ...
+                .get();
         var product = productRepository.findByPublicProductId(productDetails.publicProductId()).get();
         var payMethod = paymentMethodRepository.getByName(orderDto.paymentMethodName());
         var deliveryMethod = deliveryMethodRepository.getByName(orderDto.deliveryMethodName());

@@ -1,19 +1,24 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.zinovev.online.store.controller.dto.ProductDto;
-import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
+import ru.zinovev.online.store.dao.repository.ProductSpecifications;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.ProductDetails;
+import ru.zinovev.online.store.model.ProductParamDetails;
+import ru.zinovev.online.store.model.ProductUpdateDetails;
 
-import java.util.HashMap;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,31 +32,39 @@ public class ProductDaoService {
     private final ProductMapper productMapper;
 
     @Transactional
-    public ProductDetails createProduct(ProductDto productDto) {
-        var category = categoryRepository.findByPublicCategoryId(productDto.categoryPublicId())
-                .orElseThrow(() -> new NotFoundException("Category with id - + publicCategoryId + not found"));
+    public ProductDetails createProduct(ProductDetails productDetails) {
+        var category = categoryRepository.findByPublicCategoryId(productDetails.categoryPublicId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Category with id - " + productDetails.categoryPublicId() + " not found"));
 
         var product = Product.builder()
                 .publicProductId(UUID.randomUUID().toString())
-                .name(productDto.name())
+                .name(productDetails.name())
                 .category(category)
-                .price(productDto.price())
-                .weight(productDto.weight())
-                .volume(productDto.volume())
-                .parameters(productDto.parameters() != null ? productDto.parameters() : new HashMap<>())
-                .stockQuantity(productDto.stockQuantity())
+                .price(productDetails.price())
+                .weight(productDetails.weight())
+                .volume(productDetails.volume())
+                .parameters(new HashSet<>())
+                .stockQuantity(productDetails.stockQuantity())
                 .build();
 
-        if (productDto.parameters() != null) {
-            product.getParameters().putAll(productDto.parameters());
+        if (productDetails.parameters() != null) {
+            productDetails.parameters()
+                    .stream()
+                    .map(productMapper::toProductParameter)
+                    .map(productParameter -> productParameter.toBuilder().product(product).build())
+                    .forEach(product.getParameters()::add);
         }
         return productMapper.toProductDetails(productRepository.save(product));
     }
 
     @Transactional
-    public ProductDetails updateProduct(ProductUpdateDto updateDto, String publicProductId) {
-        var existedProduct = productRepository.findByPublicProductId(publicProductId).get();
-        productMapper.updateProductFromProductUpdateDto(existedProduct, updateDto);
+    public ProductDetails updateProduct(ProductUpdateDetails updateDetails, String publicProductId) {
+        var existedProduct =
+                productRepository.findByPublicProductId(publicProductId)
+                        .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId
+                                                                         + " , not found"));
+        productMapper.updateProductFromProductUpdateDetails(existedProduct, updateDetails);
         return productMapper.toProductDetails(productRepository.save(existedProduct));
     }
 
@@ -61,15 +74,44 @@ public class ProductDaoService {
 
     @Transactional
     public void deleteProduct(String publicProductId) {
-        var product = productRepository.findByPublicProductId(publicProductId).get();
+        var product = productRepository.findByPublicProductId(publicProductId)
+                .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId +
+                                                                 " , not found"));
         productRepository.delete(product);
     }
 
-    public List<ProductDetails> findProductsByCategoryId(String categoryPublicId) {
-        return productRepository.findByCategoryPublicCategoryId(categoryPublicId)
-                .stream()
-                .map(productMapper::toProductDetails)
-                .toList();
+    public List<ProductDetails> findProducts(List<String> categoryPublicIds, BigDecimal minPrice,
+                                             BigDecimal maxPrice,
+                                             ProductParamDetails productParamDetails) {
+        List<Specification<Product>> spec = new ArrayList<>();
+
+        spec.add(ProductSpecifications.hasPriceBetween(minPrice, maxPrice));
+
+        if (Objects.nonNull(categoryPublicIds)) {
+            spec.add(ProductSpecifications.hasCategories(categoryPublicIds));
+        }
+
+        if (Objects.nonNull(productParamDetails.brand())) {
+            spec.add(ProductSpecifications.hasBrand(productParamDetails.brand()));
+        }
+
+        if (Objects.nonNull(productParamDetails.color())) {
+            spec.add(ProductSpecifications.hasColor(productParamDetails.color()));
+        }
+
+        if (Objects.nonNull(productParamDetails.ram())) {
+            spec.add(ProductSpecifications.hasRam(productParamDetails.ram()));
+        }
+
+        if (Objects.nonNull(productParamDetails.memory())) {
+            spec.add(ProductSpecifications.hasMemory(productParamDetails.memory()));
+        }
+
+        Specification<Product> allConditions = spec.stream()
+                .reduce(Specification::and)
+                .get();
+
+        return productRepository.findAll(allConditions).stream().map(productMapper::toProductDetails).toList();
     }
 
     @Transactional

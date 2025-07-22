@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.zinovev.online.store.controller.dto.CategoryDto;
+import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.service.CategoryService;
 
@@ -23,19 +24,20 @@ import ru.zinovev.online.store.service.CategoryService;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final CategoryMapper categoryMapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDetails addCategory(@Valid @RequestBody CategoryDto categoryDto) {
         log.debug("Received POST request to add category");
-        return categoryService.createCategory(categoryDto);
+        return categoryService.createCategory(categoryMapper.toCategoryDetails(categoryDto));
     }
 
     @PatchMapping("/{publicCategoryId}")
     public CategoryDetails updateCategory(@PathVariable String publicCategoryId, @Valid @RequestBody
     CategoryDto categoryDto) {
         log.debug("Received PATCH request to update category with id = {}", publicCategoryId);
-        return categoryService.updateCategory(publicCategoryId, categoryDto);
+        return categoryService.updateCategory(publicCategoryId, categoryMapper.toCategoryDetails(categoryDto));
     }
 
     @DeleteMapping("/{publicCategoryId}")

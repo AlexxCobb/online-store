@@ -7,11 +7,23 @@ import java.util.Optional;
 
 public record UserUpdateDto(
         @Size(min = 1, max = 250)
-        Optional<String> name,
+        String name,
         @Size(min = 2, max = 250)
-        Optional<String> lastname,
+        String lastname,
         @Email
         @Size(min = 6, max = 254)
-        Optional<String> email
+        String email
 ) {
+
+    public Optional<String> getOptionalName() {
+        return Optional.ofNullable(name);
+    }
+
+    public Optional<String> getOptionalLastname() {
+        return Optional.ofNullable(lastname);
+    }
+
+    public Optional<String> getOptionalEmail() {
+        return Optional.ofNullable(email);
+    }
 }
