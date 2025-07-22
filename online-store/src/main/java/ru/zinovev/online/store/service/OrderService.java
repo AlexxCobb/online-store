@@ -45,6 +45,11 @@ public class OrderService {
         return orderDaoService.getUserOrders(publicUserId);
     }
 
+    public List<OrderShortDetails> getAllOrders(String publicUserId) {
+        userService.findUserDetails(publicUserId);
+        return orderDaoService.getAllOrders();
+    }
+
     public OrderDetails changeOrderStatus(@NonNull String publicUserId, @NonNull String publicOrderId,
                                           @NonNull OrderStatusName orderStatusName,
                                           PaymentStatusName paymentStatusName) {

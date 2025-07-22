@@ -20,7 +20,7 @@ import ru.zinovev.online.store.service.UserService;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("api/profile/users")
+@RequestMapping("api/users")
 public class UserProfileController {
 
     private final UserService userService;
@@ -31,7 +31,7 @@ public class UserProfileController {
         return userService.findUserDetails(publicUserId);
     }
 
-    @PatchMapping("/{publicUserId}/info") //смену email выделять в отдельный эндпоинт?
+    @PatchMapping("/{publicUserId}")
     public UserDetails updateUser(@PathVariable String publicUserId, @Valid @RequestBody
     UserUpdateDto userUpdateDto) {
         log.debug("Received PATCH request to update user with id = {}", publicUserId);

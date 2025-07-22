@@ -29,6 +29,7 @@ import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.OrderDetails;
+import ru.zinovev.online.store.model.OrderShortDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
@@ -163,5 +164,9 @@ public class AdminController {
         return orderService.changeOrderStatus(publicOrderId, publicUserId, orderStatusName, paymentStatusName);
     }
 
-    //просмотр заказов админом, управление статусами заказов
+    @GetMapping("/{publicUserId}/orders") // id
+    public List<OrderShortDetails> getOrders(@PathVariable String publicUserId) {
+        log.debug("Received GET request to get all user orders");
+        return orderService.getAllOrders(publicUserId);
+    }
 }
