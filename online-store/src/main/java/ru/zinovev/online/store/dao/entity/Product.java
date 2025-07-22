@@ -1,8 +1,7 @@
 package ru.zinovev.online.store.dao.entity;
 
-import jakarta.persistence.CollectionTable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -10,7 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,8 +17,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Builder(toBuilder = true)
@@ -47,12 +46,9 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "product_parameters", joinColumns = {@JoinColumn(name = "product_id")})
-    @MapKeyColumn(name = "param_key")
-    @Column(name = "param_value")
+    @OneToMany(mappedBy = "product",cascade = CascadeType.PERSIST)
     @Builder.Default
-    private Map<String, String> parameters = new HashMap<>();
+    private Set<ProductParameter> parameters = new HashSet<>();
 
     @Column(name = "product_weight")
     private BigDecimal weight;

@@ -175,7 +175,7 @@ class ProductServiceTest {
         when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(
                 List.of(mockProductDetails, mockUpdatedProductDetails));
 
-        var result = productService.getProductsByCategoryId(categoryId);
+        var result = productService.searchProductsWithParameters(categoryId);
 
         assertNotNull(result);
         assertEquals(2, result.size());
@@ -188,6 +188,6 @@ class ProductServiceTest {
         when(categoryService.existCategory(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
         when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(Collections.emptyList());
 
-        assertThrows(NotFoundException.class, () -> productService.getProductsByCategoryId(categoryId));
+        assertThrows(NotFoundException.class, () -> productService.searchProductsWithParameters(categoryId));
     }
 }

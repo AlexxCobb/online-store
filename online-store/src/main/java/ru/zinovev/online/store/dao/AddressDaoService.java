@@ -11,6 +11,7 @@ import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.repository.AddressRepository;
 import ru.zinovev.online.store.dao.repository.AddressTypeRepository;
 import ru.zinovev.online.store.model.AddressDetails;
+import ru.zinovev.online.store.model.AddressUpdateDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
 import java.util.List;
@@ -29,19 +30,19 @@ public class AddressDaoService {
     private final AddressMapper addressMapper;
 
     @Transactional
-    public AddressDetails addAddress(UserDetails userDetails, AddressDto addressDto) {
+    public AddressDetails addAddress(UserDetails userDetails, AddressDetails addressDetails) {
         var user = userDaoService.getByPublicId(userDetails.publicUserId());
         var addressType = addressTypeRepository.getByName(AddressTypeName.USER_ADDRESS);
         var address = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
                 .addressType(addressType)
                 .user(user)
-                .country(addressDto.country())
-                .town(addressDto.town())
-                .zipCode(addressDto.zipCode())
-                .street(addressDto.street())
-                .houseNumber(addressDto.houseNumber())
-                .flatNumber(addressDto.flatNumber() != null ? addressDto.flatNumber() : null)
+                .country(addressDetails.country())
+                .town(addressDetails.town())
+                .zipCode(addressDetails.zipCode())
+                .street(addressDetails.street())
+                .houseNumber(addressDetails.houseNumber())
+                .flatNumber(addressDetails.flatNumber() != null ? addressDetails.flatNumber() : null)
                 .active(false)
                 .system(false)
                 .build();
@@ -49,16 +50,16 @@ public class AddressDaoService {
     }
 
     @Transactional
-    public AddressDetails addSystemAddress(AddressDto addressDto, AddressTypeName addressTypeName) {
+    public AddressDetails addSystemAddress(AddressDetails addressDetails, AddressTypeName addressTypeName) {
         var addressType = addressTypeRepository.getByName(addressTypeName);
         var address = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
                 .addressType(addressType)
-                .country(addressDto.country())
-                .town(addressDto.town())
-                .zipCode(addressDto.zipCode())
-                .street(addressDto.street())
-                .houseNumber(addressDto.houseNumber())
+                .country(addressDetails.country())
+                .town(addressDetails.town())
+                .zipCode(addressDetails.zipCode())
+                .street(addressDetails.street())
+                .houseNumber(addressDetails.houseNumber())
                 .active(true)
                 .system(true)
                 .build();
@@ -67,8 +68,8 @@ public class AddressDaoService {
 
     @Transactional
     public AddressDetails updateAddress(DeliveryAddress deliveryAddress,
-                                        AddressUpdateDto addressUpdateDto) {
-        addressMapper.updateAddressFromAddressUpdateDto(deliveryAddress, addressUpdateDto);
+                                        AddressUpdateDetails addressUpdateDetails) {
+        addressMapper.updateAddressFromAddressUpdateDetails(deliveryAddress, addressUpdateDetails);
         return addressMapper.toAddressDetails(addressRepository.save(deliveryAddress));
     }
 

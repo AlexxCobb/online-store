@@ -3,8 +3,6 @@ package ru.zinovev.online.store.service;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.zinovev.online.store.controller.dto.AddressDto;
-import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.dao.AddressDaoService;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
@@ -12,6 +10,7 @@ import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.IllegalArgumentException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.AddressDetails;
+import ru.zinovev.online.store.model.AddressUpdateDetails;
 
 import java.util.List;
 
@@ -22,21 +21,22 @@ public class AddressService {
     private final AddressDaoService addressDaoService;
     private final UserService userService;
 
-    public AddressDetails addAddress(@NonNull String publicUserId, @NonNull AddressDto addressDto) {
+    public AddressDetails addAddress(@NonNull String publicUserId, @NonNull AddressDetails addressDetails) {
         // разобраться с получением прав admin/user для корректного сохранения адреса (security)
         var userDetails = userService.findUserDetails(publicUserId);
-        return addressDaoService.addAddress(userDetails, addressDto);
+        return addressDaoService.addAddress(userDetails, addressDetails);
     }
 
-    public AddressDetails addSystemAddress(@NonNull AddressDto addressDto, @NonNull AddressTypeName addressTypeName) {
+    public AddressDetails addSystemAddress(@NonNull AddressDetails addressDetails,
+                                           @NonNull AddressTypeName addressTypeName) {
         if (addressTypeName.equals(AddressTypeName.USER_ADDRESS)) {
-            throw new BadRequestException("Administrator cannot create addresses of type USER_ADDRESS");
+            throw new BadRequestException("Administrator cannot create addresses of type USER_ADDRESS"); //403
         }
-        return addressDaoService.addSystemAddress(addressDto, addressTypeName);
+        return addressDaoService.addSystemAddress(addressDetails, addressTypeName);
     }
 
     public AddressDetails updateAddress(@NonNull String publicUserId, @NonNull String publicAddressId,
-                                        @NonNull AddressUpdateDto addressUpdateDto) {
+                                        @NonNull AddressUpdateDetails addressUpdateDetails) {
         var userDetails = userService.findUserDetails(publicUserId);
         var address = findByPublicId(publicAddressId);
         if (!userDetails.publicUserId().equals(address.getUser().getPublicUserId()) ||
@@ -44,11 +44,11 @@ public class AddressService {
             throw new BadRequestException(
                     "User with id - " + publicUserId + " cannot edit address with id - " + publicAddressId);
         }
-        return addressDaoService.updateAddress(address, addressUpdateDto);
+        return addressDaoService.updateAddress(address, addressUpdateDetails);
     }
 
     public AddressDetails updateSystemAddress(@NonNull String publicAddressId,
-                                              @NonNull AddressUpdateDto addressUpdateDto,
+                                              @NonNull AddressUpdateDetails addressUpdateDetails,
                                               @NonNull AddressTypeName addressTypeName) {
         var address = findByPublicId(publicAddressId);
         if (!address.getAddressType().getName().equals(addressTypeName)) {
@@ -56,7 +56,7 @@ public class AddressService {
                                                   + " , the address type does not match the one transmitted - "
                                                   + addressTypeName);
         }
-        return addressDaoService.updateAddress(address, addressUpdateDto);
+        return addressDaoService.updateAddress(address, addressUpdateDetails);
     }
 
     public List<AddressDetails> getAddresses(@NonNull String publicUserId, AddressTypeName name,

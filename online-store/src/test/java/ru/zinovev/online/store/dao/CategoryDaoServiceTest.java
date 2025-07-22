@@ -7,7 +7,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
@@ -40,7 +39,7 @@ class CategoryDaoServiceTest {
 
     @Test
     void shouldSaveNewCategory() {
-        var categoryDto = new CategoryDto("Phone");
+        var categoryDetails = new CategoryDetails(null, "Phone");
         var newCategory = Category.builder()
                 .id(1L)
                 .publicCategoryId("publicId")
@@ -51,7 +50,7 @@ class CategoryDaoServiceTest {
         when(categoryMapper.toCategoryDetails(newCategory)).thenReturn(expectedCategoryDetails);
         when(categoryRepository.save(categoryCaptor.capture())).thenReturn(newCategory);
 
-        var result = categoryDaoService.createCategory(categoryDto);
+        var result = categoryDaoService.createCategory(categoryDetails);
 
         assertNotNull(result);
         assertEquals(expectedCategoryDetails, result);
@@ -60,14 +59,14 @@ class CategoryDaoServiceTest {
 
     @Test
     void shouldUpdateCategory() {
-        var categoryDto = new CategoryDto("Laptop");
+        var categoryDetails = new CategoryDetails(null, "Laptop");
         var currentCategory = Category.builder()
                 .id(1L)
                 .publicCategoryId("publicId")
                 .name("Phone")
                 .build();
         var updateCategory = currentCategory.toBuilder()
-                .name(categoryDto.name())
+                .name(categoryDetails.name())
                 .build();
         var currentCategoryDetails = new CategoryDetails("publicId", "Phone");
         var expectedCategoryDetails = new CategoryDetails("publicId", "Laptop");
@@ -77,7 +76,7 @@ class CategoryDaoServiceTest {
         when(categoryMapper.toCategoryDetails(updateCategory)).thenReturn(expectedCategoryDetails);
         when(categoryRepository.save(categoryCaptor.capture())).thenReturn(updateCategory);
 
-        var result = categoryDaoService.updateCategory(currentCategoryDetails, categoryDto);
+        var result = categoryDaoService.updateCategory(currentCategoryDetails, categoryDetails);
 
         assertNotNull(result);
         assertEquals(expectedCategoryDetails, result);
@@ -99,7 +98,7 @@ class CategoryDaoServiceTest {
 
     @Test
     void shouldFindCategoryByNameIgnoreCase() {
-        var categoryDto = new CategoryDto("Phone");
+        var categoryDetails = new CategoryDetails(null, "Phone");
         var currentCategory = Category.builder()
                 .id(1L)
                 .publicCategoryId("publicId")
@@ -108,11 +107,11 @@ class CategoryDaoServiceTest {
         var currentCategoryDetails = new CategoryDetails("publicId", "Phone");
         var expectedCategoryDetails = new CategoryDetails("publicId", "Phone");
 
-        when(categoryRepository.findByNameIgnoreCase(categoryDto.name())).thenReturn(
+        when(categoryRepository.findByNameIgnoreCase(categoryDetails.name())).thenReturn(
                 Optional.of(currentCategory));
         when(categoryMapper.toCategoryDetails(currentCategory)).thenReturn(currentCategoryDetails);
 
-        var result = categoryDaoService.findByNameIgnoreCase(categoryDto);
+        var result = categoryDaoService.findByNameIgnoreCase(categoryDetails);
 
         assertTrue(result.isPresent());
         assertEquals(expectedCategoryDetails, result.get());

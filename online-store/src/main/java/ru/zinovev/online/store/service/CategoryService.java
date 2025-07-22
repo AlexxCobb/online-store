@@ -9,35 +9,41 @@ import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CategoryDetails;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
 
     private final CategoryDaoService categoryDaoService;
 
-    public CategoryDetails createCategory(@NonNull CategoryDto categoryDto) {
-        categoryDaoService.findByNameIgnoreCase(categoryDto)
-                .ifPresent(categoryDetails -> {
-                    throw new BadRequestException("Category with name - " + categoryDto.name() + " already exist");
+    public CategoryDetails createCategory(@NonNull CategoryDetails categoryDetails) {
+        categoryDaoService.findByNameIgnoreCase(categoryDetails)
+                .ifPresent(categoryDetailsExist -> {
+                    throw new BadRequestException("Category with name - " + categoryDetails.name() + " already exist");
                 });
-        return categoryDaoService.createCategory(categoryDto);
+        return categoryDaoService.createCategory(categoryDetails);
     }
 
-    public CategoryDetails updateCategory(@NonNull String publicCategoryId, @NonNull CategoryDto categoryDto) {
-        var categoryDetails = existCategory(publicCategoryId);
-        if (!categoryDetails.name().equalsIgnoreCase(categoryDto.name())) {
-            return categoryDaoService.updateCategory(categoryDetails, categoryDto);
+    public CategoryDetails updateCategory(@NonNull String publicCategoryId, @NonNull CategoryDetails categoryDetails) {
+        var categoryDetailsExist = existCategory(publicCategoryId);
+        if (!categoryDetailsExist.name().equalsIgnoreCase(categoryDetails.name())) {
+            return categoryDaoService.updateCategory(categoryDetailsExist, categoryDetails);
         } else {
-            throw new BadRequestException("Category with name - " + categoryDto.name() + " already exist");
+            throw new BadRequestException("Category with name - " + categoryDetails.name() + " already exist");
         }
     }
 
     public void deleteCategory(@NonNull String publicCategoryId) {
-        categoryDaoService.deleteCategory(existCategory(publicCategoryId));
+        categoryDaoService.deleteCategory(publicCategoryId);
     }
 
     public CategoryDetails existCategory(String publicCategoryId) {
         return categoryDaoService.findByPublicId(publicCategoryId).orElseThrow(
                 () -> new NotFoundException("Category with id - " + publicCategoryId + " not found"));
+    }
+
+    public Boolean existCategories(List<String> publicIds) {
+        return categoryDaoService.existCategories(publicIds);
     }
 }

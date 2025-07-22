@@ -5,17 +5,32 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public record ProductUpdateDto(
         @Size(min = 3, max = 150)
-        Optional<String> name,
+        String name,
         @Positive
-        Optional<BigDecimal> price,
-        Optional<String> categoryPublicId,
-        Map<String, String> parameters,
+        BigDecimal price,
+        String categoryPublicId,
+        Set<ParametersDto> parameters,
         @PositiveOrZero
-        Optional<Integer> stockQuantity
+        Integer stockQuantity
 ) {
+    public Optional<String> getOptionalName() {
+        return Optional.ofNullable(name);
+    }
+
+    public Optional<BigDecimal> getOptionalPrice() {
+        return Optional.ofNullable(price);
+    }
+
+    public Optional<String> getOptionalCategoryPublicId() {
+        return Optional.ofNullable(categoryPublicId);
+    }
+
+    public Optional<Integer> getOptionalStockQuantity() {
+        return Optional.ofNullable(stockQuantity);
+    }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.zinovev.online.store.controller.dto.AddressDto;
 import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
+import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.service.AddressService;
 
@@ -28,18 +29,19 @@ import java.util.List;
 public class AddressController {
 
     private final AddressService addressService;
+    private final AddressMapper addressMapper;
 
     @PostMapping("/user/{publicUserId}")
     public AddressDetails addAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto) {
         log.debug("Received POST request to add user delivery address with userId - {}, dto - {}", publicUserId,
                   addressDto);
-        return addressService.addAddress(publicUserId, addressDto);
+        return addressService.addAddress(publicUserId, addressMapper.toAddressDetails(addressDto));
     }
 
     @PostMapping("/system")
     public AddressDetails addSystemAddress(@Valid AddressDto addressDto, @RequestParam AddressTypeName name) {
         log.debug("Received POST request to add system address dto - {}, with type - {}", addressDto, name);
-        return addressService.addSystemAddress(addressDto, name);
+        return addressService.addSystemAddress(addressMapper.toAddressDetails(addressDto), name);
     }
 
     @PatchMapping("/user/{publicUserId}/update/{publicAddressId}")
@@ -47,7 +49,8 @@ public class AddressController {
                                         @Valid AddressUpdateDto addressUpdateDto) {
         log.debug("Received PATCH request to update user's (id - {}) delivery address (id - {}), dto - {}",
                   publicUserId, publicAddressId, addressUpdateDto);
-        return addressService.updateAddress(publicUserId, publicAddressId, addressUpdateDto);
+        return addressService.updateAddress(publicUserId, publicAddressId,
+                                            addressMapper.toAddressUpdateDetails(addressUpdateDto));
     }
 
     @PatchMapping("/system/{publicAddressId}")
@@ -56,7 +59,8 @@ public class AddressController {
                                               @RequestParam AddressTypeName name) {
         log.debug("Received PATCH request to update system address (id - {}), dto - {}, type - {}", publicAddressId,
                   addressUpdateDto, name);
-        return addressService.updateSystemAddress(publicAddressId, addressUpdateDto, name);
+        return addressService.updateSystemAddress(publicAddressId,
+                                                  addressMapper.toAddressUpdateDetails(addressUpdateDto), name);
     }
 
     @GetMapping("/user/{publicUserId}")
