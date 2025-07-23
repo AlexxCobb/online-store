@@ -21,3 +21,9 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1750002816-add-payment-status-table.yaml
   - include:
       file: classpath:db/changelog/changeset/1750003567-add-order-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1753206149-add-order-item-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1753207600-add-cart-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1753207600-add-cart-item-table.yaml

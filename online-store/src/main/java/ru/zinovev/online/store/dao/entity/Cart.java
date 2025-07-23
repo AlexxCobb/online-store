@@ -16,48 +16,30 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "product")
-public class Product {
+@Table(name = "cart")
+public class Cart {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id")
+    @Column(name = "cart_id")
     private Long id;
 
-    @Column(name = "product_public_id")
-    private String publicProductId;
-
-    @Column(name = "product_name")
-    private String name;
-
-    @Column(name = "product_price")
-    private BigDecimal price;
+    @Column(name = "cart_public_id")
+    private String publicCartId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST)
-    @Builder.Default
-    private Set<ProductParameter> parameters = new HashSet<>();
-
-    @Column(name = "product_weight")
-    private BigDecimal weight;
-
-    @Column(name = "product_volume")
-    private BigDecimal volume;
-
-    @Column(name = "product_stock_quantity")
-    private Integer stockQuantity;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    List<CartItem> items;
 
     @Override
     public int hashCode() {
@@ -68,8 +50,8 @@ public class Product {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!(obj instanceof Product product))
+        if (!(obj instanceof Cart cart))
             return false;
-        return id != null && id.equals(product.id);
+        return id != null && id.equals(cart.id);
     }
 }
