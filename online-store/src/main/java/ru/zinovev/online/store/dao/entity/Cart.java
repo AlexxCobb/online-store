@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -39,7 +40,8 @@ public class Cart {
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-    List<CartItem> items;
+    @Builder.Default
+    List<CartItem> items = new ArrayList<>();
 
     @Override
     public int hashCode() {

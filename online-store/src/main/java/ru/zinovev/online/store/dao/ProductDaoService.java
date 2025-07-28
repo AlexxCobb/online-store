@@ -114,6 +114,10 @@ public class ProductDaoService {
         return productRepository.findAll(allConditions).stream().map(productMapper::toProductDetails).toList();
     }
 
+    public boolean existProducts(List<String> productIds) {
+        return productRepository.existsByPublicProductIdIn(productIds);
+    }
+
     @Transactional
     public void reserveProduct(String publicProductId) {
         var existedProduct = productRepository.findByPublicProductId(publicProductId).get();

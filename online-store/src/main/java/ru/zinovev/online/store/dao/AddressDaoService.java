@@ -104,4 +104,8 @@ public class AddressDaoService {
     public boolean existUserAddress(String publicAddressId, String publicUserId) {
         return addressRepository.existsByPublicDeliveryAddressIdAndUserPublicUserId(publicAddressId, publicUserId);
     }
+
+    public boolean existSystemAddress(String publicAddressId, AddressTypeName addressTypeName) {
+        return addressRepository.existsByPublicDeliveryAddressIdAndAddressTypeName(publicAddressId, addressTypeName);
+    }
 }

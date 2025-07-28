@@ -5,10 +5,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.OrderDto;
 import ru.zinovev.online.store.dao.OrderDaoService;
+import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
+import ru.zinovev.online.store.dao.entity.enums.DeliveryMethodName;
 import ru.zinovev.online.store.dao.entity.enums.OrderStatusName;
 import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
+import ru.zinovev.online.store.model.CartItemDetails;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
 
@@ -22,22 +25,17 @@ public class OrderService {
     private final UserService userService;
     private final AddressService addressService;
     private final ProductService productService;
+    private final CartService cartService;
 
     public OrderDetails createOrder(@NonNull String publicUserId, @NonNull OrderDto orderDto) {
         var userDetails = userService.findUserDetails(publicUserId);
-        var productDetails = productService.getByPublicId(orderDto.publicProductId());
-        if (!addressService.existUserAddress(orderDto.publicAddressId(), publicUserId)) {
-            throw new BadRequestException(
-                    "Address with id - " + orderDto.publicAddressId() + " is not the address of the user with id - "
-                            + publicUserId);
+        var cartDetails = cartService.getUserCart(publicUserId);
+        var productIds = cartDetails.cartItems().stream().map(CartItemDetails::publicProductId).toList();
+        if (!productService.existProducts(productIds)) {
+            throw new NotFoundException("Products with ids - " + productIds + " not found"); // нужна ли проверка/ определение наличия продукта, если его удалил админ (нужна более понятная обработка, какой продукт отсутствует)
         }
-        if (productDetails.stockQuantity() == 0) { //проверка здесь или на уровень ниже? в одной транзакции все учесть
-            throw new BadRequestException(
-                    "The product with id - " + orderDto.publicProductId() + " is out of stock");
-        } else {
-            productService.reserveProduct(productDetails.publicProductId());
-        }
-        return orderDaoService.createOrder(userDetails, productDetails, orderDto);
+        checkDeliveryMethodWithAddress(publicUserId, orderDto.publicAddressId(), orderDto.deliveryMethodName());
+        return orderDaoService.createOrder(userDetails, cartDetails, orderDto);
     }
 
     public List<OrderShortDetails> getUserOrders(String publicUserId) {
@@ -61,5 +59,33 @@ public class OrderService {
                     "User with id - " + publicUserId + " did not create an order with id - " + publicOrderId);
         }
         return orderDaoService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
+    }
+
+    private void checkDeliveryMethodWithAddress(String publicUserId, String publicAddressId, DeliveryMethodName name) {
+        switch (name) {
+            case COURIER -> {
+                if (!addressService.existUserAddress(
+                        publicAddressId, publicUserId)) {
+                    throw new BadRequestException(
+                            "Address with id - " + publicAddressId + " is not the address of the user with id - "
+                                    + publicUserId);
+                }
+            }
+            case PARCEL_LOCKER -> {
+                if (!addressService.existSystemAddress(publicAddressId, AddressTypeName.PARCEL_LOCKER)) {
+                    throw new BadRequestException(
+                            "The selected address does not match the selected delivery method - "
+                                    + name);
+                }
+            }
+            case BY_SELF -> {
+                if (!addressService.existSystemAddress(publicAddressId, AddressTypeName.STORE_ADDRESS)) {
+                    throw new BadRequestException(
+                            "The selected address does not match the selected delivery method - "
+                                    + name);
+                }
+            }
+            default -> throw new BadRequestException("Unknown delivery method");
+        }
     }
 }

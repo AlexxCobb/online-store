@@ -42,9 +42,8 @@ public class CategoryService {
         categoryDaoService.deleteCategory(publicCategoryId);
     }
 
-    public List<CategoryDetails> getCategories(String publicUserId){ //для чего Id применить
-        userService.findUserDetails(publicUserId);
-        return  categoryDaoService.getCategories();
+    public List<CategoryDetails> getCategories() {
+        return categoryDaoService.getCategories();
     }
 
     public CategoryDetails existCategory(String publicCategoryId) {

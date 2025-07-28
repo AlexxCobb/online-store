@@ -14,7 +14,7 @@ import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.User;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
-import ru.zinovev.online.store.exception.model.InvalidArgumentException;
+import ru.zinovev.online.store.exception.model.NotValidArgumentException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.UserDetails;
@@ -262,9 +262,9 @@ class AddressServiceTest {
         when(addressDaoService.findByPublicId(mockSystemAddress.getPublicDeliveryAddressId())).thenReturn(
                 Optional.of(mockSystemAddress));
 
-        assertThrows(InvalidArgumentException.class, () -> addressService.deleteAddress(mockUserDetails.publicUserId(),
-                                                                                        mockSystemAddress.getPublicDeliveryAddressId(),
-                                                                                        false)
+        assertThrows(NotValidArgumentException.class, () -> addressService.deleteAddress(mockUserDetails.publicUserId(),
+                                                                                         mockSystemAddress.getPublicDeliveryAddressId(),
+                                                                                         false)
         );
         verify(addressDaoService, never()).deleteAddress(mockSystemAddress);
     }

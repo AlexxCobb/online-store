@@ -113,12 +113,14 @@ public class AdminController {
         categoryService.deleteCategory(publicUserId, publicCategoryId);
     }
 
-    @GetMapping("/{publicUserId}/categories")
+    //брать категории из UserController
+
+    /*@GetMapping("/{publicUserId}/categories")
     @ResponseStatus(HttpStatus.CREATED)
     public List<CategoryDetails> getCategories(@PathVariable String publicUserId) {
         log.debug("Received GET request to get all categories");
         return categoryService.getCategories(publicUserId);
-    }
+    }*/
 
     @PostMapping("/{publicUserId}/products")
     @ResponseStatus(HttpStatus.CREATED)

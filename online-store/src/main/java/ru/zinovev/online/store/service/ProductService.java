@@ -25,7 +25,8 @@ public class ProductService {
         return productDaoService.createProduct(productDetails);
     }
 
-    public ProductDetails updateProduct(@NonNull String publicUserId, @NonNull ProductUpdateDetails productUpdateDetails,
+    public ProductDetails updateProduct(@NonNull String publicUserId,
+                                        @NonNull ProductUpdateDetails productUpdateDetails,
                                         @NonNull String publicProductId) {
         userService.findUserDetails(publicUserId);
         getByPublicId(publicProductId);
@@ -57,6 +58,10 @@ public class ProductService {
             }
         }
         return productDaoService.findProducts(categoryPublicIds, minPrice, maxPrice, productParamDetails);
+    }
+
+    public boolean existProducts(List<String> productsIds) {
+        return productDaoService.existProducts(productsIds);
     }
 
     public void reserveProduct(String publicProductId) { // добавить количество товаров
