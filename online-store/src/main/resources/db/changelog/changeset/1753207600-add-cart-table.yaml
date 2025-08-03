@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1753207600-add-cart-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1753207600-add-cart-table.sql

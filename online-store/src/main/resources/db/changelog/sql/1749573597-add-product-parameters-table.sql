@@ -1,9 +1,9 @@
 create TABLE
     product_parameters (
-                        product_parameter_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-                        product_id BIGINT NOT NULL,
-                        param_key VARCHAR(100) NOT NULL,
-                        param_value VARCHAR(255) NOT NULL,
+        product_parameter_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+        product_id BIGINT NOT NULL,
+        param_key VARCHAR(100) NOT NULL,
+        param_value VARCHAR(255) NOT NULL,
 
         CONSTRAINT fk_product_parameters_product FOREIGN KEY (product_id) REFERENCES product(product_id) ON DELETE CASCADE
     );

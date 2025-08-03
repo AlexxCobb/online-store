@@ -1,6 +1,5 @@
 package ru.zinovev.online.store.dao.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -9,7 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,47 +15,29 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "product")
-public class Product {
+@Table(name = "cart_item")
+public class CartItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id")
+    @Column(name = "cart_item_id")
     private Long id;
 
-    @Column(name = "product_public_id")
-    private String publicProductId;
-
-    @Column(name = "product_name")
-    private String name;
-
-    @Column(name = "product_price")
-    private BigDecimal price;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "product_id")
+    private Product product;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST)
-    @Builder.Default
-    private Set<ProductParameter> parameters = new HashSet<>();
-
-    @Column(name = "product_weight")
-    private BigDecimal weight;
-
-    @Column(name = "product_volume")
-    private BigDecimal volume;
-
-    @Column(name = "product_stock_quantity")
-    private Integer stockQuantity;
+    private Integer quantity;
 
     @Override
     public int hashCode() {
@@ -68,8 +48,8 @@ public class Product {
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
-        if (!(obj instanceof Product product))
+        if (!(obj instanceof CartItem cartItem))
             return false;
-        return id != null && id.equals(product.id);
+        return id != null && id.equals(cartItem.id);
     }
 }

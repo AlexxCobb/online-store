@@ -10,8 +10,6 @@ public record OrderDto(
         @NotBlank
         PaymentMethodName paymentMethodName,
         @NotBlank
-        DeliveryMethodName deliveryMethodName,
-        @NotBlank
-        String publicProductId // заменить на лист?
+        DeliveryMethodName deliveryMethodName
 ) {
 }

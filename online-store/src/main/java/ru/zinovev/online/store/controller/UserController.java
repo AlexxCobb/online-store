@@ -1,10 +1,13 @@
 package ru.zinovev.online.store.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -22,11 +25,13 @@ import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.model.AddressDetails;
+import ru.zinovev.online.store.model.CartDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.service.AddressService;
+import ru.zinovev.online.store.service.CartService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
@@ -44,9 +49,9 @@ public class UserController {
     private final ProductService productService;
     private final CategoryService categoryService;
     private final OrderService orderService;
+    private final CartService cartService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
-
 
     @PostMapping("/{publicUserId}/addresses")
     public AddressDetails addAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto) {
@@ -80,14 +85,14 @@ public class UserController {
         addressService.deleteAddress(publicUserId, publicAddressId, false);
     }
 
-    @GetMapping("/{publicUserId}/categories")
+    @GetMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public List<CategoryDetails> getCategories(@PathVariable String publicUserId) {
+    public List<CategoryDetails> getCategories() {
         log.debug("Received GET request to get all categories");
-        return categoryService.getCategories(publicUserId);
+        return categoryService.getCategories();
     }
 
-    @GetMapping("/{publicUserId}/products")
+    @GetMapping("/products")
     public List<ProductDetails> searchProducts(
             @RequestParam(required = false) List<String> publicCategoryIds,
             @RequestParam(required = false) BigDecimal minPrice,
@@ -96,6 +101,16 @@ public class UserController {
         log.debug("Received GET request to search products with parameters");
         return productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
                                                            productMapper.toProductParamDetails(productParamDto));
+    }
+
+    @PostMapping("/carts")
+    public CartDetails addProductsToCart(@CookieValue(value = "CART_ID", required = false) String cartId,
+                                         @RequestParam(required = false) String publicUserId,
+                                         @RequestParam String publicProductId,
+                                         @RequestParam(defaultValue = "1") Integer quantity,
+                                         HttpServletResponse response) {
+        setCartCookie(response, cartId);
+        return cartService.addProductToCart(cartId, publicUserId, publicProductId, quantity);
     }
 
     @PostMapping("/{publicUserId}/orders")
@@ -109,5 +124,13 @@ public class UserController {
     public List<OrderShortDetails> getOrders(@PathVariable String publicUserId) {
         log.debug("Received GET request to get user orders with userId - {}", publicUserId);
         return orderService.getUserOrders(publicUserId);
+    }
+
+    private void setCartCookie(HttpServletResponse response, String cartId) {
+        Cookie cookie = new Cookie("CART_ID", cartId);
+        cookie.setPath("/");
+        cookie.setMaxAge(30 * 24 * 60 * 60);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
     }
 }

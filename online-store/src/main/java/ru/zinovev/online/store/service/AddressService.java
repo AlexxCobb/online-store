@@ -7,8 +7,8 @@ import ru.zinovev.online.store.dao.AddressDaoService;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
-import ru.zinovev.online.store.exception.model.InvalidArgumentException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
+import ru.zinovev.online.store.exception.model.NotValidArgumentException;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.AddressUpdateDetails;
 
@@ -86,7 +86,7 @@ public class AddressService {
         } else if (isSystem && address.getSystem().equals(true)) {
             addressDaoService.deleteAddress(address);
         } else {
-            throw new InvalidArgumentException(
+            throw new NotValidArgumentException(
                     "Invalid delete operation parameters - " + publicUserId + publicAddressId + isSystem);
         }
     }
@@ -94,6 +94,11 @@ public class AddressService {
     public boolean existUserAddress(String publicAddressId, String publicUserId) {
         findByPublicId(publicAddressId);
         return addressDaoService.existUserAddress(publicAddressId, publicUserId);
+    }
+
+    public boolean existSystemAddress(String publicAddressId, AddressTypeName name) {
+        findByPublicId(publicAddressId);
+        return addressDaoService.existSystemAddress(publicAddressId, name);
     }
 
     private DeliveryAddress findByPublicId(String publicAddressId) {

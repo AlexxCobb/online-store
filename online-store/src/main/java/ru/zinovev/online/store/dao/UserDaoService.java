@@ -72,6 +72,6 @@ public class UserDaoService {
 
     public User getByPublicId(String publicUserId) {
         return userRepository.findByPublicUserId(publicUserId)
-                .orElseThrow(() -> new NotFoundException("User with id - + publicUserId + not found"));
+                .orElseThrow(() -> new NotFoundException("User with id - " + publicUserId + " not found"));
     }
 }

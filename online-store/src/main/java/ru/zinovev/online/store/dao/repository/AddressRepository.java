@@ -21,4 +21,6 @@ public interface AddressRepository extends JpaRepository<DeliveryAddress, Long> 
     List<DeliveryAddress> findByActiveAndSystem(Boolean active, Boolean system);
 
     boolean existsByPublicDeliveryAddressIdAndUserPublicUserId(String publicDeliveryAddressId, String publicUserId);
+
+    boolean existsByPublicDeliveryAddressIdAndAddressTypeName(String publicDeliveryAddressId, AddressTypeName name);
 }

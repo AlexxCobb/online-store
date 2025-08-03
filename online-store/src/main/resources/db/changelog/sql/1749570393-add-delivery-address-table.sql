@@ -15,7 +15,7 @@ create TABLE
 
         CONSTRAINT fk_delivery_address_user FOREIGN KEY (user_id) REFERENCES "user"(user_id),
         CONSTRAINT fk_delivery_address_address_type FOREIGN KEY (address_type_id) REFERENCES address_type(address_type_id)
-);
+    );
 
 comment on table delivery_address is 'Таблица для хранения адресов доставки';
 comment on column delivery_address.delivery_address_id is 'ID адреса доставки';
