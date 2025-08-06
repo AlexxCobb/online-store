@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Categories</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<h1>Categories</h1>
+<table>
+  <tr>
+    <th>CATEGORY NAME</th>
+  </tr>
+  <tr th:each="category : ${categories}">
+    <td th:text="${category.name}">Phones</td>
+  </tr>
+</table>
+</body>
+</html>

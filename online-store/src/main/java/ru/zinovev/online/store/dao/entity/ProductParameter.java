@@ -24,6 +24,7 @@ public class ProductParameter {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_parameter_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

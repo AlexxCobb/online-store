@@ -51,7 +51,7 @@ public class ProductService {
             List<String> categoryPublicIds, BigDecimal minPrice,
             BigDecimal maxPrice,
             ProductParamDetails productParamDetails) {
-        if (!categoryPublicIds.isEmpty()) {
+        if (categoryPublicIds != null ) {
             var result = categoryService.existCategories(categoryPublicIds);
             if (!result) {
                 throw new NotFoundException("Categories with ids - " + categoryPublicIds + "not found");

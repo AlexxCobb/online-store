@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Products</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+<div class="welcome-container">
+<h1>Товары</h1>
+<table>
+
+    <tr>
+        <th>Бренд</th>
+        <th>Название модели</th>
+        <th>Стоимость, ₽</th>
+        <th>Вес, гр</th>
+        <th>Наличие</th>
+    </tr>
+    <tr th:each="product : ${products}">
+        <td th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
+                        ? ''
+                        : product.parameters.?[key == 'brand'][0].value}">
+            Apple
+        </td>
+        <td th:text="${product.name}">Iphone</td>
+        <td th:text="${product.price}">1000</td>
+        <td th:text="${product.weight}">240</td>
+        <td th:text="${product.stockQuantity}">10</td>
+    </tr>
+</table>
+</div>
+</body>
+</html>

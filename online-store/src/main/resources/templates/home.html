@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+
+</head>
+<body>
+<div class="welcome-container">
+    <h1 class="welcome-text">Добро пожаловать в онлайн магазин "Захотел - купил"!</h1>
+    <a th:href="@{/api/users/products}">
+        <img
+                src="/images/WI-BI.png"
+                class="shop-image"
+                th:src="@{/images/WI-BI.png}">
+    </a>
+    <p>Нажмите на изображение, чтобы начать покупки</p>
+</div>
+</body>
+</html>

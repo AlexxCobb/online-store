@@ -9,8 +9,12 @@ spring:
     password: qweqwe
     driver-class-name: org.postgresql.Driver
   jpa:
+    show-sql: true
     hibernate:
-    ddl-auto: validate;
+    format_sql: true
+    ddl-auto: validate
   liquibase:
     default-schema: public
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  thymeleaf:
+    cache: false

@@ -33,6 +33,8 @@ public interface ProductMapper {
     @Mapping(target = "stockQuantity", source = "stockQuantity")
     ProductDetails toProductDetails(Product product);
 
+    ParametersDetails toParametersDetails(ProductParameter productParameter);
+
     @Mapping(target = "publicProductId", ignore = true)
     ProductDetails toProductDetails(ProductDto productDto);
 

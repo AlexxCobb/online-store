@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -83,6 +84,15 @@ public class ProductDaoService {
     public List<ProductDetails> findProducts(List<String> categoryPublicIds, BigDecimal minPrice,
                                              BigDecimal maxPrice,
                                              ProductParamDetails productParamDetails) {
+        if (Objects.isNull(categoryPublicIds) && Objects.isNull(minPrice) && Objects.isNull(maxPrice) && Objects.isNull(
+                productParamDetails.brand()) && Objects.isNull(productParamDetails.memory()) && Objects.isNull(
+                productParamDetails.ram()) && Objects.isNull(productParamDetails.color())) {
+            return productRepository.findAllWithParameters()
+                    .stream()
+                    .map(productMapper::toProductDetails)
+                    .collect(Collectors.toList());
+        }
+
         List<Specification<Product>> spec = new ArrayList<>();
 
         spec.add(ProductSpecifications.hasPriceBetween(minPrice, maxPrice));

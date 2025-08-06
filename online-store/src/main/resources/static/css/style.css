@@ -1,0 +1,86 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: olive;
+    flex-direction: column;
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.welcome-container {
+    max-width: 800px;
+    padding: 2rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+}
+
+.welcome-text {
+    color: #2c3e50;
+    font-size: 2.2rem;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+    line-height: 1.4;
+}
+
+.shop-image {
+    max-width: 90%;
+    height: auto;
+    cursor: pointer;
+    border-radius: 12px; /* Увеличено для лучшего эффекта */
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    transition: all 0.4s ease;
+    border: none; /* Убираем границу если была */
+    display: block; /* Убираем нижний отступ */
+    margin: 0 auto; /* Центрирование */
+}
+
+.shop-image:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.welcome-container p {
+    color: #7f8c8d;
+    font-size: 1.2rem;
+    margin-top: 25px;
+    font-style: italic;
+}
+.products {
+    display: flex;
+    background-color: yellow;
+    gap: 20px;
+}
+.product {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+}
+table {
+    border-collapse: collapse;
+}
+table, th, td {
+    border: 2px solid grey;
+}
+
+td, th {
+    padding: 5px;
+}
+
+form{
+    display: flex;
+    align-content: space-between;
+}
+
+a.button {
+    text-decoration: none;
+    color: green;
+    background-color: aliceblue;
+    border: 1px solid grey;
+}
