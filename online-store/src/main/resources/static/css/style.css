@@ -52,6 +52,14 @@ body {
     margin-top: 25px;
     font-style: italic;
 }
+.address-tab {
+    padding: 10px 15px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
 .products {
     display: flex;
     background-color: yellow;

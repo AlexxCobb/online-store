@@ -65,10 +65,13 @@ public class AddressService {
         var userDetails = userService.findUserDetails(publicUserId);
         if (name == null && isSystem) {
             return addressDaoService.findAllSystemAddresses();
-        } else if (isSystem) {
+        } else if (name != null && !name.equals(AddressTypeName.USER_ADDRESS) && isSystem) {
             return addressDaoService.findSystemAddresses(name);
-        } else {
+        } else if (name != null && name.equals(AddressTypeName.USER_ADDRESS)) {
             return addressDaoService.findUserAddresses(userDetails);
+        } else {
+            throw new NotValidArgumentException(
+                    "Invalid parameters to get addresses, AddressTypeName :" + name + "system address: " + isSystem);
         }
     }
 

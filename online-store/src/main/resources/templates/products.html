@@ -9,10 +9,10 @@
 <div class="welcome-container">
 <h1>Товары</h1>
 <table>
-
     <tr>
         <th>Бренд</th>
         <th>Название модели</th>
+        <th>Цвет</th>
         <th>Стоимость, ₽</th>
         <th>Вес, гр</th>
         <th>Наличие</th>
@@ -24,6 +24,11 @@
             Apple
         </td>
         <td th:text="${product.name}">Iphone</td>
+        <td th:text="${#lists.isEmpty(product.parameters.?[key == 'color'])
+                        ? ''
+                        : product.parameters.?[key == 'color'][0].value}">
+            Green
+        </td>
         <td th:text="${product.price}">1000</td>
         <td th:text="${product.weight}">240</td>
         <td th:text="${product.stockQuantity}">10</td>

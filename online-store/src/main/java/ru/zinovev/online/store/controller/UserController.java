@@ -1,6 +1,7 @@
 package ru.zinovev.online.store.controller;
 
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -74,11 +75,19 @@ public class UserController {
     }
 
     @GetMapping("/{publicUserId}/addresses")
-    public List<AddressDetails> getAddresses(@PathVariable String publicUserId,
-                                             @RequestParam(required = false) AddressTypeName name,
-                                             @RequestParam(required = false) Boolean isSystem) {
+    public String getAddresses(@PathVariable String publicUserId,
+                               @RequestParam(required = false) AddressTypeName name,// с фронта enum? заменить на String
+                               @RequestParam(required = false) Boolean isSystem, Model model, HttpServletRequest request) {
         log.debug("Received GET request to get addresses");
-        return addressService.getAddresses(publicUserId, name, isSystem);
+
+        model.addAttribute("nameParam", request.getParameter("name"));
+        model.addAttribute("isSystemParam", request.getParameter("isSystem"));
+        if (name == null && isSystem == null) {
+            return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
+        }
+        var addresses = addressService.getAddresses(publicUserId, name, isSystem);
+        model.addAttribute("addresses", addresses);
+        return "addresses";
     }
 
     @DeleteMapping("/{publicUserId}/addresses/{publicAddressId}")

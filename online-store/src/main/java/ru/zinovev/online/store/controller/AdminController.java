@@ -82,13 +82,15 @@ public class AdminController {
         addressService.deleteAddress(publicUserId, publicAddressId, true);
     }
 
-    @GetMapping("/{publicUserId}/addresses")
+    //брать адреса из UserController
+
+   /* @GetMapping("/{publicUserId}/addresses")
     public List<AddressDetails> getAddresses(@PathVariable String publicUserId,
                                              @RequestParam(required = false) AddressTypeName name,
                                              @RequestParam(required = false) Boolean isSystem) {
         log.debug("Received GET request to get addresses");
         return addressService.getAddresses(publicUserId, name, isSystem);
-    }
+    }*/
 
     @PostMapping("/{publicUserId}/categories")
     @ResponseStatus(HttpStatus.CREATED)
@@ -145,7 +147,8 @@ public class AdminController {
         productService.deleteProduct(publicUserId, publicProductId);
     }
 
-    @GetMapping("/{publicUserId}/products") // id
+    //брать товары из UserController
+    /*@GetMapping("/{publicUserId}/products") // id
     public List<ProductDetails> searchProducts(
             @RequestParam(required = false) List<String> publicCategoryIds,
             @RequestParam(required = false) BigDecimal minPrice,
@@ -154,7 +157,7 @@ public class AdminController {
         log.debug("Received GET request to search products with parameters");
         return productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
                                                            productMapper.toProductParamDetails(productParamDto));
-    }
+    }*/
 
     @PatchMapping("/{publicUserId}/orders/{publicOrderId}")
     public OrderDetails changeOrderStatus(@PathVariable String publicUserId, @PathVariable String publicOrderId,
