@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="UTF-8">
-    <title>Categories</title>
-  <link rel="stylesheet" th:href="@{/css/style.css}" />
+<head th:replace="~{fragments/header :: common-header('Categories')}">
 </head>
 <body>
 <h1>Categories</h1>
@@ -15,5 +12,6 @@
     <td th:text="${category.name}">Phones</td>
   </tr>
 </table>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
 </body>
 </html>

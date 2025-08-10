@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+<head th:replace="~{fragments/header :: common-header('Addresses')}">
 </head>
 <body>
 <div class="welcome-container">
     <div class="address-tab"
          th:classappend="${nameParam == 'USER_ADDRESS'} ? 'active' : ''"
-         onclick="location.href='?name=USER_ADDRESS'">Мои адреса</div>
+         onclick="location.href='?name=USER_ADDRESS'">Мои адреса
+    </div>
 
     <div class="address-tab"
          th:classappend="${nameParam == 'PARCEL_LOCKER' && isSystemParam == 'true'} ? 'active' : ''"
-         onclick="location.href='?name=PARCEL_LOCKER&isSystem=true'">Пункты выдачи</div>
+         onclick="location.href='?name=PARCEL_LOCKER&isSystem=true'">Пункты выдачи
+    </div>
 
     <div class="address-tab"
          th:classappend="${nameParam == 'STORE_ADDRESS' && isSystemParam == 'true'} ? 'active' : ''"
-         onclick="location.href='?name=STORE_ADDRESS&isSystem=true'">Адреса магазинов</div>
+         onclick="location.href='?name=STORE_ADDRESS&isSystem=true'">Адреса магазинов
+    </div>
 
-    <h1>Адреса</h1>
+    <h2>Адреса</h2>
     <table>
         <tr>
             <th>Тип адреса</th>

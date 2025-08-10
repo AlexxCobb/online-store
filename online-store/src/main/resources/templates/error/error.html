@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Error')}">
+</head>
+<body>
+
+<div class="welcome-container">
+    <h2>You broke the app!</h2>
+    <p th:text="${error}">Описание ошибки</p>
+    <img
+            src="/images/wake up.png"
+            class="shop-image">
+</div>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>
