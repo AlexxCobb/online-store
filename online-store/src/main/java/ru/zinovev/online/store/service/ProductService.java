@@ -63,8 +63,4 @@ public class ProductService {
     public boolean existProducts(List<String> productsIds) {
         return productDaoService.existProducts(productsIds);
     }
-
-    public void reserveProduct(String publicProductId) { // добавить количество товаров
-        productDaoService.reserveProduct(publicProductId);
-    }
 }
