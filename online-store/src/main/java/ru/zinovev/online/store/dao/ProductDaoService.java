@@ -94,8 +94,9 @@ public class ProductDaoService {
         }
 
         List<Specification<Product>> spec = new ArrayList<>();
-
-        spec.add(ProductSpecifications.hasPriceBetween(minPrice, maxPrice));
+        if(Objects.nonNull(ProductSpecifications.hasPriceBetween(minPrice, maxPrice))){
+            spec.add(ProductSpecifications.hasPriceBetween(minPrice, maxPrice));
+        }
 
         if (Objects.nonNull(categoryPublicIds)) {
             spec.add(ProductSpecifications.hasCategories(categoryPublicIds));

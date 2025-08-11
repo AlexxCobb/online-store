@@ -35,7 +35,7 @@ public class ProductSpecifications {
     public static Specification<Product> hasCategories(List<String> publicCategoryIds) {
         return (root, query, criteriaBuilder) -> {
             Join<Product, Category> categoryJoin = root.join("category");
-            return categoryJoin.get("category").in(publicCategoryIds);
+            return categoryJoin.get("publicCategoryId").in(publicCategoryIds);
         };
     }
 

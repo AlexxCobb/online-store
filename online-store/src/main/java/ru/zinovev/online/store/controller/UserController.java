@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,7 @@ import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.CartDetails;
+import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
 import ru.zinovev.online.store.service.AddressService;
@@ -54,7 +56,8 @@ public class UserController {
     private final ProductMapper productMapper;
 
     @GetMapping("/home")
-    public String homePage() {
+    public String homePage(Model model, HttpServletRequest request) {
+        model.addAttribute("currentPath", request.getRequestURI());
         return "home";
     }
 
@@ -77,7 +80,8 @@ public class UserController {
     @GetMapping("/{publicUserId}/addresses")
     public String getAddresses(@PathVariable String publicUserId,
                                @RequestParam(required = false) AddressTypeName name,// с фронта enum? заменить на String
-                               @RequestParam(required = false) Boolean isSystem, Model model, HttpServletRequest request) {
+                               @RequestParam(required = false) Boolean isSystem, Model model,
+                               HttpServletRequest request) {
         log.debug("Received GET request to get addresses");
 
         model.addAttribute("nameParam", request.getParameter("name"));
@@ -100,11 +104,17 @@ public class UserController {
 
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public String getCategories(Model model) {
+    public String getCategories(Model model, HttpServletRequest request) {
         log.debug("Received GET request to get all categories");
         var categories = categoryService.getCategories();
         model.addAttribute("categories", categories);
+        model.addAttribute("currentPath", request.getRequestURI());
         return "categories";
+    }
+
+    @ModelAttribute("categories") // проверь нужность
+    public List<CategoryDetails> getCategoriesForAllPages() {
+        return categoryService.getCategories();
     }
 
     @GetMapping("/products")
@@ -113,16 +123,17 @@ public class UserController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @Valid ProductParamDto productParamDto,
-            Model model) { // если все параметры null вернуть все товары постранично
+            Model model, HttpServletRequest request) { // если все параметры null вернуть все товары постранично
         log.debug("Received GET request to search products with parameters");
         var products = productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
                                                                    productMapper.toProductParamDetails(
                                                                            productParamDto));
         model.addAttribute("products", products);
+        model.addAttribute("currentPath", request.getRequestURI());
         return "products";
     }
 
-    @PostMapping("/carts")
+    @PostMapping("/cart")
     public CartDetails addProductsToCart(@CookieValue(value = "CART_ID", required = false) String cartId,
                                          @RequestParam(required = false) String publicUserId,
                                          @RequestParam String publicProductId,
@@ -130,6 +141,13 @@ public class UserController {
                                          HttpServletResponse response) {
         setCartCookie(response, cartId);
         return cartService.addProductToCart(cartId, publicUserId, publicProductId, quantity);
+    }
+
+    @GetMapping("/cart")
+    public String getCart(@CookieValue(value = "CART_ID", required = false) String cartId,
+                          @RequestParam(required = false) String publicUserId,
+                          HttpServletResponse response) {
+        return "categories";
     }
 
     @PostMapping("/{publicUserId}/orders")

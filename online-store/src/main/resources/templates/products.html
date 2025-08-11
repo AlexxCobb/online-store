@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Products</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}" />
+<head th:replace="~{fragments/header :: common-header('Products')}">
 </head>
 <body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
 <div class="welcome-container">
 <h1>Товары</h1>
 <table>
