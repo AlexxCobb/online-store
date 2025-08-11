@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Addresses')}">
+</head>
+<body>
+<div class="welcome-container">
+    <div class="address-tab"
+         th:classappend="${nameParam == 'USER_ADDRESS'} ? 'active' : ''"
+         onclick="location.href='?name=USER_ADDRESS'">Мои адреса
+    </div>
+
+    <div class="address-tab"
+         th:classappend="${nameParam == 'PARCEL_LOCKER' && isSystemParam == 'true'} ? 'active' : ''"
+         onclick="location.href='?name=PARCEL_LOCKER&isSystem=true'">Пункты выдачи
+    </div>
+
+    <div class="address-tab"
+         th:classappend="${nameParam == 'STORE_ADDRESS' && isSystemParam == 'true'} ? 'active' : ''"
+         onclick="location.href='?name=STORE_ADDRESS&isSystem=true'">Адреса магазинов
+    </div>
+
+    <h2>Адреса</h2>
+    <table>
+        <tr>
+            <th>Тип адреса</th>
+            <th>Индекс</th>
+            <th>Город</th>
+            <th>Улица/Проспект</th>
+            <th>Номер дома</th>
+            <th>Номер квартиры</th>
+        </tr>
+        <tr th:each="address : ${addresses}">
+            <td>
+                <span th:if="${nameParam == 'USER_ADDRESS'}">🏠</span>
+                <span th:if="${nameParam == 'PARCEL_LOCKER'}">📦</span>
+                <span th:if="${nameParam == 'STORE_ADDRESS'}">🏬</span>
+            </td>
+            <td th:text="${address.zipCode}">190300</td>
+            <td th:text="${address.town}">Санкт-Петербург</td>
+            <td th:text="${address.street}">Невский проспект</td>
+            <td th:text="${address.houseNumber}">1</td>
+            <td th:text="${address.flatNumber} ?: '-'">1</td>
+        </tr>
+    </table>
+</div>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

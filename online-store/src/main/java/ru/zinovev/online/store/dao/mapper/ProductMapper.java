@@ -33,6 +33,9 @@ public interface ProductMapper {
     @Mapping(target = "stockQuantity", source = "stockQuantity")
     ProductDetails toProductDetails(Product product);
 
+    @Mapping(target = "value", expression = "java(productParameter.getValue().toLowerCase())")
+    ParametersDetails toParametersDetails(ProductParameter productParameter);
+
     @Mapping(target = "publicProductId", ignore = true)
     ProductDetails toProductDetails(ProductDto productDto);
 
@@ -59,18 +62,4 @@ public interface ProductMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     ProductUpdateDetails toProductUpdateDetails(ProductUpdateDto productUpdateDto);
-
-
-    /*default Set<ProductParameter> updateParameters(Set<ProductParameter> existParam, Set<ParametersDetails> updateParam) {
-        if (updateParam.isEmpty()) {
-            return existParam;
-        }
-        updateParam.forEach((k, v) -> {
-            if (v == null) {
-                existParam.remove(k);
-            }
-            existParam.put(k, v);
-        });
-        return existParam;
-    }*/
 }

@@ -18,7 +18,6 @@ import ru.zinovev.online.store.controller.dto.AddressDto;
 import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.controller.dto.ProductDto;
-import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.entity.enums.OrderStatusName;
@@ -36,7 +35,6 @@ import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -82,14 +80,6 @@ public class AdminController {
         addressService.deleteAddress(publicUserId, publicAddressId, true);
     }
 
-    @GetMapping("/{publicUserId}/addresses")
-    public List<AddressDetails> getAddresses(@PathVariable String publicUserId,
-                                             @RequestParam(required = false) AddressTypeName name,
-                                             @RequestParam(required = false) Boolean isSystem) {
-        log.debug("Received GET request to get addresses");
-        return addressService.getAddresses(publicUserId, name, isSystem);
-    }
-
     @PostMapping("/{publicUserId}/categories")
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDetails addCategory(@PathVariable String publicUserId, @Valid @RequestBody CategoryDto categoryDto) {
@@ -113,15 +103,6 @@ public class AdminController {
         categoryService.deleteCategory(publicUserId, publicCategoryId);
     }
 
-    //брать категории из UserController
-
-    /*@GetMapping("/{publicUserId}/categories")
-    @ResponseStatus(HttpStatus.CREATED)
-    public List<CategoryDetails> getCategories(@PathVariable String publicUserId) {
-        log.debug("Received GET request to get all categories");
-        return categoryService.getCategories(publicUserId);
-    }*/
-
     @PostMapping("/{publicUserId}/products")
     @ResponseStatus(HttpStatus.CREATED)
     public ProductDetails addProduct(@PathVariable String publicUserId, @Valid @RequestBody ProductDto productDto) {
@@ -143,17 +124,6 @@ public class AdminController {
     public void deleteProduct(@PathVariable String publicUserId, @PathVariable String publicProductId) {
         log.debug("Received DELETE request to delete product with id = {}", publicProductId);
         productService.deleteProduct(publicUserId, publicProductId);
-    }
-
-    @GetMapping("/{publicUserId}/products") // id
-    public List<ProductDetails> searchProducts(
-            @RequestParam(required = false) List<String> publicCategoryIds,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
-            @Valid ProductParamDto productParamDto) { // если все параметры null вернуть все товары постранично
-        log.debug("Received GET request to search products with parameters");
-        return productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
-                                                           productMapper.toProductParamDetails(productParamDto));
     }
 
     @PatchMapping("/{publicUserId}/orders/{publicOrderId}")

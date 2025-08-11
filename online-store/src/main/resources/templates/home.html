@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Home')}">
+</head>
+<body>
+<div class="welcome-container">
+    <h1 class="welcome-text">Добро пожаловать в онлайн магазин "Хочешь - купи"!</h1>
+    <a th:href="@{/api/users/products}"> <!--оформить правильно-->
+        <img
+                src="/images/WI-BI.png"
+                class="shop-image"
+                th:src="@{/images/WI-BI.png}">
+    </a>
+    <p>Нажмите на изображение, чтобы начать покупки</p>
+</div>
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

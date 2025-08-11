@@ -63,7 +63,8 @@ public class UserDaoService {
     }
 
     public Optional<UserDetails> findByPublicId(String publicUserId) {
-        return userRepository.findByPublicUserId(publicUserId).map(userMapper::toUserDetails);
+        var user = userRepository.findByPublicUserId(publicUserId);
+        return user.map(userMapper::toUserDetails);
     }
 
     public Optional<String> findPasswordHashByPublicId(UserDetails userDetails) {

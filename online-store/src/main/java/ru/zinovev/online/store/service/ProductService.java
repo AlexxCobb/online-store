@@ -51,7 +51,7 @@ public class ProductService {
             List<String> categoryPublicIds, BigDecimal minPrice,
             BigDecimal maxPrice,
             ProductParamDetails productParamDetails) {
-        if (!categoryPublicIds.isEmpty()) {
+        if (categoryPublicIds != null ) {
             var result = categoryService.existCategories(categoryPublicIds);
             if (!result) {
                 throw new NotFoundException("Categories with ids - " + categoryPublicIds + "not found");
@@ -62,9 +62,5 @@ public class ProductService {
 
     public boolean existProducts(List<String> productsIds) {
         return productDaoService.existProducts(productsIds);
-    }
-
-    public void reserveProduct(String publicProductId) { // добавить количество товаров
-        productDaoService.reserveProduct(publicProductId);
     }
 }

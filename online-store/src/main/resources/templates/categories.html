@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head th:replace="~{fragments/header :: common-header('Categories')}">
+</head>
+<body>
+<h1>Все категории</h1>
+<div class="welcome-container">
+<table>
+  <tr>
+    <th>Название категории</th>
+  </tr>
+  <tr th:each="category : ${categories}">
+    <td th:text="${category.name}">Phones</td>
+  </tr>
+</table>
+</div>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>
