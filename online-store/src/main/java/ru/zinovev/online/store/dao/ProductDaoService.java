@@ -128,11 +128,4 @@ public class ProductDaoService {
     public boolean existProducts(List<String> productIds) {
         return productRepository.existsByPublicProductIdIn(productIds);
     }
-
-    @Transactional
-    public void reserveProduct(String publicProductId) {
-        var existedProduct = productRepository.findByPublicProductId(publicProductId).get();
-        var updatedProduct = existedProduct.toBuilder().stockQuantity(existedProduct.getStockQuantity() - 1).build();
-        productRepository.save(updatedProduct);
-    }
 }

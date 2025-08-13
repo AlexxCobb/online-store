@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('ТОП Товары')}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+<div class="welcome-container">
+    <h1>ТОП популярных товаров</h1>
+    <table>
+        <tr>
+            <th>Название модели</th>
+            <th>Стоимость, ₽</th>
+        </tr>
+        <tr th:each="product : ${topProducts}">
+            <td th:text="${product.name}">Iphone</td>
+            <td th:text="${product.price}">1000</td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>

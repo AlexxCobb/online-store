@@ -12,6 +12,7 @@ import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductParameter;
+import ru.zinovev.online.store.dao.entity.ProductView;
 import ru.zinovev.online.store.model.ParametersDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductParamDetails;
@@ -48,6 +49,8 @@ public interface ProductMapper {
     Set<ProductParameter> toProductParameters(Set<ParametersDetails> parametersDetails);
 
     ProductShortDetails toProductShortDetails(Product product);
+
+    ProductShortDetails toProductShortDetails(ProductView productView);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)

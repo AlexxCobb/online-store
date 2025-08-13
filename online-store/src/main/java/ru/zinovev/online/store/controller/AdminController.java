@@ -1,10 +1,12 @@
 package ru.zinovev.online.store.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,6 +36,7 @@ import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
+import ru.zinovev.online.store.service.StatisticService;
 
 import java.util.List;
 
@@ -47,9 +50,16 @@ public class AdminController {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final OrderService orderService;
+    private final StatisticService statisticService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
+
+    @GetMapping("/home")
+    public String homePage(Model model, HttpServletRequest request) {
+        model.addAttribute("currentPath", request.getRequestURI());
+        return "home";
+    }
 
     @PostMapping("/{publicUserId}/addresses")
     public AddressDetails addSystemAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto,
@@ -140,5 +150,15 @@ public class AdminController {
     public List<OrderShortDetails> getOrders(@PathVariable String publicUserId) {
         log.debug("Received GET request to get all user orders");
         return orderService.getAllOrders(publicUserId);
+    }
+
+    @GetMapping("/{publicUserId}/products/statistic")
+    public String getProductStatistic(@PathVariable String publicUserId,
+                                      @RequestParam(defaultValue = "6") Integer limit, Model model, HttpServletRequest request) {
+        log.debug("Received GET request to get product statistic");
+        var topProducts = statisticService.getTopProducts(publicUserId, limit);
+        model.addAttribute("topProducts", topProducts);
+        model.addAttribute("currentPath", request.getRequestURI());
+        return "top-products";
     }
 }
