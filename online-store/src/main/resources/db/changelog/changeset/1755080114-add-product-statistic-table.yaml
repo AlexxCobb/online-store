@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1755080114-add-product-statistic-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1755080114-add-product-statistic-table.sql
