@@ -6,4 +6,7 @@ public interface ProductView {
     String getPublicProductId();
     String getName();
     BigDecimal getPrice();
+    Integer getPurchaseCount();
+    String getBrand();
+    String getColor();
 }

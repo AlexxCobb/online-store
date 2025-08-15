@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,6 +39,7 @@ import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
 import ru.zinovev.online.store.service.StatisticService;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Controller
@@ -56,8 +58,7 @@ public class AdminController {
     private final CategoryMapper categoryMapper;
 
     @GetMapping("/home")
-    public String homePage(Model model, HttpServletRequest request) {
-        model.addAttribute("currentPath", request.getRequestURI());
+    public String homePage(Model model) {
         return "home";
     }
 
@@ -152,13 +153,42 @@ public class AdminController {
         return orderService.getAllOrders(publicUserId);
     }
 
-    @GetMapping("/{publicUserId}/products/statistic")
+    @GetMapping("/{publicUserId}/products/top-products")
     public String getProductStatistic(@PathVariable String publicUserId,
-                                      @RequestParam(defaultValue = "6") Integer limit, Model model, HttpServletRequest request) {
+                                      @RequestParam(defaultValue = "6") Integer limit, Model model) {
         log.debug("Received GET request to get product statistic");
         var topProducts = statisticService.getTopProducts(publicUserId, limit);
         model.addAttribute("topProducts", topProducts);
-        model.addAttribute("currentPath", request.getRequestURI());
         return "top-products";
+    }
+
+    @GetMapping("/{publicUserId}/orders/top-users")
+    public String getTopUsers(
+            @PathVariable String publicUserId,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now().minusDays(7)}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateFrom,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now()}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateTo,
+            Model model) {
+
+        var topUsers = statisticService.getTopUsersByOrders(publicUserId, limit, dateFrom, dateTo);
+        model.addAttribute("topUsers", topUsers);
+        return "top-users";
+    }
+
+    @GetMapping("/{publicUserId}/orders/top-revenue")
+    public String getTopRevenue(
+            @PathVariable String publicUserId,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now().minusDays(7)}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateFrom,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now()}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateTo,
+            Model model) {
+
+        var topRevenue = statisticService.getStatistic(publicUserId, limit, dateFrom, dateTo);
+        model.addAttribute("topRevenue", topRevenue);
+        return "top-revenue";
     }
 }

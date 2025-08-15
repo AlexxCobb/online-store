@@ -19,18 +19,18 @@ import ru.zinovev.online.store.dao.entity.enums.OrderStatusName;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "delivery_status")
+@Table(name = "order_status")
 public class OrderStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "delivery_status_id")
+    @Column(name = "order_status_id")
     private Integer id;
 
-    @Column(name = "delivery_status_name")
+    @Column(name = "order_status_name")
     @Enumerated(EnumType.STRING)
     private OrderStatusName name;
 
-    @Column(name = "delivery_status_description")
+    @Column(name = "order_status_description")
     private String description;
 
     @Override

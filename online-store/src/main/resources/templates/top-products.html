@@ -8,14 +8,21 @@
     <h1>ТОП популярных товаров</h1>
     <table>
         <tr>
+            <th>Бренд</th>
             <th>Название модели</th>
+            <th>Цвет</th>
             <th>Стоимость, ₽</th>
+            <th>Количество проданных, шт</th>
         </tr>
         <tr th:each="product : ${topProducts}">
+            <td th:text="${product.brand}">Apple</td>
             <td th:text="${product.name}">Iphone</td>
+            <td th:text="${product.color}">Green</td>
             <td th:text="${product.price}">1000</td>
+            <td th:text="${product.purchaseCount}">333</td>
         </tr>
     </table>
 </div>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
 </body>
 </html>
