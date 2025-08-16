@@ -52,12 +52,6 @@ public class OrderService {
                                           @NonNull OrderStatusName orderStatusName,
                                           PaymentStatusName paymentStatusName) {
         userService.findUserDetails(publicUserId);
-        var orderDetails = orderDaoService.findByPublicOrderId(publicOrderId)
-                .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
-        if (!orderDetails.userDetails().publicUserId().equals(publicUserId)) {
-            throw new BadRequestException(
-                    "User with id - " + publicUserId + " did not create an order with id - " + publicOrderId);
-        }
         return orderDaoService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
     }
 

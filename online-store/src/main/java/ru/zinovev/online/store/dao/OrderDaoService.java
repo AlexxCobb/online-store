@@ -30,7 +30,6 @@ import ru.zinovev.online.store.model.UserDetails;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,6 +41,7 @@ public class OrderDaoService {
 
     private final OrderRepository orderRepository;
     private final UserDaoService userDaoService;
+    private final StatisticDaoService statisticDaoService;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
     private final AddressRepository addressRepository;
@@ -110,24 +110,25 @@ public class OrderDaoService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<OrderDetails> findByPublicOrderId(String publicOrderId) {
-        return orderRepository.findByPublicOrderId(publicOrderId).map(orderMapper::toOrderDetails);
-    }
-
     @Transactional
     public OrderDetails changeOrderStatus(String publicOrderId,
                                           OrderStatusName orderStatusName, PaymentStatusName paymentStatusName) {
         var order = orderRepository.findByPublicOrderId(publicOrderId)
                 .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
         var orderStatus = orderStatusRepository.getByName(orderStatusName);
-        Order updatedOrder;
-        if (paymentStatusName == null) {
-            updatedOrder = order.toBuilder().orderStatus(orderStatus).build();
-        } else {
+        var updatedOrder = order.toBuilder().orderStatus(orderStatus);
+
+        if (paymentStatusName != null) {
             var payStatus = paymentStatusRepository.getByName(paymentStatusName);
-            updatedOrder = order.toBuilder().orderStatus(orderStatus).paymentStatus(payStatus).build();
+            updatedOrder.paymentStatus(payStatus);
         }
-        return orderMapper.toOrderDetails(orderRepository.save(updatedOrder));
+        var savedOrder = orderRepository.save(updatedOrder.build());
+        if (orderStatusName.equals(OrderStatusName.DELIVERED) && !OrderStatusName.DELIVERED.equals(
+                order.getOrderStatus().getName())) {
+            statisticDaoService.createStatistic(savedOrder);
+        }
+        //реализовать логику при отмене/возврате заказа
+        return orderMapper.toOrderDetails(savedOrder);
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
