@@ -21,8 +21,8 @@
                 <!-- Главная страница -->
                 <li class="nav-item">
                     <a class="nav-link"
-                       th:classappend="${currentPath.startsWith('/api/users/home')} ? 'active'"
-                       th:href="@{/api/users/home}">
+                       th:classappend="${currentPath.startsWith('/api/users/home') or currentPath.startsWith('/api/admins/home')} ? 'active'"
+                       th:href="@{${#strings.startsWith(currentPath, '/api/admins') ? '/api/admins/home' : '/api/users/home'}}">
                         <i class="bi bi-house-door me-1"></i> Главная
                     </a>
                 </li>
@@ -52,7 +52,7 @@
                 </li>
 
             <!-- Корзина -->
-            <li class="nav-item">
+            <li class="nav-item" th:unless="${#strings.startsWith(currentPath, '/api/admins')}">
                 <a class="nav-link"
                    th:classappend="${currentPath.startsWith('/api/users/cart')} ? 'active'"
                    th:href="@{/api/users/cart}">

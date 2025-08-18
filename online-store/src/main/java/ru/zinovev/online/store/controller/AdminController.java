@@ -1,10 +1,13 @@
 package ru.zinovev.online.store.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -34,7 +37,9 @@ import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
+import ru.zinovev.online.store.service.StatisticService;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Controller
@@ -47,9 +52,15 @@ public class AdminController {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final OrderService orderService;
+    private final StatisticService statisticService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
+
+    @GetMapping("/home")
+    public String homePage(Model model) {
+        return "home";
+    }
 
     @PostMapping("/{publicUserId}/addresses")
     public AddressDetails addSystemAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto,
@@ -140,5 +151,44 @@ public class AdminController {
     public List<OrderShortDetails> getOrders(@PathVariable String publicUserId) {
         log.debug("Received GET request to get all user orders");
         return orderService.getAllOrders(publicUserId);
+    }
+
+    @GetMapping("/{publicUserId}/products/top-products")
+    public String getProductStatistic(@PathVariable String publicUserId,
+                                      @RequestParam(defaultValue = "6") Integer limit, Model model) {
+        log.debug("Received GET request to get product statistic");
+        var topProducts = statisticService.getTopProducts(publicUserId, limit);
+        model.addAttribute("topProducts", topProducts);
+        return "top-products";
+    }
+
+    @GetMapping("/{publicUserId}/orders/top-users")
+    public String getTopUsers(
+            @PathVariable String publicUserId,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now().minusDays(7)}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateFrom,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now()}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateTo,
+            Model model) {
+
+        var topUsers = statisticService.getTopUsersByOrders(publicUserId, limit, dateFrom, dateTo);
+        model.addAttribute("topUsers", topUsers);
+        return "top-users";
+    }
+
+    @GetMapping("/{publicUserId}/orders/top-revenue")
+    public String getTopRevenue(
+            @PathVariable String publicUserId,
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now().minusDays(7)}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateFrom,
+            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now()}")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateTo,
+            Model model) {
+
+        var topRevenue = statisticService.getStatistic(publicUserId, limit, dateFrom, dateTo);
+        model.addAttribute("topRevenue", topRevenue);
+        return "top-revenue";
     }
 }

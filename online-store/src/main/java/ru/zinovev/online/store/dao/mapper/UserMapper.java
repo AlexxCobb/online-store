@@ -7,7 +7,9 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
+import ru.zinovev.online.store.dao.entity.CustomerView;
 import ru.zinovev.online.store.dao.entity.User;
+import ru.zinovev.online.store.model.TopCustomerDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
 @Mapper(componentModel = "spring")
@@ -21,4 +23,6 @@ public interface UserMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     void updateUserFromUserUpdateDto(UserUpdateDto userUpdateDto, @MappingTarget User user);
+
+    TopCustomerDetails toTopCustomerDetails(CustomerView customerView);
 }

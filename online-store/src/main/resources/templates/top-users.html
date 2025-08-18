@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('ТОП Покупатели')}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+<div class="welcome-container">
+  <h1>ТОП покупателей</h1>
+  <table>
+    <tr>
+      <th>Имя</th>
+      <th>Фамилия</th>
+      <th>Email</th>
+      <th>Сумма сделанных покупок</th>
+    </tr>
+    <tr th:each="user : ${topUsers}">
+      <td th:text="${user.name}">Joe</td>
+      <td th:text="${user.lastname}">Tribiani/td>
+      <td th:text="${user.email}">ya@ya.ru</td>
+      <td th:text="${user.totalSpent}">1000</td>
+    </tr>
+  </table>
+</div>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

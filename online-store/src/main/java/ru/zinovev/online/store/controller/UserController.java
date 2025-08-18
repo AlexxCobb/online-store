@@ -56,8 +56,7 @@ public class UserController {
     private final ProductMapper productMapper;
 
     @GetMapping("/home")
-    public String homePage(Model model, HttpServletRequest request) {
-        model.addAttribute("currentPath", request.getRequestURI());
+    public String homePage(Model model) {
         return "home";
     }
 
@@ -104,11 +103,10 @@ public class UserController {
 
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public String getCategories(Model model, HttpServletRequest request) {
+    public String getCategories(Model model) {
         log.debug("Received GET request to get all categories");
         var categories = categoryService.getCategories();
         model.addAttribute("categories", categories);
-        model.addAttribute("currentPath", request.getRequestURI());
         return "categories";
     }
 
@@ -123,13 +121,12 @@ public class UserController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @Valid ProductParamDto productParamDto,
-            Model model, HttpServletRequest request) { // если все параметры null вернуть все товары постранично
+            Model model) { // если все параметры null вернуть все товары постранично
         log.debug("Received GET request to search products with parameters");
         var products = productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
                                                                    productMapper.toProductParamDetails(
                                                                            productParamDto));
         model.addAttribute("products", products);
-        model.addAttribute("currentPath", request.getRequestURI());
         return "products";
     }
 

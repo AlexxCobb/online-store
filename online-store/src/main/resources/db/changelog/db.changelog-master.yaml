@@ -27,3 +27,7 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1753207600-add-cart-table.yaml
   - include:
       file: classpath:db/changelog/changeset/1753207600-add-cart-item-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1755080114-add-customer-statistic-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1755080114-add-product-statistic-table.yaml
