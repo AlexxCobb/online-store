@@ -3,13 +3,16 @@ package ru.zinovev.online.store.dao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.dao.repository.ProductSpecifications;
 import ru.zinovev.online.store.exception.model.NotFoundException;
+import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductParamDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
@@ -18,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -94,7 +98,7 @@ public class ProductDaoService {
         }
 
         List<Specification<Product>> spec = new ArrayList<>();
-        if(Objects.nonNull(ProductSpecifications.hasPriceBetween(minPrice, maxPrice))){
+        if (Objects.nonNull(ProductSpecifications.hasPriceBetween(minPrice, maxPrice))) {
             spec.add(ProductSpecifications.hasPriceBetween(minPrice, maxPrice));
         }
 
@@ -127,5 +131,34 @@ public class ProductDaoService {
 
     public boolean existProducts(List<String> productIds) {
         return productRepository.existsByPublicProductIdIn(productIds);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public List<Product> updateProductsQuantity(Map<Product, Integer> products) {
+        var productsList = new ArrayList<Product>();
+        products.forEach((product, integer) -> {
+            if (product.getStockQuantity() < integer) {
+                throw new OutOfStockException(
+                        "You cannot order the selected quantity - " + integer + " of product with id - "
+                                + product.getPublicProductId() + ", the remainder in the warehouse is - "
+                                + product.getStockQuantity());
+            }
+            var productToUpdate = product.toBuilder()
+                    .stockQuantity(product.getStockQuantity() - integer)
+                    .build();
+            productsList.add(productToUpdate);
+        });
+        return productRepository.saveAll(productsList);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void returnProductsToWarehouse(List<OrderItem> items) {
+        var productsList = items.stream().map(item -> {
+            var product = item.getProduct();
+            return product.toBuilder()
+                    .stockQuantity(product.getStockQuantity() + item.getQuantity())
+                    .build();
+        }).toList();
+        productRepository.saveAll(productsList);
     }
 }

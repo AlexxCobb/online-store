@@ -2,7 +2,6 @@ package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.zinovev.online.store.controller.dto.OrderDto;
 import ru.zinovev.online.store.dao.entity.CartItem;
@@ -19,17 +18,13 @@ import ru.zinovev.online.store.dao.repository.OrderRepository;
 import ru.zinovev.online.store.dao.repository.OrderStatusRepository;
 import ru.zinovev.online.store.dao.repository.PaymentMethodRepository;
 import ru.zinovev.online.store.dao.repository.PaymentStatusRepository;
-import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.exception.model.NotFoundException;
-import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.CartDetails;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -43,7 +38,7 @@ public class OrderDaoService {
     private final UserDaoService userDaoService;
     private final StatisticDaoService statisticDaoService;
     private final CartRepository cartRepository;
-    private final ProductRepository productRepository;
+    private final ProductDaoService productDaoService;
     private final AddressRepository addressRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final DeliveryMethodRepository deliveryMethodRepository;
@@ -63,7 +58,7 @@ public class OrderDaoService {
                 .orElseThrow(
                         () -> new NotFoundException("Cart with id - " + cartDetails.publicCartId() + " not found"));
         var products = cart.getItems().stream().collect(Collectors.toMap(CartItem::getProduct, CartItem::getQuantity));
-        var productsList = updateProductsQuantity(products);
+        var productsList = productDaoService.updateProductsQuantity(products);
         var productMap = productsList.stream()
                 .collect(Collectors.toMap(Product::getPublicProductId, Function.identity()));
 
@@ -127,25 +122,11 @@ public class OrderDaoService {
                 order.getOrderStatus().getName())) {
             statisticDaoService.createStatistic(savedOrder);
         }
-        //реализовать логику при отмене/возврате заказа
+        if (orderStatusName.equals(OrderStatusName.CANCELLED) && OrderStatusName.DELIVERED.equals(
+                order.getOrderStatus().getName())) {
+            statisticDaoService.cancelStatistic(savedOrder);
+            productDaoService.returnProductsToWarehouse(order.getItems());
+        }
         return orderMapper.toOrderDetails(savedOrder);
-    }
-
-    @Transactional(propagation = Propagation.MANDATORY)
-    private List<Product> updateProductsQuantity(Map<Product, Integer> products) {
-        var productsList = new ArrayList<Product>();
-        products.forEach((product, integer) -> {
-            if (product.getStockQuantity() < integer) {
-                throw new OutOfStockException(
-                        "You cannot order the selected quantity - " + integer + " of product with id - "
-                                + product.getPublicProductId() + ", the remainder in the warehouse is - "
-                                + product.getStockQuantity());
-            }
-            var productToUpdate = product.toBuilder()
-                    .stockQuantity(product.getStockQuantity() - integer)
-                    .build();
-            productsList.add(productToUpdate);
-        });
-        return productRepository.saveAll(productsList);
     }
 }

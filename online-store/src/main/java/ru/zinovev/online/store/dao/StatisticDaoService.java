@@ -39,6 +39,7 @@ public class StatisticDaoService {
         var topProducts = order.getItems()
                 .stream()
                 .map(orderItem -> ProductStatistic.builder()
+                        .order(order)
                         .product(orderItem.getProduct())
                         .purchaseCount(orderItem.getQuantity())
                         .build())
@@ -51,6 +52,12 @@ public class StatisticDaoService {
                         .build();
         productStatisticRepository.saveAll(topProducts);
         customerStatisticRepository.save(customerStat);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void cancelStatistic(Order order) {
+        productStatisticRepository.deleteByOrderId(order.getPublicOrderId());
+        customerStatisticRepository.deleteByOrderId(order.getPublicOrderId());
     }
 
     public List<TopProductDetails> findTopProducts(Pageable pageable) {

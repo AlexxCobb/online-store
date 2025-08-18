@@ -19,4 +19,7 @@ public interface ProductStatisticRepository extends JpaRepository<ProductStatist
             "GROUP BY p.id, p.publicProductId, p.name, p.price " +
             "ORDER BY SUM(ps.purchaseCount) DESC")
     List<ProductView> findTopProductViews(Pageable pageable);
+
+    @Query("DELETE FROM ProductStatistic ps WHERE ps.order.publicOrderId = :publicOrderId")
+    void deleteByOrderId(String publicOrderId);
 }

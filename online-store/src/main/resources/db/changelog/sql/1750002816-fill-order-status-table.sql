@@ -6,4 +6,5 @@ insert into
 values  ('PENDING_PAYMENT', 'Заказ ожидает оплаты'),
         ('PENDING_DELIVERY', 'Заказ ожидает отгрузки'),
         ('SHIPPED', 'Заказ отгружен'),
-        ('DELIVERED', 'Заказ доставлен');
+        ('DELIVERED', 'Заказ доставлен'),
+        ('CANCELLED', 'Заказ отменен');
