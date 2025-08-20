@@ -10,6 +10,7 @@ import ru.zinovev.online.store.controller.dto.ParametersDto;
 import ru.zinovev.online.store.controller.dto.ProductDto;
 import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
+import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductParameter;
 import ru.zinovev.online.store.dao.entity.ProductView;
@@ -25,14 +26,7 @@ import java.util.Set;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    @Mapping(target = "publicProductId", source = "publicProductId")
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "price", source = "price")
     @Mapping(target = "categoryPublicId", source = "category.publicCategoryId")
-    @Mapping(target = "parameters", source = "parameters")
-    @Mapping(target = "weight", source = "weight")
-    @Mapping(target = "volume", source = "volume")
-    @Mapping(target = "stockQuantity", source = "stockQuantity")
     ProductDetails toProductDetails(Product product);
 
     @Mapping(target = "value", expression = "java(productParameter.getValue().toLowerCase())")
@@ -50,6 +44,10 @@ public interface ProductMapper {
     Set<ProductParameter> toProductParameters(Set<ParametersDetails> parametersDetails);
 
     ProductShortDetails toProductShortDetails(Product product);
+
+    @Mapping(target = "publicProductId", source = "product.publicProductId")
+    @Mapping(target = "name", source = "product.name")
+    ProductShortDetails toProductShortDetails(OrderItem orderItem);
 
     TopProductDetails toTopProductDetails(ProductView productView);
 

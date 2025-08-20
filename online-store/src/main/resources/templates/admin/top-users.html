@@ -3,10 +3,13 @@
 <head th:replace="~{fragments/header :: common-header('ТОП Покупатели')}">
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 <div class="welcome-container">
   <h1>ТОП покупателей</h1>
-  <table>
+  <div th:if="${topUsers == null or topUsers.empty}">
+    <p>Нет списка ТОП покупателей за выбранный период</p>
+  </div>
+  <table th:unless="${topUsers == null or topUsers.empty}">
     <tr>
       <th>Имя</th>
       <th>Фамилия</th>

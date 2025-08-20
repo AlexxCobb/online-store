@@ -1,6 +1,5 @@
 package ru.zinovev.online.store.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +30,6 @@ import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.OrderDetails;
-import ru.zinovev.online.store.model.OrderShortDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
@@ -39,8 +37,9 @@ import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
 import ru.zinovev.online.store.service.StatisticService;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.time.ZoneId;
 
 @Controller
 @RequiredArgsConstructor
@@ -59,7 +58,9 @@ public class AdminController {
 
     @GetMapping("/home")
     public String homePage(Model model) {
-        return "home";
+        var publicUserId = "userPublicId1";
+        model.addAttribute("publicUserId", publicUserId);
+        return "admin/admin-home";
     }
 
     @PostMapping("/{publicUserId}/addresses")
@@ -147,48 +148,84 @@ public class AdminController {
         return orderService.changeOrderStatus(publicOrderId, publicUserId, orderStatusName, paymentStatusName);
     }
 
-    @GetMapping("/{publicUserId}/orders") // id
-    public List<OrderShortDetails> getOrders(@PathVariable String publicUserId) {
+    @GetMapping("/{publicUserId}/orders")
+    public String getOrders(@PathVariable String publicUserId, Model model) {
         log.debug("Received GET request to get all user orders");
-        return orderService.getAllOrders(publicUserId);
+        var orders = orderService.getAllOrders(publicUserId);
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("orders", orders);
+        return "admin/orders";
     }
 
-    @GetMapping("/{publicUserId}/products/top-products")
+    @GetMapping("/{publicUserId}/statistics")
+    public String getStatistic(@PathVariable String publicUserId,
+                               Model model) {
+        log.debug("Received GET request to get statistic");
+        model.addAttribute("publicUserId", publicUserId);
+        return "admin/statistics";
+    }
+
+    @GetMapping("/{publicUserId}/statistics/top-products")
     public String getProductStatistic(@PathVariable String publicUserId,
                                       @RequestParam(defaultValue = "6") Integer limit, Model model) {
         log.debug("Received GET request to get product statistic");
         var topProducts = statisticService.getTopProducts(publicUserId, limit);
+        model.addAttribute("publicUserId", publicUserId);
         model.addAttribute("topProducts", topProducts);
-        return "top-products";
+        return "admin/top-products";
     }
 
-    @GetMapping("/{publicUserId}/orders/top-users")
+    @GetMapping("/{publicUserId}/statistics/top-users")
     public String getTopUsers(
             @PathVariable String publicUserId,
             @RequestParam(defaultValue = "10") Integer limit,
-            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now().minusDays(7)}")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateFrom,
-            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now()}")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateTo,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             Model model) {
 
-        var topUsers = statisticService.getTopUsersByOrders(publicUserId, limit, dateFrom, dateTo);
+        var zone = ZoneId.of("Europe/Moscow");
+        var currentUtcTime = OffsetDateTime.now(zone);
+        if (dateFrom == null) {
+            dateFrom = currentUtcTime.minusDays(7).toLocalDate();
+        }
+        if (dateTo == null) {
+            dateTo = currentUtcTime.toLocalDate();
+        }
+        var startDateTime = dateFrom.atStartOfDay(zone).toOffsetDateTime();
+        var endDateTime = dateTo.atTime(currentUtcTime.toOffsetTime());
+
+        var topUsers = statisticService.getTopUsersByOrders(publicUserId, limit, startDateTime, endDateTime);
         model.addAttribute("topUsers", topUsers);
-        return "top-users";
+        model.addAttribute("publicUserId", publicUserId);
+        return "admin/top-users";
     }
 
-    @GetMapping("/{publicUserId}/orders/top-revenue")
+    @GetMapping("/{publicUserId}/statistics/top-revenue")
     public String getTopRevenue(
             @PathVariable String publicUserId,
             @RequestParam(defaultValue = "10") Integer limit,
-            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now().minusDays(7)}")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateFrom,
-            @RequestParam(defaultValue = "#{T(java.time.OffsetDateTime).now()}")
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateTo,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
             Model model) {
 
-        var topRevenue = statisticService.getStatistic(publicUserId, limit, dateFrom, dateTo);
+        var zone = ZoneId.of("Europe/Moscow");
+        var currentUtcTime = OffsetDateTime.now(zone);
+        if (dateFrom == null) {
+            dateFrom = currentUtcTime.minusDays(7).toLocalDate();
+        }
+        if (dateTo == null) {
+            dateTo = currentUtcTime.toLocalDate();
+        }
+        var startDateTime = dateFrom.atStartOfDay(zone).toOffsetDateTime();
+        var endDateTime = dateTo.atTime(currentUtcTime.toOffsetTime());
+
+        var topRevenue = statisticService.getStatistic(publicUserId, limit, startDateTime, endDateTime);
         model.addAttribute("topRevenue", topRevenue);
-        return "top-revenue";
+        model.addAttribute("publicUserId", publicUserId);
+        return "admin/top-revenue";
     }
 }

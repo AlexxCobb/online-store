@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Статистика</title>
+    <style>
+        .statistics-container {
+            display: flex;
+            min-height: calc(100vh - 120px);
+        }
+
+        .statistics-sidebar {
+            width: 280px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .statistics-content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .report-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        .filter-form {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+        }
+
+        .summary-row {
+            font-weight: bold;
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: common-header('Статистика')}"></div>
+<div class="statistics-container">
+        <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+    <div class="statistics-content">
+        <h1 class="mb-4">Статистика и аналитика</h1>
+
+        <div id="top-products" class="report-section">
+            <h3 class="mb-3">ТОП товаров</h3>
+
+            <div class="filter-form">
+                <h5 class="mb-3">Параметры отчета</h5>
+                <form th:action="@{/api/admins/{publicUserId}/statistics/top-products(publicUserId=${publicUserId})}"
+                      method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="limitProducts" class="form-label">Количество записей</label>
+                        <select id="limitProducts" name="limit" class="form-select">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i> Применить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="top-users" class="report-section">
+            <h3 class="mb-3">ТОП покупателей</h3>
+
+            <div class="filter-form">
+                <h5 class="mb-3">Параметры отчета</h5>
+                <form th:action="@{/api/admins/{publicUserId}/statistics/top-users(publicUserId=${publicUserId})}"
+                      method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="limitUsers" class="form-label">Количество записей</label>
+                        <select id="limitUsers" name="limit" class="form-select">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateFromUsers" class="form-label">Дата с</label>
+                        <input type="date" id="dateFromUsers" name="dateFrom" class="form-control"
+                               th:value="${#temporals.format(#temporals.createNow().minusDays(30), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateToUsers" class="form-label">Дата по</label>
+                        <input type="date" id="dateToUsers" name="dateTo" class="form-control"
+                               th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i> Применить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="revenue" class="report-section">
+            <h3 class="mb-3">Общая выручка</h3>
+
+            <div class="filter-form">
+                <h5 class="mb-3">Параметры отчета</h5>
+                <form th:action="@{/api/admins/{publicUserId}/statistics/top-revenue(publicUserId=${publicUserId})}"
+                      method="get" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="limitRevenue" class="form-label">Количество записей</label>
+                        <select id="limitRevenue" name="limit" class="form-select">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateFromRevenue" class="form-label">Дата с</label>
+                        <input type="date" id="dateFromRevenue" name="dateFrom" class="form-control"
+                               th:value="${#temporals.format(#temporals.createNow().minusDays(30), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dateToRevenue" class="form-label">Дата по</label>
+                        <input type="date" id="dateToRevenue" name="dateTo" class="form-control"
+                               th:value="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i> Применить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

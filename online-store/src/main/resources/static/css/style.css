@@ -33,12 +33,12 @@ body {
     max-width: 90%;
     height: auto;
     cursor: pointer;
-    border-radius: 12px; /* Увеличено для лучшего эффекта */
+    border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     transition: all 0.4s ease;
-    border: none; /* Убираем границу если была */
-    display: block; /* Убираем нижний отступ */
-    margin: 0 auto; /* Центрирование */
+    border: none
+    display: block;
+    margin: 0 auto;
 }
 
 .shop-image:hover {
@@ -71,7 +71,10 @@ body {
     border-radius: 5px;
 }
 table {
-    border-collapse: collapse;
+     width: 100%;
+     margin-bottom: 1rem;
+     color: #212529;
+     border-collapse: collapse;
 }
 table, th, td {
     border: 2px solid grey;
@@ -91,4 +94,71 @@ a.button {
     color: green;
     background-color: aliceblue;
     border: 1px solid grey;
+}
+
+.main-container {
+    display: flex;
+    width: 100%;
+}
+
+.admin-container {
+    display: flex;
+    min-height: calc(100vh - 56px);
+    flex-direction: row-reverse;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background: #f8f9fa;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.admin-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        flex-direction: column;
+    }
+
+    .admin-sidebar {
+        width: 100%;
+        position: relative;
+        order: 1;
+    }
+
+    .admin-content {
+        order: 2;
+    }
+}
+
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.sub-menu {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
