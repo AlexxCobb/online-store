@@ -1,24 +1,22 @@
 package ru.zinovev.online.store.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import ru.zinovev.online.store.dao.entity.DeliveryMethod;
-import ru.zinovev.online.store.dao.entity.OrderStatus;
-import ru.zinovev.online.store.dao.entity.PaymentMethod;
-import ru.zinovev.online.store.dao.entity.PaymentStatus;
-import ru.zinovev.online.store.model.constants.Constants;
+import ru.zinovev.online.store.dao.entity.enums.DeliveryMethodName;
+import ru.zinovev.online.store.dao.entity.enums.OrderStatusName;
+import ru.zinovev.online.store.dao.entity.enums.PaymentMethodName;
+import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public record OrderDetails(
         String publicOrderId,
         UserDetails userDetails,
         AddressShortDetails addressShortDetails,
-        PaymentMethod paymentMethod,
-        DeliveryMethod deliveryMethod,
-        ProductShortDetails productShortDetails,
-        PaymentStatus paymentStatus,
-        OrderStatus orderStatus,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_PATTERN)
+        PaymentMethodName paymentMethodName,
+        DeliveryMethodName deliveryMethodName,
+        List<ProductShortDetails> productShortDetails,
+        PaymentStatusName paymentStatusName,
+        OrderStatusName orderStatusName,
         OffsetDateTime createdAt
 ) {
 }

@@ -13,11 +13,13 @@ body {
 }
 
 .welcome-container {
-    max-width: 800px;
+    max-width: 100%;
+    width: 100%;
     padding: 2rem;
     background: white;
     border-radius: 15px;
     box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    box-sizing: border-box;
 }
 
 .welcome-text {
@@ -72,6 +74,7 @@ body {
 }
 table {
      width: 100%;
+     min-width: 800px;
      margin-bottom: 1rem;
      color: #212529;
      border-collapse: collapse;

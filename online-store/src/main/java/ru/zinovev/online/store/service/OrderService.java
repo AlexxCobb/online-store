@@ -32,7 +32,8 @@ public class OrderService {
         var cartDetails = cartService.getUserCart(publicUserId);
         var productIds = cartDetails.cartItems().stream().map(CartItemDetails::publicProductId).toList();
         if (!productService.existProducts(productIds)) {
-            throw new NotFoundException("Products with ids - " + productIds + " not found"); // нужна ли проверка/ определение наличия продукта, если его удалил админ (нужна более понятная обработка, какой продукт отсутствует)
+            throw new NotFoundException("Products with ids - " + productIds
+                                                + " not found"); // нужна ли проверка/ определение наличия продукта, если его удалил админ (нужна более понятная обработка, какой продукт отсутствует)
         }
         checkDeliveryMethodWithAddress(publicUserId, orderDto.publicAddressId(), orderDto.deliveryMethodName());
         return orderDaoService.createOrder(userDetails, cartDetails, orderDto);
@@ -46,6 +47,12 @@ public class OrderService {
     public List<OrderShortDetails> getAllOrders(String publicUserId) {
         userService.findUserDetails(publicUserId);
         return orderDaoService.getAllOrders();
+    }
+
+    public OrderShortDetails getOrderById(String publicOrderId, String publicUserId) {
+        userService.findUserDetails(publicUserId);
+        return orderDaoService.findOrderById(publicOrderId)
+                .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
     }
 
     public OrderDetails changeOrderStatus(@NonNull String publicUserId, @NonNull String publicOrderId,

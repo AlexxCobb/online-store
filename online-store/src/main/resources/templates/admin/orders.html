@@ -12,7 +12,7 @@
         <p>Еще нет сделанных заказов</p>
     </div>
     <h1>Заказы</h1>
-    <table th:unless="${orders == null or orders.empty}">
+    <table >
         <tr>
             <th>ID заказа</th>
             <th>Email клиента</th>
@@ -20,6 +20,7 @@
             <th>Статус оплаты</th>
             <th>Статус заказы</th>
             <th>Дата</th>
+            <th>Действия</th>
         </tr>
         <tr th:each="order : ${orders}">
             <td th:text="${order.publicOrderId}"></td>
@@ -27,7 +28,13 @@
             <td th:text="${order.deliveryMethodName}"></td>
             <td th:text="${order.paymentStatusName}"></td>
             <td th:text="${order.orderStatusName}"></td>
-            <td th:text="${order.createdAt}"></td>
+            <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
+            <td>
+                <a th:href="@{'/api/admins/' + ${publicUserId} + '/orders/' + ${order.publicOrderId} + '/edit'}"
+                   class="btn btn-sm btn-primary">
+                    <i class="bi bi-pencil"></i> Редактировать
+                </a>
+            </td>
         </tr>
     </table>
 </div>

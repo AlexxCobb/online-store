@@ -25,6 +25,7 @@ import ru.zinovev.online.store.model.OrderShortDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -104,6 +105,11 @@ public class OrderDaoService {
                 .map(orderMapper::toOrderShortDetails)
                 .collect(Collectors.toList());
     }
+
+    public Optional<OrderShortDetails> findOrderById(String publicOrderId) {
+        return orderRepository.findByPublicOrderId(publicOrderId).map(orderMapper::toOrderShortDetails);
+    }
+
 
     @Transactional
     public OrderDetails changeOrderStatus(String publicOrderId,

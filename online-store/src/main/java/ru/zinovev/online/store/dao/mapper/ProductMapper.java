@@ -29,7 +29,7 @@ public interface ProductMapper {
     @Mapping(target = "categoryPublicId", source = "category.publicCategoryId")
     ProductDetails toProductDetails(Product product);
 
-    @Mapping(target = "value", expression = "java(productParameter.getValue().toLowerCase())")
+   // @Mapping(target = "value", expression = "java(productParameter.getValue().toLowerCase())")
     ParametersDetails toParametersDetails(ProductParameter productParameter);
 
     @Mapping(target = "publicProductId", ignore = true)

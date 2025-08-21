@@ -18,3 +18,7 @@ spring:
     change-log: classpath:db/changelog/db.changelog-master.yaml
   thymeleaf:
     cache: false
+  mvc:
+    hidden method:
+      filter:
+        enabled: true

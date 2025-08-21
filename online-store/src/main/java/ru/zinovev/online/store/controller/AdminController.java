@@ -29,7 +29,6 @@ import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
-import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
@@ -139,22 +138,41 @@ public class AdminController {
     }
 
     @PatchMapping("/{publicUserId}/orders/{publicOrderId}")
-    public OrderDetails changeOrderStatus(@PathVariable String publicUserId, @PathVariable String publicOrderId,
-                                          @RequestParam OrderStatusName orderStatusName,
-                                          @RequestParam(required = false) PaymentStatusName paymentStatusName) {
+    public String changeOrderStatus(@PathVariable String publicUserId, @PathVariable String publicOrderId,
+                                    @RequestParam OrderStatusName orderStatusName,
+                                    @RequestParam(required = false) PaymentStatusName paymentStatusName, Model model) {
         log.debug(
                 "Received PATCH request to change order status, with id - {}, orderStatusName - {}, paymentStatusName -{}",
                 publicOrderId, orderStatusName, paymentStatusName);
-        return orderService.changeOrderStatus(publicOrderId, publicUserId, orderStatusName, paymentStatusName);
+        var order = orderService.changeOrderStatus(publicUserId, publicOrderId, orderStatusName, paymentStatusName);
+
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("order", order);
+        return "redirect:/api/admins/" + publicUserId + "/orders";
     }
 
     @GetMapping("/{publicUserId}/orders")
     public String getOrders(@PathVariable String publicUserId, Model model) {
         log.debug("Received GET request to get all user orders");
         var orders = orderService.getAllOrders(publicUserId);
+
         model.addAttribute("publicUserId", publicUserId);
         model.addAttribute("orders", orders);
         return "admin/orders";
+    }
+
+    @GetMapping("/{publicUserId}/orders/{publicOrderId}/edit")
+    public String editOrder(@PathVariable String publicUserId,
+                                @PathVariable String publicOrderId,
+                                Model model) {
+        log.debug("Received GET request to edit order: {}", publicOrderId);
+        var order = orderService.getOrderById(publicOrderId, publicUserId);
+
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("order", order);
+        model.addAttribute("orderStatuses", OrderStatusName.values());
+        model.addAttribute("paymentStatuses", PaymentStatusName.values());
+        return "admin/edit-order";
     }
 
     @GetMapping("/{publicUserId}/statistics")
