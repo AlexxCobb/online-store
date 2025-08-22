@@ -4,7 +4,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.dao.AddressDaoService;
-import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
@@ -39,25 +38,25 @@ public class AddressService {
     public AddressDetails updateAddress(@NonNull String publicUserId, @NonNull String publicAddressId,
                                         @NonNull AddressUpdateDetails addressUpdateDetails) {
         var userDetails = userService.findUserDetails(publicUserId);
-        var address = findByPublicId(publicAddressId);
-        if (!userDetails.publicUserId().equals(address.getUser().getPublicUserId()) ||
-                !address.getAddressType().getName().equals(AddressTypeName.USER_ADDRESS)) {
+        var address = getAddressByPublicId(publicAddressId);
+        if (!userDetails.publicUserId().equals(address.userDetails().publicUserId()) ||
+                !address.addressTypeName().equals(AddressTypeName.USER_ADDRESS.name())) {
             throw new BadRequestException(
                     "User with id - " + publicUserId + " cannot edit address with id - " + publicAddressId);
         }
         return addressDaoService.updateAddress(address, addressUpdateDetails);
     }
 
-    public AddressDetails updateSystemAddress(@NonNull String publicAddressId,
-                                              @NonNull AddressUpdateDetails addressUpdateDetails,
-                                              @NonNull AddressTypeName addressTypeName) {
-        var address = findByPublicId(publicAddressId);
-        if (!address.getAddressType().getName().equals(addressTypeName)) {
-            throw new BadRequestException("In the address found by id - " + publicAddressId
-                                                  + " , the address type does not match the one transmitted - "
-                                                  + addressTypeName);
-        }
+    public AddressDetails updateSystemAddress(@NonNull String publicUserId, @NonNull String publicAddressId,
+                                              @NonNull AddressUpdateDetails addressUpdateDetails) {
+        userService.findUserDetails(publicUserId);
+        var address = getAddressByPublicId(publicAddressId);
         return addressDaoService.updateAddress(address, addressUpdateDetails);
+    }
+
+    public AddressDetails getAddressByPublicId(@NonNull String publicAddressId) {
+        return addressDaoService.findByPublicId(publicAddressId)
+                .orElseThrow(() -> new NotFoundException("Address with id - " + publicAddressId + " + not found"));
     }
 
     public List<AddressDetails> getAddresses(@NonNull String publicUserId, AddressTypeName name,
@@ -71,22 +70,23 @@ public class AddressService {
             return addressDaoService.findUserAddresses(userDetails);
         } else {
             throw new NotValidArgumentException(
-                    "Invalid parameters to get addresses, AddressTypeName :" + name + "system address: " + isSystem);
+                    "Invalid parameters to get addresses, AddressTypeName :" + name + "system address flag: "
+                            + isSystem);
         }
     }
 
     public void deleteAddress(@NonNull String publicUserId, @NonNull String publicAddressId, Boolean isSystem) {
-        var address = findByPublicId(publicAddressId);
-        if (!isSystem && address.getUser() != null) {
+        var address = getAddressByPublicId(publicAddressId);
+        if (!isSystem && address.userDetails() != null) {
             var userDetails = userService.findUserDetails(publicUserId);
-            if (!userDetails.publicUserId().equals(address.getUser().getPublicUserId()) ||
-                    !address.getAddressType().getName().equals(AddressTypeName.USER_ADDRESS) || address.getSystem()
+            if (!userDetails.publicUserId().equals(address.userDetails().publicUserId()) ||
+                    !address.addressTypeName().equals(AddressTypeName.USER_ADDRESS.name()) || address.isSystem()
                     .equals(true)) {
                 throw new BadRequestException(
                         "User with id - " + publicUserId + " cannot delete address with id - " + publicAddressId);
             }
             addressDaoService.deleteAddress(address);
-        } else if (isSystem && address.getSystem().equals(true)) {
+        } else if (isSystem && address.isSystem().equals(true)) {
             addressDaoService.deleteAddress(address);
         } else {
             throw new NotValidArgumentException(
@@ -95,17 +95,13 @@ public class AddressService {
     }
 
     public boolean existUserAddress(String publicAddressId, String publicUserId) {
-        findByPublicId(publicAddressId);
+        userService.findUserDetails(publicUserId);
+        getAddressByPublicId(publicAddressId);
         return addressDaoService.existUserAddress(publicAddressId, publicUserId);
     }
 
     public boolean existSystemAddress(String publicAddressId, AddressTypeName name) {
-        findByPublicId(publicAddressId);
+        getAddressByPublicId(publicAddressId);
         return addressDaoService.existSystemAddress(publicAddressId, name);
-    }
-
-    private DeliveryAddress findByPublicId(String publicAddressId) {
-        return addressDaoService.findByPublicId(publicAddressId)
-                .orElseThrow(() -> new NotFoundException("Address with id - " + publicAddressId + " + not found"));
     }
 }

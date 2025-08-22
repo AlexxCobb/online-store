@@ -1,34 +1,17 @@
 package ru.zinovev.online.store.controller.dto;
 
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-import java.util.Optional;
-
 public record AddressUpdateDto(
-        @Positive
+        @Pattern(regexp = "\\d{6}", message = "Индекс должен содержать шесть цифр")
         @Size(min = 6, max = 6)
-        Integer zipCode,
+        String zipCode,
         @Size(min = 3, max = 200)
         String street,
-        @Positive
-        Integer houseNumber,
-        @Positive
-        Integer flatNumber
+        @Pattern(regexp = "\\d+", message = "Номер дома может быть только числом")
+        String houseNumber,
+        @Pattern(regexp = "\\d*", message = "Номер квартиры может быть только числом")
+        String flatNumber
 ) {
-        public Optional<Integer> getOptionalZipCode() {
-                return Optional.ofNullable(zipCode);
-        }
-
-        public Optional<String> getOptionalStreet() {
-                return Optional.ofNullable(street);
-        }
-
-        public Optional<Integer> getOptionalHouseNumber() {
-                return Optional.ofNullable(houseNumber);
-        }
-
-        public Optional<Integer> getOptionalFlatNumber() {
-                return Optional.ofNullable(flatNumber);
-        }
 }

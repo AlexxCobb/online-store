@@ -15,13 +15,13 @@ public interface AddressRepository extends JpaRepository<DeliveryAddress, Long> 
     @Query("select d from DeliveryAddress d join d.user u join d.addressType ad where u.publicUserId = :publicUserId and ad.name = USER_ADDRESS")
     List<DeliveryAddress> findUserAddresses(String publicUserId);
 
-    List<DeliveryAddress> findByAddressTypeNameAndActiveAndSystem(AddressTypeName name, Boolean active,
-                                                                  Boolean system); // зашить в Query active/system?
+    List<DeliveryAddress> findByAddressTypeNameAndIsActiveAndIsSystem(AddressTypeName name, Boolean isActive,
+                                                                      Boolean isSystem); // зашить в Query active/system?
 
-    List<DeliveryAddress> findByActiveAndSystem(Boolean active, Boolean system);
+
+    List<DeliveryAddress> findByIsActiveAndIsSystem(Boolean isActive, Boolean isSystem);
 
     boolean existsByPublicDeliveryAddressIdAndUserPublicUserId(String publicDeliveryAddressId, String publicUserId);
 
     boolean existsByPublicDeliveryAddressIdAndAddressTypeName(String publicDeliveryAddressId, AddressTypeName name);
-
 }

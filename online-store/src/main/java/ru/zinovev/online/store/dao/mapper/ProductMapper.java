@@ -29,7 +29,7 @@ public interface ProductMapper {
     @Mapping(target = "categoryPublicId", source = "category.publicCategoryId")
     ProductDetails toProductDetails(Product product);
 
-   // @Mapping(target = "value", expression = "java(productParameter.getValue().toLowerCase())")
+    // @Mapping(target = "value", expression = "java(productParameter.getValue().toLowerCase())")
     ParametersDetails toParametersDetails(ProductParameter productParameter);
 
     @Mapping(target = "publicProductId", ignore = true)
@@ -54,8 +54,7 @@ public interface ProductMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     @Mapping(target = "parameters", ignore = true)
-    void updateProductFromProductUpdateDetails(@MappingTarget Product product,
-                                               ProductUpdateDetails updateDetails);
+    void updateProductFromProductUpdateDetails(ProductUpdateDetails updateDetails, @MappingTarget Product product);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)

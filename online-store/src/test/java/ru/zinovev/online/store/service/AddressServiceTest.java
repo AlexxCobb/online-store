@@ -87,8 +87,8 @@ class AddressServiceTest {
                 .street(mockAddressDto.street())
                 .houseNumber(mockAddressDto.houseNumber())
                 .flatNumber(mockAddressDto.flatNumber() != null ? mockAddressDto.flatNumber() : null)
-                .active(false)
-                .system(false)
+                .isActive(false)
+                .isSystem(false)
                 .build();
         mockSystemAddress = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
@@ -98,8 +98,8 @@ class AddressServiceTest {
                 .zipCode(mockAddressDto.zipCode())
                 .street(mockAddressDto.street())
                 .houseNumber(mockAddressDto.houseNumber())
-                .active(true)
-                .system(true)
+                .isActive(true)
+                .isSystem(true)
                 .build();
 
         mockUserAddressDetails =
@@ -276,7 +276,7 @@ class AddressServiceTest {
                         .publicDeliveryAddressId(UUID.randomUUID().toString())
                         .addressType(mockSystemType)
                         .user(mockUser)
-                        .system(false)
+                        .isSystem(false)
                         .build();
 
         when(addressDaoService.findByPublicId(userAddress.getPublicDeliveryAddressId())).thenReturn(

@@ -69,7 +69,7 @@ public class ProductDaoService {
                 productRepository.findByPublicProductId(publicProductId)
                         .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId
                                                                          + " , not found"));
-        productMapper.updateProductFromProductUpdateDetails(existedProduct, updateDetails);
+        productMapper.updateProductFromProductUpdateDetails(updateDetails, existedProduct);
         return productMapper.toProductDetails(productRepository.save(existedProduct));
     }
 

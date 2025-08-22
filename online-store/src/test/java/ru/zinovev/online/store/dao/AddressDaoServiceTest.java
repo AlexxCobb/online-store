@@ -91,8 +91,8 @@ class AddressDaoServiceTest {
                 .street(mockAddressDetails.street())
                 .houseNumber(mockAddressDetails.houseNumber())
                 .flatNumber(mockAddressDetails.flatNumber() != null ? mockAddressDetails.flatNumber() : null)
-                .active(false)
-                .system(false)
+                .isActive(false)
+                .isSystem(false)
                 .build();
         mockSystemAddress = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
@@ -102,8 +102,8 @@ class AddressDaoServiceTest {
                 .zipCode(mockAddressDetails.zipCode())
                 .street(mockAddressDetails.street())
                 .houseNumber(mockAddressDetails.houseNumber())
-                .active(true)
-                .system(true)
+                .isActive(true)
+                .isSystem(true)
                 .build();
 
         mockUserAddressDetails =
@@ -143,7 +143,7 @@ class AddressDaoServiceTest {
 
         assertNotNull(result);
         assertEquals(mockSystemDetails, result);
-        assertEquals(mockSystemAddress.getSystem(), addressCaptor.getValue().getSystem());
+        assertEquals(mockSystemAddress.getIsSystem(), addressCaptor.getValue().getIsSystem());
     }
 
     @Test
@@ -185,8 +185,8 @@ class AddressDaoServiceTest {
 
     @Test
     void shouldFindSystemAddresses() {
-        when(addressRepository.findByAddressTypeNameAndActiveAndSystem(mockSystemType.getName(), true,
-                                                                       true)).thenReturn(List.of(mockSystemAddress));
+        when(addressRepository.findByAddressTypeNameAndIsActiveAndIsSystem(mockSystemType.getName(), true,
+                                                                           true)).thenReturn(List.of(mockSystemAddress));
         when(addressMapper.toAddressDetails(mockSystemAddress)).thenReturn(mockSystemDetails);
 
         var result = addressDaoService.findSystemAddresses(mockSystemType.getName());
@@ -199,7 +199,7 @@ class AddressDaoServiceTest {
     void shouldFindAllSystemAddresses() {
         var systemAddress = DeliveryAddress.builder().build();
         var systemDetails = mockSystemDetails;
-        when(addressRepository.findByActiveAndSystem(true, true)).thenReturn(List.of(mockSystemAddress, systemAddress));
+        when(addressRepository.findByIsActiveAndIsSystem(true, true)).thenReturn(List.of(mockSystemAddress, systemAddress));
         when(addressMapper.toAddressDetails(mockSystemAddress)).thenReturn(mockSystemDetails);
         when(addressMapper.toAddressDetails(systemAddress)).thenReturn(systemDetails);
 

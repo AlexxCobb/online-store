@@ -73,14 +73,14 @@ public class OrderService {
                 }
             }
             case PARCEL_LOCKER -> {
-                if (!addressService.existSystemAddress(publicAddressId, AddressTypeName.PARCEL_LOCKER)) {
+                if (!addressService.existSystemAddress(publicUserId, AddressTypeName.PARCEL_LOCKER)) {
                     throw new BadRequestException(
                             "The selected address does not match the selected delivery method - "
                                     + name);
                 }
             }
             case BY_SELF -> {
-                if (!addressService.existSystemAddress(publicAddressId, AddressTypeName.STORE_ADDRESS)) {
+                if (!addressService.existSystemAddress(publicUserId, AddressTypeName.STORE_ADDRESS)) {
                     throw new BadRequestException(
                             "The selected address does not match the selected delivery method - "
                                     + name);

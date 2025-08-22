@@ -8,6 +8,7 @@ import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.repository.AddressRepository;
 import ru.zinovev.online.store.dao.repository.AddressTypeRepository;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.AddressUpdateDetails;
 import ru.zinovev.online.store.model.UserDetails;
@@ -41,8 +42,8 @@ public class AddressDaoService {
                 .street(addressDetails.street())
                 .houseNumber(addressDetails.houseNumber())
                 .flatNumber(addressDetails.flatNumber() != null ? addressDetails.flatNumber() : null)
-                .active(false)
-                .system(false)
+                .isActive(false)
+                .isSystem(false)
                 .build();
         return addressMapper.toAddressDetails(addressRepository.save(address));
     }
@@ -58,26 +59,32 @@ public class AddressDaoService {
                 .zipCode(addressDetails.zipCode())
                 .street(addressDetails.street())
                 .houseNumber(addressDetails.houseNumber())
-                .active(true)
-                .system(true)
+                .isActive(true)
+                .isSystem(true)
                 .build();
         return addressMapper.toAddressDetails(addressRepository.save(address));
     }
 
     @Transactional
-    public AddressDetails updateAddress(DeliveryAddress deliveryAddress,
+    public AddressDetails updateAddress(AddressDetails addressDetails,
                                         AddressUpdateDetails addressUpdateDetails) {
-        addressMapper.updateAddressFromAddressUpdateDetails(deliveryAddress, addressUpdateDetails);
+        var deliveryAddress = addressRepository.findByPublicDeliveryAddressId(addressDetails.publicAddressId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Address with id - " + addressDetails.publicAddressId() + " + not found"));
+        addressMapper.updateAddressFromAddressUpdateDetails(addressUpdateDetails, deliveryAddress);
         return addressMapper.toAddressDetails(addressRepository.save(deliveryAddress));
     }
 
     @Transactional
-    public void deleteAddress(DeliveryAddress address) {
+    public void deleteAddress(AddressDetails addressDetails) {
+        var address = addressRepository.findByPublicDeliveryAddressId(addressDetails.publicAddressId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Address with id - " + addressDetails.publicAddressId() + " + not found"));
         addressRepository.delete(address);
     }
 
-    public Optional<DeliveryAddress> findByPublicId(String publicAddressId) {
-        return addressRepository.findByPublicDeliveryAddressId(publicAddressId);
+    public Optional<AddressDetails> findByPublicId(String publicAddressId) {
+        return addressRepository.findByPublicDeliveryAddressId(publicAddressId).map(addressMapper::toAddressDetails);
     }
 
     public List<AddressDetails> findUserAddresses(UserDetails userDetails) {
@@ -88,14 +95,14 @@ public class AddressDaoService {
     }
 
     public List<AddressDetails> findSystemAddresses(AddressTypeName addressTypeName) {
-        return addressRepository.findByAddressTypeNameAndActiveAndSystem(addressTypeName, true, true)
+        return addressRepository.findByAddressTypeNameAndIsActiveAndIsSystem(addressTypeName, true, true)
                 .stream()
                 .map(addressMapper::toAddressDetails)
                 .collect(Collectors.toList());
     }
 
     public List<AddressDetails> findAllSystemAddresses() {
-        return addressRepository.findByActiveAndSystem(true, true)
+        return addressRepository.findByIsActiveAndIsSystem(true, true)
                 .stream()
                 .map(addressMapper::toAddressDetails)
                 .collect(Collectors.toList());

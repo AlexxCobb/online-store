@@ -1,5 +1,6 @@
 package ru.zinovev.online.store.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +8,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.zinovev.online.store.controller.dto.AddressDto;
 import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.controller.dto.CategoryDto;
@@ -27,7 +31,6 @@ import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
-import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.service.AddressService;
@@ -39,6 +42,7 @@ import ru.zinovev.online.store.service.StatisticService;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -62,37 +66,82 @@ public class AdminController {
         return "admin/admin-home";
     }
 
+    @GetMapping("/{publicUserId}/addresses")
+    public String getAddresses(@PathVariable String publicUserId,
+                               @RequestParam(required = false) AddressTypeName name, Model model,
+                               HttpServletRequest request, @ModelAttribute AddressDto addressDto) {
+        log.debug("Received GET request to get system addresses");
+        var addresses = addressService.getAddresses(publicUserId, name, true);
+
+        model.addAttribute("addressTypes", List.of(AddressTypeName.STORE_ADDRESS, AddressTypeName.PARCEL_LOCKER));
+        model.addAttribute("nameParam", request.getParameter("name"));
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("addresses", addresses);
+        return "admin/addresses";
+    }
+
     @PostMapping("/{publicUserId}/addresses")
-    public AddressDetails addSystemAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto,
-                                           @RequestParam AddressTypeName name) {
+    public String addSystemAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto,
+                                   BindingResult bindingResult, @RequestParam AddressTypeName name,
+                                   RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received POST request to add system address dto - {}, with type - {}, from user with id - {}",
                   addressDto, name, publicUserId);
-        return addressService.addSystemAddress(publicUserId, addressMapper.toAddressDetails(addressDto), name);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("addressTypes", List.of(AddressTypeName.STORE_ADDRESS, AddressTypeName.PARCEL_LOCKER));
+            return "admin/addresses";
+        }
+        addressService.addSystemAddress(publicUserId, addressMapper.toAddressDetails(addressDto), name);
+        redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО ДОБАВЛЕН");
+        return "redirect:/api/admins/" + publicUserId + "/addresses";
+    }
+
+    @GetMapping("/{publicUserId}/addresses/{publicAddressId}")
+    public String editSystemAddress(@PathVariable String publicUserId,
+                                    @ModelAttribute AddressUpdateDto addressUpdateDto,
+                                    @PathVariable String publicAddressId, Model model) {
+        log.debug(
+                "Received GET request to edit system address id - {}, from user with id - {}",
+                publicAddressId,
+                publicUserId);
+
+        var address = addressService.getAddressByPublicId(publicAddressId);
+
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("address", address);
+        return "admin/edit-address";
     }
 
     @PatchMapping("/{publicUserId}/addresses/{publicAddressId}")
-    public AddressDetails updateSystemAddress(@PathVariable String publicUserId,
-                                              @Valid AddressUpdateDto addressUpdateDto,
-                                              @PathVariable String publicAddressId,
-                                              @RequestParam AddressTypeName name) {
+    public String updateSystemAddress(@PathVariable String publicUserId,
+                                      AddressUpdateDto addressUpdateDto, BindingResult bindingResult,
+                                      @PathVariable String publicAddressId, Model model,
+                                      RedirectAttributes redirectAttributes) {
         log.debug(
-                "Received PATCH request to update system address (id - {}), dto - {}, type - {}, from user with id - {}",
+                "Received PATCH request to update system address (id - {}), dto - {}, from user with id - {}",
                 publicAddressId,
-                addressUpdateDto, name, publicUserId);
-        return addressService.updateSystemAddress(publicAddressId,
-                                                  addressMapper.toAddressUpdateDetails(addressUpdateDto), name);
+                addressUpdateDto, publicUserId);
+        if (bindingResult.hasErrors()) {
+            var address = addressService.getAddressByPublicId(publicAddressId);
+            model.addAttribute("address", address);
+            return "admin/edit-address";
+        }
+        addressService.updateSystemAddress(publicUserId, publicAddressId,
+                                           addressMapper.toAddressUpdateDetails(addressUpdateDto));
+        redirectAttributes.addFlashAttribute("successMessage", "УСПЕШНО ОБНОВЛЕНО");
+        return "redirect:/api/admins/" + publicUserId + "/addresses";
     }
 
     @DeleteMapping("/{publicUserId}/addresses/{publicAddressId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteSystemAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId) {
+    public String deleteSystemAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
+                                      RedirectAttributes redirectAttributes) {
         log.debug("Received DELETE request to delete system address with id = {}, from user with id - {}",
                   publicAddressId, publicUserId);
         addressService.deleteAddress(publicUserId, publicAddressId, true);
+        redirectAttributes.addFlashAttribute("successMessage", "УСПЕШНО УДАЛЕНО");
+        return "redirect:/api/admins/" + publicUserId + "/addresses";
     }
 
     @PostMapping("/{publicUserId}/categories")
-    @ResponseStatus(HttpStatus.CREATED)
     public CategoryDetails addCategory(@PathVariable String publicUserId, @Valid @RequestBody CategoryDto categoryDto) {
         log.debug("Received POST request to add category");
         return categoryService.createCategory(publicUserId, categoryMapper.toCategoryDetails(categoryDto));
@@ -147,7 +196,7 @@ public class AdminController {
         var order = orderService.changeOrderStatus(publicUserId, publicOrderId, orderStatusName, paymentStatusName);
 
         model.addAttribute("publicUserId", publicUserId);
-        model.addAttribute("order", order);
+        model.addAttribute("order", order); // для чего
         return "redirect:/api/admins/" + publicUserId + "/orders";
     }
 
@@ -163,8 +212,8 @@ public class AdminController {
 
     @GetMapping("/{publicUserId}/orders/{publicOrderId}/edit")
     public String editOrder(@PathVariable String publicUserId,
-                                @PathVariable String publicOrderId,
-                                Model model) {
+                            @PathVariable String publicOrderId,
+                            Model model) {
         log.debug("Received GET request to edit order: {}", publicOrderId);
         var order = orderService.getOrderById(publicOrderId, publicUserId);
 

@@ -1,27 +1,27 @@
 package ru.zinovev.online.store.controller.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record AddressDto(
-        @NotBlank(message="Country is required")
+        @NotBlank(message = "Укажите страну")
         @Size(min = 3, max = 100)
         String country,
-        @NotBlank(message="Town is required")
+        @NotBlank(message = "Укажите город")
         @Size(min = 3, max = 100)
         String town,
-        @NotBlank(message="Zip code is required")
-        @Positive
+        @NotBlank(message = "Укажите Индекс")
+        @Pattern(regexp = "\\d{6}", message = "Индекс должен содержать шесть цифр")
         @Size(min = 6, max = 6)
-        Integer zipCode,
-        @NotBlank(message = "Street is required")
+        String zipCode,
+        @NotBlank(message = "Укажите улицу/проспект")
         @Size(min = 3, max = 200)
         String street,
-        @NotBlank(message="House number is required")
-        @Positive
-        Integer houseNumber,
-        @Positive
-        Integer flatNumber
+        @NotBlank(message = "Укажите номер дома")
+        @Pattern(regexp = "\\d+", message = "Номер дома может быть только числом")
+        String houseNumber,
+        @Pattern(regexp = "\\d*", message = "Номер квартиры может быть только числом")
+        String flatNumber
 ) {
 }

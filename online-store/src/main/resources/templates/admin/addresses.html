@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Admin addresses')}">
+</head>
+<body>
+<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+<div class="welcome-container">
+    <div class="address-tab"
+       th:classappend="${nameParam == 'PARCEL_LOCKER' && isSystemParam == 'true'} ? 'active' : ''"
+       onclick="location.href='?name=PARCEL_LOCKER'">Пункты выдачи
+  </div>
+
+  <div class="address-tab"
+       th:classappend="${nameParam == 'STORE_ADDRESS' && isSystemParam == 'true'} ? 'active' : ''"
+       onclick="location.href='?name=STORE_ADDRESS'">Адреса магазинов
+  </div>
+
+  <h2>Адреса</h2>
+  <div th:if="${successMessage}" class="alert alert-success">
+    <span th:text="${successMessage}"></span>
+  </div>
+  <table>
+    <tr>
+      <th>Тип адреса</th>
+      <th>Индекс</th>
+      <th>Город</th>
+      <th>Улица/Проспект</th>
+      <th>Номер дома</th>
+      <th>Действия</th>
+    </tr>
+    <tr th:each="address : ${addresses}">
+      <td>
+        <span th:if="${address.addressTypeName == 'PARCEL_LOCKER'}">📦 Пункт выдачи</span>
+        <span th:if="${address.addressTypeName == 'STORE_ADDRESS'}">🏬 Магазин</span>
+      </td>
+      <td th:text="${address.zipCode}">190300</td>
+      <td th:text="${address.town}">Санкт-Петербург</td>
+      <td th:text="${address.street}">Невский проспект</td>
+      <td th:text="${address.houseNumber}">1</td>
+      <td>
+        <a th:href="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+           class="btn btn-sm btn-primary">
+          <i class="bi bi-pencil"></i> Редактировать
+        </a>
+        <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+              method="post">
+          <input type="hidden" name="_method" value="delete" />
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Удалить</button>
+            </div>
+        </form>
+      </td>
+    </tr>
+  </table>
+
+  <table>
+  <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses'}"
+        method="post" th:object="${addressDto}">
+    <h3>Добавить новый адрес</h3>
+
+    <div class="mb-3">
+      <label class="form-label" for="country">Страна</label>
+      <input type="text" class="form-control" th:field="*{country}"/>
+      <span class="validationError"
+            th:if="${#fields.hasErrors('country')}"
+            th:errors="*{country}"></span>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label" for="town">Город</label>
+      <input type="text" class="form-control" th:field="*{town}"/>
+      <span class="validationError"
+            th:if="${#fields.hasErrors('town')}"
+            th:errors="*{town}"></span>
+    </div>
+
+    <div class="mb-3">
+      <label for="zipCode">Почтовый индекс</label>
+      <input type="text" class="form-control" th:field="*{zipCode}"/>
+      <span class="validationError"
+            th:if="${#fields.hasErrors('zipCode')}"
+            th:errors="*{zipCode}"></span>
+    </div>
+
+    <div class="mb-3">
+      <label for="street">Улица</label>
+      <input type="text" class="form-control" th:field="*{street}"/>
+      <span class="validationError"
+            th:if="${#fields.hasErrors('street')}"
+            th:errors="*{street}"></span>
+    </div>
+
+    <div class="mb-3">
+      <label for="houseNumber">Номер дома</label>
+      <input type="text" class="form-control" th:field="*{houseNumber}"/>
+      <span class="validationError"
+            th:if="${#fields.hasErrors('houseNumber')}"
+            th:errors="*{houseNumber}"></span>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Тип адреса:</label>
+      <select name="name" class="form-select">
+        <option value="">-- Выберите тип адреса --</option>
+        <option th:each="type : ${addressTypes}"
+                th:value="${type}"
+                th:text="${type}">
+        </option>
+      </select>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Добавить адрес</button>
+    </div>
+  </form>
+  </table>
+</div>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>
