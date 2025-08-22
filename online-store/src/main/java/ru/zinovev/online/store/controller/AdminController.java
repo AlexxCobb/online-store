@@ -141,26 +141,71 @@ public class AdminController {
         return "redirect:/api/admins/" + publicUserId + "/addresses";
     }
 
+    @GetMapping("/{publicUserId}/categories")
+    public String getCategories(@PathVariable String publicUserId, @ModelAttribute CategoryDto categoryDto,
+                                Model model) {
+        log.debug("Received GET request to get all categories");
+        var categories = categoryService.getCategories();
+
+        model.addAttribute("categories", categories);
+        model.addAttribute("publicUserId", publicUserId);
+        return "admin/categories";
+    }
+
+    @GetMapping("/{publicUserId}/categories/{publicCategoryId}")
+    public String editCategory(@PathVariable String publicUserId,
+                               @ModelAttribute CategoryDto categoryDto,
+                               @PathVariable String publicCategoryId, Model model) {
+        log.debug(
+                "Received GET request to edit category with id - {}, from user with id - {}",
+                publicCategoryId,
+                publicUserId);
+
+        var category = categoryService.getCategoryByPublicId(publicCategoryId);
+
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("category", category);
+        return "admin/edit-category";
+    }
+
     @PostMapping("/{publicUserId}/categories")
-    public CategoryDetails addCategory(@PathVariable String publicUserId, @Valid @RequestBody CategoryDto categoryDto) {
+    public String addCategory(@PathVariable String publicUserId, @Valid CategoryDto categoryDto,
+                              BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received POST request to add category");
-        return categoryService.createCategory(publicUserId, categoryMapper.toCategoryDetails(categoryDto));
+        if (bindingResult.hasErrors()) {
+            var categories = categoryService.getCategories();
+            model.addAttribute("categories", categories);
+            return "admin/categories";
+        }
+        categoryService.createCategory(publicUserId, categoryMapper.toCategoryDetails(categoryDto));
+        redirectAttributes.addFlashAttribute("successMessage", "КАТЕГОРИЯ УСПЕШНО ДОБАВЛЕНА");
+
+        return "redirect:/api/admins/" + publicUserId + "/categories";
     }
 
     @PatchMapping("/{publicUserId}/categories/{publicCategoryId}")
-    public CategoryDetails updateCategory(@PathVariable String publicUserId, @PathVariable String publicCategoryId,
-                                          @Valid @RequestBody
-                                          CategoryDto categoryDto) {
+    public String updateCategory(@PathVariable String publicUserId, @PathVariable String publicCategoryId,
+                                 @Valid CategoryDto categoryDto, BindingResult bindingResult, Model model,
+                                 RedirectAttributes redirectAttributes) {
         log.debug("Received PATCH request to update category with id = {}", publicCategoryId);
-        return categoryService.updateCategory(publicUserId, publicCategoryId,
-                                              categoryMapper.toCategoryDetails(categoryDto));
+        if (bindingResult.hasErrors()) {
+            var category = categoryService.getCategoryByPublicId(publicCategoryId);
+            model.addAttribute("category", category);
+            return "admin/edit-category";
+        }
+        categoryService.updateCategory(publicUserId, publicCategoryId,
+                                       categoryMapper.toCategoryDetails(categoryDto));
+        redirectAttributes.addFlashAttribute("successMessage", "КАТЕГОРИЯ УСПЕШНО ОБНОВЛЕНА");
+        return "redirect:/api/admins/" + publicUserId + "/categories";
     }
 
     @DeleteMapping("/{publicUserId}/categories/{publicCategoryId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable String publicUserId, @PathVariable String publicCategoryId) {
+    public String deleteCategory(@PathVariable String publicUserId, @PathVariable String publicCategoryId,
+                                 RedirectAttributes redirectAttributes) {
         log.debug("Received DELETE request to delete category with id = {}", publicCategoryId);
         categoryService.deleteCategory(publicUserId, publicCategoryId);
+        redirectAttributes.addFlashAttribute("successMessage", "КАТЕГОРИЯ УСПЕШНО УДАЛЕНА");
+        return "redirect:/api/admins/" + publicUserId + "/categories";
     }
 
     @PostMapping("/{publicUserId}/products")

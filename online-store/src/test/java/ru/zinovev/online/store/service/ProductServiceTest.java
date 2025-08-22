@@ -118,7 +118,7 @@ class ProductServiceTest {
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
-        verify(categoryService, times(1)).existCategory(categoryId);
+        verify(categoryService, times(1)).getCategoryByPublicId(categoryId);
     }
 
     @Test
@@ -136,7 +136,7 @@ class ProductServiceTest {
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
-        verify(categoryService, times(0)).existCategory(categoryId);
+        verify(categoryService, times(0)).getCategoryByPublicId(categoryId);
     }
 
     @Test
@@ -171,7 +171,7 @@ class ProductServiceTest {
     @Test
     void shouldReturnListOfProductsByCategoryId() {
         var categoryId = mockCategory.getPublicCategoryId();
-        when(categoryService.existCategory(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
+        when(categoryService.getCategoryByPublicId(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
         when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(
                 List.of(mockProductDetails, mockUpdatedProductDetails));
 
@@ -185,7 +185,7 @@ class ProductServiceTest {
     @Test
     void shouldThrowExceptionWhenReturnEmptyList() {
         var categoryId = mockCategory.getPublicCategoryId();
-        when(categoryService.existCategory(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
+        when(categoryService.getCategoryByPublicId(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
         when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(Collections.emptyList());
 
         assertThrows(NotFoundException.class, () -> productService.searchProductsWithParameters(categoryId));

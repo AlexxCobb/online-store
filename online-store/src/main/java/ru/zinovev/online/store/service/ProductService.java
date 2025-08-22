@@ -31,7 +31,7 @@ public class ProductService {
         userService.findUserDetails(publicUserId);
         getByPublicId(publicProductId);
         if (productUpdateDetails.categoryPublicId() != null) {
-            categoryService.existCategory(productUpdateDetails.categoryPublicId());
+            categoryService.getCategoryByPublicId(productUpdateDetails.categoryPublicId());
         }
         return productDaoService.updateProduct(productUpdateDetails, publicProductId);
     }
