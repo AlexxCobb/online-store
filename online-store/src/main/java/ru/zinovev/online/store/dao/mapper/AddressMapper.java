@@ -17,6 +17,8 @@ import ru.zinovev.online.store.model.AddressUpdateDetails;
 public interface AddressMapper {
 
     @Mapping(target = "publicAddressId", source = "publicDeliveryAddressId")
+    @Mapping(target = "userDetails", source = "user")
+    @Mapping(target = "addressTypeName", source = "addressType.name")
     AddressDetails toAddressDetails(DeliveryAddress deliveryAddress);
 
     @Mapping(target = "publicAddressId", ignore = true)
@@ -24,6 +26,10 @@ public interface AddressMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Mapping(target = "zipCode", expression = "java(convertToInteger(addressUpdateDto.zipCode()))")
+    @Mapping(target = "houseNumber", expression = "java(convertToInteger(addressUpdateDto.houseNumber()))")
+    @Mapping(target = "flatNumber", expression = "java(convertToInteger(addressUpdateDto.flatNumber()))")
+    @Mapping(target = "street", expression = "java(checkValue(addressUpdateDto.street()))")
     AddressUpdateDetails toAddressUpdateDetails(AddressUpdateDto addressUpdateDto);
 
     @Mapping(target = "publicAddressId", source = "publicDeliveryAddressId")
@@ -31,6 +37,21 @@ public interface AddressMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    void updateAddressFromAddressUpdateDetails(@MappingTarget DeliveryAddress deliveryAddress,
-                                               AddressUpdateDetails addressUpdateDetails);
+    void updateAddressFromAddressUpdateDetails(AddressUpdateDetails addressUpdateDetails, @MappingTarget DeliveryAddress deliveryAddress);
+
+    default Integer convertToInteger(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return Integer.parseInt(value);
+    }
+
+    default String checkValue(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value;
+    }
 }
+
+

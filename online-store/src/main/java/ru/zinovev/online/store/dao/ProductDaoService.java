@@ -69,6 +69,13 @@ public class ProductDaoService {
                 productRepository.findByPublicProductId(publicProductId)
                         .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId
                                                                          + " , not found"));
+        if (updateDetails.publicCategoryId() != null) {
+            var category = categoryRepository.findByPublicCategoryId(updateDetails.publicCategoryId())
+                    .orElseThrow(() -> new NotFoundException(
+                            "Category with id - " + updateDetails.publicCategoryId() + " not found"));
+            existedProduct.setCategory(category);
+        }
+
         productMapper.updateProductFromProductUpdateDetails(existedProduct, updateDetails);
         return productMapper.toProductDetails(productRepository.save(existedProduct));
     }

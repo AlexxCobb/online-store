@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public record ProductUpdateDetails(
         String name,
         BigDecimal price,
-        String categoryPublicId,
+        String publicCategoryId,
         Integer stockQuantity
 ) {
 }

@@ -104,7 +104,7 @@ class CategoryServiceTest {
 
         when(categoryDaoService.findByPublicId(publicId)).thenReturn(Optional.of(expectedCategoryDetails));
 
-        var result = categoryService.existCategory(publicId);
+        var result = categoryService.getCategoryByPublicId(publicId);
 
         assertNotNull(result);
         assertEquals(expectedCategoryDetails, result);
@@ -117,6 +117,6 @@ class CategoryServiceTest {
         when(categoryDaoService.findByPublicId(publicId)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
-                     () -> categoryService.existCategory(publicId));
+                     () -> categoryService.getCategoryByPublicId(publicId));
     }
 }

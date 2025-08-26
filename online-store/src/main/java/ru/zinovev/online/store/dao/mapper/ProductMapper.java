@@ -10,6 +10,7 @@ import ru.zinovev.online.store.controller.dto.ParametersDto;
 import ru.zinovev.online.store.controller.dto.ProductDto;
 import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
+import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductParameter;
 import ru.zinovev.online.store.dao.entity.ProductView;
@@ -20,22 +21,17 @@ import ru.zinovev.online.store.model.ProductShortDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
 import ru.zinovev.online.store.model.TopProductDetails;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    @Mapping(target = "publicProductId", source = "publicProductId")
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "price", source = "price")
     @Mapping(target = "categoryPublicId", source = "category.publicCategoryId")
-    @Mapping(target = "parameters", source = "parameters")
-    @Mapping(target = "weight", source = "weight")
-    @Mapping(target = "volume", source = "volume")
-    @Mapping(target = "stockQuantity", source = "stockQuantity")
     ProductDetails toProductDetails(Product product);
 
-    @Mapping(target = "value", expression = "java(productParameter.getValue().toLowerCase())")
     ParametersDetails toParametersDetails(ProductParameter productParameter);
 
     @Mapping(target = "publicProductId", ignore = true)
@@ -51,13 +47,18 @@ public interface ProductMapper {
 
     ProductShortDetails toProductShortDetails(Product product);
 
+    @Mapping(target = "publicProductId", source = "product.publicProductId")
+    @Mapping(target = "name", source = "product.name")
+    ProductShortDetails toProductShortDetails(OrderItem orderItem);
+
     TopProductDetails toTopProductDetails(ProductView productView);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "parameters", ignore = true)
-    void updateProductFromProductUpdateDetails(@MappingTarget Product product,
-                                               ProductUpdateDetails updateDetails);
+    @Mapping(target = "name", source = "name")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "stockQuantity", source = "stockQuantity")
+    void updateProductFromProductUpdateDetails(@MappingTarget Product product, ProductUpdateDetails updateDetails);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
@@ -65,5 +66,23 @@ public interface ProductMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Mapping(target = "name", expression = "java(checkValue(productUpdateDto.name()))")
+    @Mapping(target = "publicCategoryId", expression = "java(checkValue(productUpdateDto.categoryPublicId()))")
     ProductUpdateDetails toProductUpdateDetails(ProductUpdateDto productUpdateDto);
+
+    default Set<ParametersDetails> toParametersDetails(List<ParametersDto> parameters) {
+        if (parameters == null) {
+            return Collections.emptySet();
+        }
+        return parameters.stream()
+                .map(this::toParametersDetails)
+                .collect(Collectors.toSet());
+    }
+
+    default String checkValue(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value;
+    }
 }

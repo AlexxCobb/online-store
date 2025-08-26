@@ -3,10 +3,13 @@
 <head th:replace="~{fragments/header :: common-header('ТОП Товары')}">
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 <div class="welcome-container">
     <h1>ТОП популярных товаров</h1>
-    <table>
+    <div th:if="${topProducts == null or topProducts.empty}">
+        <p>Нет популярных продуктов за выбранный период</p>
+    </div>
+    <table th:unless="${topProducts == null or topProducts.empty}">
         <tr>
             <th>Бренд</th>
             <th>Название модели</th>

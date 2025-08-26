@@ -29,7 +29,7 @@ public class CategoryService {
     public CategoryDetails updateCategory(@NonNull String publicUserId, @NonNull String publicCategoryId,
                                           @NonNull CategoryDetails categoryDetails) {
         userService.findUserDetails(publicUserId);
-        var categoryDetailsExist = existCategory(publicCategoryId);
+        var categoryDetailsExist = getCategoryByPublicId(publicCategoryId);
         if (!categoryDetailsExist.name().equalsIgnoreCase(categoryDetails.name())) {
             return categoryDaoService.updateCategory(categoryDetailsExist, categoryDetails);
         } else {
@@ -46,7 +46,7 @@ public class CategoryService {
         return categoryDaoService.getCategories();
     }
 
-    public CategoryDetails existCategory(String publicCategoryId) {
+    public CategoryDetails getCategoryByPublicId(String publicCategoryId) {
         return categoryDaoService.findByPublicId(publicCategoryId).orElseThrow(
                 () -> new NotFoundException("Category with id - " + publicCategoryId + " not found"));
     }
