@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -24,6 +23,7 @@ import ru.zinovev.online.store.controller.dto.AddressDto;
 import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.controller.dto.CategoryDto;
 import ru.zinovev.online.store.controller.dto.ProductDto;
+import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.entity.enums.OrderStatusName;
@@ -31,14 +31,13 @@ import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
-import ru.zinovev.online.store.model.CategoryDetails;
-import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
 import ru.zinovev.online.store.service.StatisticService;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -103,7 +102,6 @@ public class AdminController {
                 "Received GET request to edit system address id - {}, from user with id - {}",
                 publicAddressId,
                 publicUserId);
-
         var address = addressService.getAddressByPublicId(publicAddressId);
 
         model.addAttribute("publicUserId", publicUserId);
@@ -113,7 +111,7 @@ public class AdminController {
 
     @PatchMapping("/{publicUserId}/addresses/{publicAddressId}")
     public String updateSystemAddress(@PathVariable String publicUserId,
-                                      AddressUpdateDto addressUpdateDto, BindingResult bindingResult,
+                                      @Valid AddressUpdateDto addressUpdateDto, BindingResult bindingResult,
                                       @PathVariable String publicAddressId, Model model,
                                       RedirectAttributes redirectAttributes) {
         log.debug(
@@ -208,27 +206,89 @@ public class AdminController {
         return "redirect:/api/admins/" + publicUserId + "/categories";
     }
 
+    @GetMapping("/{publicUserId}/products")
+    public String searchProducts(@PathVariable String publicUserId,
+                                 @RequestParam(required = false) List<String> publicCategoryIds,
+                                 @RequestParam(required = false) BigDecimal minPrice,
+                                 @RequestParam(required = false) BigDecimal maxPrice,
+                                 @Valid ProductParamDto productParamDto,
+                                 Model model, @ModelAttribute
+                                 ProductDto productDto) { // если все параметры null вернуть все товары постранично
+        log.debug("Received GET request to search products with parameters");
+        var products = productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
+                                                                   productMapper.toProductParamDetails(
+                                                                           productParamDto));
+        var categories = categoryService.getCategories();
+        model.addAttribute("categories", categories);
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("products", products);
+
+        return "admin/products";
+    }
+
+    @GetMapping("/{publicUserId}/products/{publicProductId}")
+    public String editProduct(@PathVariable String publicUserId,
+                              @ModelAttribute ProductUpdateDto productUpdateDto,
+                              @PathVariable String publicProductId, Model model) {
+        log.debug(
+                "Received GET request to edit product with id - {}, from user with id - {}",
+                publicProductId,
+                publicUserId);
+
+        var product = productService.getByPublicId(publicProductId);
+        var categories = categoryService.getCategories();
+
+        model.addAttribute("categories", categories);
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("product", product);
+        return "admin/edit-product";
+    }
+
     @PostMapping("/{publicUserId}/products")
     @ResponseStatus(HttpStatus.CREATED)
-    public ProductDetails addProduct(@PathVariable String publicUserId, @Valid @RequestBody ProductDto productDto) {
+    public String addProduct(@PathVariable String publicUserId, @Valid ProductDto productDto,
+                             BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received POST request to add product");
-        return productService.createProduct(publicUserId, productMapper.toProductDetails(productDto));
+        if (bindingResult.hasErrors()) {
+            var categories = categoryService.getCategories();
+            model.addAttribute("categories", categories);
+            return "admin/products";
+        }
+        productService.createProduct(publicUserId, productMapper.toProductDetails(productDto));
+        redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УСПЕШНО ДОБАВЛЕН");
+
+        return "redirect:/api/admins/" + publicUserId + "/products";
     }
 
     @PatchMapping("/{publicUserId}/products/{publicProductId}")
-    public ProductDetails updateProduct(@PathVariable String publicUserId, @PathVariable String publicProductId,
-                                        @Valid @RequestBody
-                                        ProductUpdateDto productUpdateDto) {
+    public String updateProduct(@PathVariable String publicUserId, @PathVariable String publicProductId,
+                                ProductUpdateDto productUpdateDto, BindingResult bindingResult,
+                                RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received PATCH request to update product with id = {}", publicProductId);
-        return productService.updateProduct(publicUserId, productMapper.toProductUpdateDetails(productUpdateDto),
-                                            publicProductId);
+
+        if (bindingResult.hasErrors()) {
+            var product = productService.getByPublicId(publicProductId);
+            var categories = categoryService.getCategories();
+            model.addAttribute("categories", categories);
+            model.addAttribute("product", product);
+            return "admin/edit-product";
+        }
+        var categories = categoryService.getCategories();
+        model.addAttribute("categories", categories);
+        productService.updateProduct(publicUserId, productMapper.toProductUpdateDetails(productUpdateDto),
+                                     publicProductId);
+        redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УСПЕШНО ОТРЕДАКТИРОВАН");
+        return "redirect:/api/admins/" + publicUserId + "/products";
     }
 
     @DeleteMapping("/{publicUserId}/products/{publicProductId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProduct(@PathVariable String publicUserId, @PathVariable String publicProductId) {
+    public String deleteProduct(@PathVariable String publicUserId, @PathVariable String publicProductId,
+                                RedirectAttributes redirectAttributes) {
         log.debug("Received DELETE request to delete product with id = {}", publicProductId);
         productService.deleteProduct(publicUserId, publicProductId);
+        redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УСПЕШНО УДАЛЕН");
+
+        return "redirect:/api/admins/" + publicUserId + "/products";
     }
 
     @PatchMapping("/{publicUserId}/orders/{publicOrderId}")
@@ -238,10 +298,9 @@ public class AdminController {
         log.debug(
                 "Received PATCH request to change order status, with id - {}, orderStatusName - {}, paymentStatusName -{}",
                 publicOrderId, orderStatusName, paymentStatusName);
-        var order = orderService.changeOrderStatus(publicUserId, publicOrderId, orderStatusName, paymentStatusName);
-
+        orderService.changeOrderStatus(publicUserId, publicOrderId, orderStatusName, paymentStatusName);
         model.addAttribute("publicUserId", publicUserId);
-        model.addAttribute("order", order); // для чего
+
         return "redirect:/api/admins/" + publicUserId + "/orders";
     }
 

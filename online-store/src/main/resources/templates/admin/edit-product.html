@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Редактирование товара')}">
+</head>
+
+<body>
+<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+<div class="welcome-container">
+    <h1>Редактирование товара <span th:text="${product.publicProductId}"></span></h1>
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+    <table>
+        <form th:action="@{'/api/admins/' + ${publicUserId} + '/products/' + ${product.publicProductId}}"
+              method="post" th:object="${productUpdateDto}">
+            <input type="hidden" name="_method" value="patch"/>
+            <h3>Редактировать существующий товар</h3>
+
+            <div class="mb-3">
+                <label class="form-label" for="name">Название товара</label>
+                <input type="text" class="form-control" th:field="*{name}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="price">Стоимость товара, руб</label>
+                <input type="number" step="0.01" class="form-control" th:field="*{price}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('price')}"
+                      th:errors="*{price}"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Категория:</label>
+                <select name="categoryPublicId" class="form-select">
+                    <option value="">-- Выберите категорию --</option>
+                    <option th:each="category : ${categories}"
+                            th:value="${category.publicCategoryId}"
+                            th:text="${category.name}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="stockQuantity">Количество, шт</label>
+                <input type="number" class="form-control" th:field="*{stockQuantity}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('stockQuantity')}"
+                      th:errors="*{stockQuantity}"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a th:href="@{'/api/admins/' + ${publicUserId} + '/products'}"
+                   class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </table>
+    <div class="mt-4">
+        <h5>Информация о товаре:</h5>
+        <p><strong>Бренд товара:</strong>
+            <span th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
+                        ? ''
+                        : product.parameters.?[key == 'brand'][0].value}">
+
+            </span></p>
+        <p><strong>Название товара:</strong> <span th:text="${product.name} ?: 'Не указан'"></span></p>
+        <p><strong>Стоимость товара:</strong> <span th:text="${product.price} + ' ₽'"></span></p>
+        <p><strong>Категория товара:</strong>
+            <span th:each="category : ${categories}"
+                  th:if="${category.publicCategoryId == product.categoryPublicId}"
+                  th:text="${category.name}">
+            </span>
+        <p><strong>Количество товара:</strong> <span th:text="${product.stockQuantity} + ' шт.'"></span></p>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

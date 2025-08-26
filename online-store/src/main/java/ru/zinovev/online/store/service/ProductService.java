@@ -30,8 +30,8 @@ public class ProductService {
                                         @NonNull String publicProductId) {
         userService.findUserDetails(publicUserId);
         getByPublicId(publicProductId);
-        if (productUpdateDetails.categoryPublicId() != null) {
-            categoryService.getCategoryByPublicId(productUpdateDetails.categoryPublicId());
+        if (productUpdateDetails.publicCategoryId() != null) { // нужна ли проверка, если ниже буду опять это делать
+            categoryService.getCategoryByPublicId(productUpdateDetails.publicCategoryId());
         }
         return productDaoService.updateProduct(productUpdateDetails, publicProductId);
     }

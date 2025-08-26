@@ -39,17 +39,17 @@
       <td th:text="${address.street}">Невский проспект</td>
       <td th:text="${address.houseNumber}">1</td>
       <td>
-        <a th:href="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
-           class="btn btn-sm btn-primary">
-          <i class="bi bi-pencil"></i> Редактировать
-        </a>
-        <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
-              method="post">
-          <input type="hidden" name="_method" value="delete" />
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-primary">Удалить</button>
-            </div>
-        </form>
+        <div class="d-flex gap-2 align-items-center">
+          <a th:href="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+             class="btn btn-sm btn-primary">
+            <i class="bi bi-pencil"></i> Редактировать
+          </a>
+          <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+                method="post" class="m-0">
+            <input type="hidden" name="_method" value="delete" />
+            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+          </form>
+        </div>
       </td>
     </tr>
   </table>
@@ -108,6 +108,7 @@
                 th:text="${type}">
         </option>
       </select>
+
     </div>
 
     <div class="d-flex gap-2">

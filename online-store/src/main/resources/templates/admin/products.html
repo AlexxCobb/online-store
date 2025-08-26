@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Admin products')}">
+</head>
+<body>
+<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+<div class="welcome-container">
+    <h2>Товары</h2>
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+    <table>
+        <tr>
+            <th>Бренд</th>
+            <th>Название модели</th>
+            <th>Цвет</th>
+            <th>Стоимость, ₽</th>
+            <th>Вес, гр</th>
+            <th>Наличие, шт</th>
+            <th>Действия</th>
+        </tr>
+        <tr th:each="product : ${products}">
+            <td th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
+                        ? ''
+                        : product.parameters.?[key == 'brand'][0].value}">
+                Apple
+            </td>
+            <td th:text="${product.name}">Iphone</td>
+            <td th:text="${#lists.isEmpty(product.parameters.?[key == 'color'])
+                        ? ''
+                        : product.parameters.?[key == 'color'][0].value}">
+                Green
+            </td>
+            <td th:text="${product.price}">1000</td>
+            <td th:text="${product.weight}">240</td>
+            <td th:text="${product.stockQuantity}">10</td>
+            <td>
+                <div class="d-flex gap-2 align-items-center">
+                    <a th:href="@{'/api/admins/' + ${publicUserId} + '/products/' + ${product.publicProductId}}"
+                       class="btn btn-sm btn-primary">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <form th:action="@{'/api/admins/' + ${publicUserId} + '/products/' + ${product.publicProductId}}"
+                          method="post">
+                        <input type="hidden" name="_method" value="delete"/>
+                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table>
+        <form th:action="@{'/api/admins/' + ${publicUserId} + '/products'}"
+              method="post" th:object="${productDto}">
+            <h3>Добавить новый товар</h3>
+
+            <div class="mb-3">
+                <label class="form-label" for="name">Название товара</label>
+                <input type="text" class="form-control" th:field="*{name}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="price">Стоимость товара, руб</label>
+                <input type="number" step="0.01" class="form-control" th:field="*{price}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('price')}"
+                      th:errors="*{price}"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Категория:</label>
+                <select name="categoryPublicId" class="form-select">
+                    <option value="">-- Выберите категорию --</option>
+                    <option th:each="category : ${categories}"
+                            th:value="${category.publicCategoryId}"
+                            th:text="${category.name}">
+                    </option>
+                </select>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('categoryPublicId')}"
+                      th:errors="*{categoryPublicId}"></span>
+            </div>
+
+            <div class="mb-3">
+                <h5>Параметры товара</h5>
+
+                <div class="mb-2">
+                    <label for="brand" class="form-label">Бренд</label>
+                    <input type="text" class="form-control"
+                           th:field="*{parameters[0].value}"
+                           id="brand"/>
+                    <input type="hidden" th:field="*{parameters[0].key}" value="brand"/>
+                </div>
+
+                <div class="mb-2">
+                    <label for="color" class="form-label">Цвет</label>
+                    <input type="text" class="form-control"
+                           th:field="*{parameters[1].value}"
+                           id="color"/>
+                    <input type="hidden" th:field="*{parameters[1].key}" value="color"/>
+                </div>
+
+                <div class="mb-2">
+                    <label for="ram" class="form-label">Оперативная память, Gb</label>
+                    <input type="text" class="form-control"
+                           th:field="*{parameters[2].value}"
+                           id="ram"/>
+                    <input type="hidden" th:field="*{parameters[2].key}" value="ram"/>
+                </div>
+
+                <div class="mb-2">
+                    <label for="memory" class="form-label">Память, Gb</label>
+                    <input type="text" class="form-control"
+                           th:field="*{parameters[3].value}"
+                           id="memory"/>
+                    <input type="hidden" th:field="*{parameters[3].key}" value="memory"/>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="weight">Вес товара, гр</label>
+                <input type="number" step="0.01" class="form-control" th:field="*{weight}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('weight')}"
+                      th:errors="*{weight}"></span>
+            </div>
+            <div class="mb-3">
+                <label for="volume">Объем товара, см3</label>
+                <input type="number" step="0.01" class="form-control" th:field="*{volume}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('volume')}"
+                      th:errors="*{volume}"></span>
+            </div>
+            <div class="mb-3">
+                <label for="stockQuantity">Количество, шт</label>
+                <input type="number" class="form-control" th:field="*{stockQuantity}"/>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('stockQuantity')}"
+                      th:errors="*{stockQuantity}"></span>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Добавить товар</button>
+            </div>
+        </form>
+    </table>
+</div>
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>
