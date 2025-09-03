@@ -28,7 +28,8 @@ public record ProductDto(
         BigDecimal volume,
         @NotNull
         @PositiveOrZero
-        Integer stockQuantity
+        Integer stockQuantity,
+        String imagePath
 ) {
         public ProductDto {
                 if (parameters == null) {

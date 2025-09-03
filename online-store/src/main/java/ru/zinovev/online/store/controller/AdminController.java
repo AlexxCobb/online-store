@@ -262,7 +262,7 @@ public class AdminController {
 
     @PatchMapping("/{publicUserId}/products/{publicProductId}")
     public String updateProduct(@PathVariable String publicUserId, @PathVariable String publicProductId,
-                                ProductUpdateDto productUpdateDto, BindingResult bindingResult,
+                               @Valid ProductUpdateDto productUpdateDto, BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received PATCH request to update product with id = {}", publicProductId);
 

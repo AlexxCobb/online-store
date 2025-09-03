@@ -30,11 +30,6 @@ public class OrderService {
     public OrderDetails createOrder(@NonNull String publicUserId, @NonNull OrderDto orderDto) {
         var userDetails = userService.findUserDetails(publicUserId);
         var cartDetails = cartService.getUserCart(publicUserId);
-        var productIds = cartDetails.cartItems().stream().map(CartItemDetails::publicProductId).toList();
-        if (!productService.existProducts(productIds)) {
-            throw new NotFoundException("Products with ids - " + productIds
-                                                + " not found"); // нужна ли проверка/ определение наличия продукта, если его удалил админ (нужна более понятная обработка, какой продукт отсутствует)
-        }
         checkDeliveryMethodWithAddress(publicUserId, orderDto.publicAddressId(), orderDto.deliveryMethodName());
         return orderDaoService.createOrder(userDetails, cartDetails, orderDto);
     }

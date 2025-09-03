@@ -12,6 +12,7 @@
     </div>
     <table>
         <tr>
+            <th></th>
             <th>Бренд</th>
             <th>Название модели</th>
             <th>Цвет</th>
@@ -21,6 +22,10 @@
             <th>Действия</th>
         </tr>
         <tr th:each="product : ${products}">
+            <td>
+                <img th:src="@{${product.imagePath != null ? product.imagePath : '/images/WI-BI.png'}}"
+                     class="product-thumbnail"/>
+            </td>
             <td th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
                         ? ''
                         : product.parameters.?[key == 'brand'][0].value}">
@@ -143,12 +148,31 @@
                       th:if="${#fields.hasErrors('stockQuantity')}"
                       th:errors="*{stockQuantity}"></span>
             </div>
+            <div class="mb-3">
+                <label for="imagePath">Расположение изображения товара</label>
+                <input type="text" class="form-control" th:field="*{imagePath}"/>
+                <small class="form-text text-muted">
+                    Положите изображение в папку static/images/products/ и укажите путь относительно static
+                </small>
+                <span class="validationError"
+                      th:if="${#fields.hasErrors('imagePath')}"
+                      th:errors="*{imagePath}"></span>
+            </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Добавить товар</button>
             </div>
         </form>
     </table>
 </div>
+<style>
+    .product-thumbnail {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+</style>
 <footer th:replace="~{fragments/footer :: copy}"></footer>
 </body>
 </html>

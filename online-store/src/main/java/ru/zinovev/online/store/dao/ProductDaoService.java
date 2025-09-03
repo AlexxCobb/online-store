@@ -46,6 +46,7 @@ public class ProductDaoService {
                 .publicProductId(UUID.randomUUID().toString())
                 .name(productDetails.name())
                 .category(category)
+                .imagePath(productDetails.imagePath())
                 .price(productDetails.price())
                 .weight(productDetails.weight())
                 .volume(productDetails.volume())

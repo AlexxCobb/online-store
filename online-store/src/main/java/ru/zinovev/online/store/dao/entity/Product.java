@@ -64,6 +64,9 @@ public class Product {
     @Column(name = "product_stock_quantity")
     private Integer stockQuantity;
 
+    @Column(name = "image_path")
+    private String imagePath;
+
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : super.hashCode();
