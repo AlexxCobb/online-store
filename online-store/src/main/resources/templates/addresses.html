@@ -43,6 +43,76 @@
         </tr>
     </table>
 </div>
+
+<div class="welcome-container mt-4">
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">➕ Добавить новый адрес</h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{'/api/users/' + ${publicUserId} + '/addresses'}" method="post" th:object="${addressDto}">
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="country">Страна</label>
+                        <input type="text" class="form-control" id="country" th:field="*{country}"/>
+                        <span class="text-danger"
+                              th:if="${#fields.hasErrors('country')}"
+                              th:errors="*{country}"></span>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label" for="town">Город</label>
+                        <input type="text" class="form-control" id="town" th:field="*{town}"/>
+                        <span class="text-danger"
+                              th:if="${#fields.hasErrors('town')}"
+                              th:errors="*{town}"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="zipCode">Почтовый индекс</label>
+                        <input type="text" class="form-control" id="zipCode" th:field="*{zipCode}"/>
+                        <span class="text-danger"
+                              th:if="${#fields.hasErrors('zipCode')}"
+                              th:errors="*{zipCode}"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="street">Улица</label>
+                        <input type="text" class="form-control" id="street" th:field="*{street}"/>
+                        <span class="text-danger"
+                              th:if="${#fields.hasErrors('street')}"
+                              th:errors="*{street}"></span>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="houseNumber">Номер дома</label>
+                        <input type="text" class="form-control" id="houseNumber" th:field="*{houseNumber}"/>
+                        <span class="text-danger"
+                              th:if="${#fields.hasErrors('houseNumber')}"
+                              th:errors="*{houseNumber}"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="flatNumber">Номер квартиры (если есть)</label>
+                        <input type="text" class="form-control" id="flatNumber" th:field="*{flatNumber}"/>
+                        <span class="text-danger"
+                              th:if="${#fields.hasErrors('flatNumber')}"
+                              th:errors="*{flatNumber}"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">Добавить адрес</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <footer th:replace="~{fragments/footer :: copy}"></footer>
 </body>
 </html>

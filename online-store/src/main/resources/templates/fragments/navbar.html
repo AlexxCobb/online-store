@@ -47,32 +47,18 @@
                     </ul>
                 </li>
 
-            <li class="nav-item" th:unless="${#strings.startsWith(currentPath, '/api/admins')}">
-                <a class="nav-link"
-                   th:classappend="${currentPath.startsWith('/api/users/cart')} ? 'active'"
-                   th:href="@{/api/users/cart}">
-                    <i class="bi bi-cart me-1"></i> Корзина
-                    <span th:if="${cart != null and cart.totalItems > 0}"
-                          class="badge bg-danger rounded-pill ms-1"
-                          th:text="${cart.totalItems}">
-            </span>
-                </a>
-            </li>
+                <li class="nav-item" th:unless="${#strings.startsWith(currentPath, '/api/admins')}">
+                    <a class="nav-link"
+                       th:classappend="${currentPath.startsWith('/api/users/cart')} ? 'active'"
+                       th:href="@{/api/users/cart}">
+                        <i class="bi bi-cart me-1"></i> Корзина
+                        <span th:if="${cart != null and cart.cartItems.size() > 0}"
+                              class="badge bg-danger rounded-pill ms-1"
+                              th:text="${cart.totalQuantity}">
+                        </span>
+                    </a>
+                </li>
             </ul>
-
-            <form class="d-flex me-3" th:action="@{/search}" method="get">
-                <div class="input-group">
-                    <input class="form-control"
-                           type="search"
-                           name="query"
-                           placeholder="Поиск товаров..."
-                           th:value="${param.query}"
-                           aria-label="Search">
-                    <button class="btn btn-light" type="submit">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </nav>

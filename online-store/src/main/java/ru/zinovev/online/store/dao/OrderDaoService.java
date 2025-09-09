@@ -63,14 +63,7 @@ public class OrderDaoService {
         var productMap = productsList.stream()
                 .collect(Collectors.toMap(Product::getPublicProductId, Function.identity()));
 
-        var items = cart.getItems().stream().map(cartItem -> {
-            var product = productMap.get(cartItem.getProduct().getPublicProductId());
-            return OrderItem.builder()
-                    .quantity(cartItem.getQuantity())
-                    .priceAtPurchase(product.getPrice())
-                    .product(product)
-                    .build();
-        }).toList();
+
 
         var payMethod = paymentMethodRepository.getByName(orderDto.paymentMethodName());
         var deliveryMethod = deliveryMethodRepository.getByName(orderDto.deliveryMethodName());
@@ -86,10 +79,22 @@ public class OrderDaoService {
                 .paymentStatus(payStatus)
                 .orderStatus(orderStatus)
                 .build();
-        var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
-        var orderWithItems = order.toBuilder().items(updatedItems).build();
+        var items = cart.getItems().stream().map(cartItem -> {
+            var product = productMap.get(cartItem.getProduct().getPublicProductId());
+            return OrderItem.builder()
+                    .quantity(cartItem.getQuantity())
+                    .priceAtPurchase(product.getPrice())
+                    .product(product)
+                    .order(order)
+                    .build();
+        }).toList();
 
-        return orderMapper.toOrderDetails(orderRepository.save(orderWithItems));
+      //  var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
+        order.getItems().addAll(items);
+        var newOrd = orderRepository.save(order);
+        cartRepository.delete(cart);
+
+        return orderMapper.toOrderDetails(newOrd);
     }
 
     public List<OrderShortDetails> getUserOrders(String publicUserId) {
@@ -126,10 +131,9 @@ public class OrderDaoService {
         var savedOrder = orderRepository.save(updatedOrder.build());
         if (orderStatusName.equals(OrderStatusName.DELIVERED) && !OrderStatusName.DELIVERED.equals(
                 order.getOrderStatus().getName())) {
-            statisticDaoService.createStatistic(savedOrder);
+            statisticDaoService.createStatistic(savedOrder); //статистика, проверки
         }
-        if (orderStatusName.equals(OrderStatusName.CANCELLED) && OrderStatusName.DELIVERED.equals(
-                order.getOrderStatus().getName())) {
+        if (orderStatusName.equals(OrderStatusName.CANCELLED)) {
             statisticDaoService.cancelStatistic(savedOrder);
             productDaoService.returnProductsToWarehouse(order.getItems());
         }

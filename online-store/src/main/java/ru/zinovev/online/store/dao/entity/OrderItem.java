@@ -41,4 +41,18 @@ public class OrderItem {
 
     @Column(name = "price_at_purchase")
     private BigDecimal priceAtPurchase;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof OrderItem orderItem))
+            return false;
+        return id != null && id.equals(orderItem.id);
+    }
 }

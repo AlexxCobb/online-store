@@ -31,6 +31,7 @@ import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
+import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
@@ -175,9 +176,16 @@ public class AdminController {
             model.addAttribute("categories", categories);
             return "admin/categories";
         }
-        categoryService.createCategory(publicUserId, categoryMapper.toCategoryDetails(categoryDto));
-        redirectAttributes.addFlashAttribute("successMessage", "КАТЕГОРИЯ УСПЕШНО ДОБАВЛЕНА");
+        try {
+            categoryService.createCategory(publicUserId, categoryMapper.toCategoryDetails(categoryDto));
+        } catch (BadRequestException e) {
+            var categories = categoryService.getCategories();
+            model.addAttribute("categories", categories);
+            model.addAttribute("errorMessage", "КАТЕГОРИЯ " + categoryDto.name() + " УЖЕ СУЩЕСТВУЕТ");
+            return "admin/categories";
+        }
 
+        redirectAttributes.addFlashAttribute("successMessage", "КАТЕГОРИЯ УСПЕШНО ДОБАВЛЕНА");
         return "redirect:/api/admins/" + publicUserId + "/categories";
     }
 
@@ -262,7 +270,7 @@ public class AdminController {
 
     @PatchMapping("/{publicUserId}/products/{publicProductId}")
     public String updateProduct(@PathVariable String publicUserId, @PathVariable String publicProductId,
-                               @Valid ProductUpdateDto productUpdateDto, BindingResult bindingResult,
+                                @Valid ProductUpdateDto productUpdateDto, BindingResult bindingResult,
                                 RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received PATCH request to update product with id = {}", publicProductId);
 

@@ -4,36 +4,120 @@
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: main-navbar}"></div>
-<div class="welcome-container">
-<h1>Товары</h1>
-<table>
-    <tr>
-        <th>Бренд</th>
-        <th>Название модели</th>
-        <th>Цвет</th>
-        <th>Стоимость, ₽</th>
-        <th>Вес, гр</th>
-        <th>Наличие</th>
-    </tr>
-    <tr th:each="product : ${products}">
-        <td th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
-                        ? ''
-                        : product.parameters.?[key == 'brand'][0].value}">
-            Apple
-        </td>
-        <td th:text="${product.name}">Iphone</td>
-        <td th:text="${#lists.isEmpty(product.parameters.?[key == 'color'])
-                        ? ''
-                        : product.parameters.?[key == 'color'][0].value}">
-            Green
-        </td>
-        <td th:text="${product.price}">1000</td>
-        <td th:text="${product.weight}">240</td>
-        <td th:text="${product.stockQuantity}">10</td>
-    </tr>
-</table>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-8">Фильтры</h5>
+    </div>
+    <div class="card-body ">
+        <form th:action="@{/api/users/products}" method="get" class="row g-3" th:object="${productParamDto}">
+
+            <div class="col-md-3">
+                <label class="form-label">Бренд</label>
+                <div th:each="brand : ${brandValues}" class="form-check">
+                    <input class="form-check-input" type="checkbox" th:field="*{brand}"
+                           th:value="${brand}" th:id="'brand-' + ${brandStat.index}">
+                    <label class="form-check-label" th:text="${brand}" th:for="'brand-' + ${brandStat.index}"></label>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Цвет</label>
+                <div th:each="color : ${colorValues}" class="form-check">
+                    <input class="form-check-input" type="checkbox" th:field="*{color}"
+                           th:value="${color}" th:id="'color-' + ${colorStat.index}">
+                    <label class="form-check-label" th:text="${color}" th:for="'color-' + ${colorStat.index}"></label>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Оперативная память</label>
+                <div th:each="ram : ${ramValues}" class="form-check">
+                    <input class="form-check-input" type="checkbox" th:field="*{ram}"
+                           th:value="${ram}" th:id="'ram-' + ${ramStat.index}">
+                    <label class="form-check-label" th:text="${ram}" th:for="'ram-' + ${ramStat.index}"></label>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Память</label>
+                <div th:each="memory : ${memoryValues}" class="form-check">
+                    <input class="form-check-input" type="checkbox" th:field="*{memory}"
+                           th:value="${memory}" th:id="'memory-' + ${memoryStat.index}">
+                    <label class="form-check-label" th:text="${memory}" th:for="'memory-' + ${memoryStat.index}"></label>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Применить фильтры</button>
+                <a th:href="@{/api/users/products}" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+<div th:if="${successMessage}" class="alert alert-success">
+    <span th:text="${successMessage}"></span>
+</div>
+<div th:if="${errorMessage}" class="alert alert-danger">
+    <span th:text="${errorMessage}"></span>
 </div>
 
-</body>
+<div class="container-fluid mt-2">
+    <div class="row">
+        <div class="col-lg-7">
+            <h1>Товары</h1>
+
+            <div class="row">
+                <div th:each="product : ${products}" class="col-md-8 col-lg-8 mb-4 col-xl-3">
+                    <div class="card h-100 product-card">
+                        <img th:src="@{${product.imagePath != null ? product.imagePath : '/images/WI-BI.png'}}"
+                             class="card-img-top shop-image"
+                             alt="Product image">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+                            <p class="card-text">
+                                <strong>Бренд:</strong>
+                                <span th:text="${#lists.isEmpty(product.parameters.?[key == 'brand']) ?
+                                              'Не указан' : product.parameters.?[key == 'brand'][0].value}">
+                                </span>
+                            </p>
+                            <p class="card-text">
+                                <strong>Цвет:</strong>
+                                <span th:text="${#lists.isEmpty(product.parameters.?[key == 'color']) ?
+                                              'Не указан' : product.parameters.?[key == 'color'][0].value}">
+                                </span>
+                            </p>
+                            <p class="card-text">
+                                <strong>Цена:</strong>
+                                <span th:text="${#numbers.formatDecimal(product.price, 1, 2)} + ' ₽'"></span>
+                            </p>
+                            <p class="card-text">
+                                <strong>В наличии:</strong>
+                                <span th:text="${product.stockQuantity} + ' шт.'"></span>
+                            </p>
+
+                            <!-- Форма добавления в корзину -->
+                            <div th:if="${product.stockQuantity > 0}">
+                                <form th:action="@{'/api/users/cart'}" method="post" class="add-to-cart-form">
+                                    <input type="hidden" name="publicProductId" th:value="${product.publicProductId}">
+                                    <div class="input-group mb-2">
+                                        <input type="number" name="quantity" class="form-control"
+                                               value="1" min="1" th:attr="max=${product.stockQuantity}">
+                                        <button type="submit" class="btn btn-success">В корзину</button>
+                                    </div>
+                                </form>
+                            </div>
+                            <div th:if="${product.stockQuantity <= 0}" class="text-danger">
+                                Нет в наличии
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
 </html>

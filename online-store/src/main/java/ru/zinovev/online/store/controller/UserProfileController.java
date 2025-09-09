@@ -32,21 +32,18 @@ public class UserProfileController {
     }
 
     @PatchMapping("/{publicUserId}")
-    public UserDetails updateUser(@PathVariable String publicUserId, @Valid @RequestBody
-    UserUpdateDto userUpdateDto) {
+    public UserDetails updateUser(@PathVariable String publicUserId, @Valid UserUpdateDto userUpdateDto) {
         log.debug("Received PATCH request to update user with id = {}", publicUserId);
         return userService.updateUser(publicUserId, userUpdateDto);
     }
 
     @PatchMapping("/{publicUserId}/password")
-    public UserDetails changePassword(@PathVariable String publicUserId, @Valid @RequestBody
-    ChangePasswordDto changePasswordDto) {
+    public UserDetails changePassword(@PathVariable String publicUserId, @Valid ChangePasswordDto changePasswordDto) {
         log.debug("Received PATCH request to update user password with id = {}", publicUserId);
         return userService.changePassword(publicUserId, changePasswordDto);
     }
 
     @DeleteMapping("/{publicUserId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable String publicUserId) {
         log.debug("Received DELETE request to delete user with id = {}", publicUserId);
         userService.deleteUser(publicUserId);

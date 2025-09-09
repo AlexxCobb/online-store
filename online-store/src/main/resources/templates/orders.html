@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Orders')}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+
+<div class="welcome-container">
+  <div th:if="${orders == null or orders.empty}">
+    <p>Еще нет сделанных заказов</p>
+  </div>
+  <h1>Заказы</h1>
+  <table >
+    <tr>
+      <th>Email клиента</th>
+      <th>Способ доставки</th>
+      <th>Статус оплаты</th>
+      <th>Статус заказы</th>
+      <th>Дата</th>
+    </tr>
+    <tr th:each="order : ${orders}">
+      <td th:text="${order.userDetails.email}"></td>
+      <td th:text="${order.deliveryMethodName.displayValue}"></td>
+      <td th:text="${order.paymentStatusName}"></td>
+      <td th:text="${order.orderStatusName}"></td>
+      <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
+    </tr>
+  </table>
+</div>
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

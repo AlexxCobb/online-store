@@ -11,7 +11,6 @@ import ru.zinovev.online.store.dao.entity.enums.OrderStatusName;
 import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
-import ru.zinovev.online.store.model.CartItemDetails;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
 
@@ -68,14 +67,14 @@ public class OrderService {
                 }
             }
             case PARCEL_LOCKER -> {
-                if (!addressService.existSystemAddress(publicUserId, AddressTypeName.PARCEL_LOCKER)) {
+                if (!addressService.existSystemAddress(publicAddressId, AddressTypeName.PARCEL_LOCKER)) {
                     throw new BadRequestException(
                             "The selected address does not match the selected delivery method - "
                                     + name);
                 }
             }
             case BY_SELF -> {
-                if (!addressService.existSystemAddress(publicUserId, AddressTypeName.STORE_ADDRESS)) {
+                if (!addressService.existSystemAddress(publicAddressId, AddressTypeName.STORE_ADDRESS)) {
                     throw new BadRequestException(
                             "The selected address does not match the selected delivery method - "
                                     + name);

@@ -7,6 +7,7 @@ public record CartDetails(
         String publicCartId,
         String publicUserId,
         List<CartItemDetails> cartItems,
-        BigDecimal totalPrice
+        BigDecimal totalPrice,
+        Integer totalQuantity
 ) {
 }

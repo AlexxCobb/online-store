@@ -36,9 +36,21 @@ public class CartService {
         return cartDaoService.addProductToCart(cart, publicProductId, quantity);
     }
 
+    public void updateCartWithRegisteredUser(String publicUserId, String publicCartId){
+        userService.findUserDetails(publicUserId);
+      cartDaoService.updateCartWithRegisteredUser(publicUserId,publicCartId);
+    }
+
     public CartDetails getUserCart(String publicUserId) {
         userService.findUserDetails(publicUserId);
         return cartDaoService.findUserCartDetails(publicUserId)
                 .orElseThrow(() -> new NotFoundException("User cart with user id - " + publicUserId + " not found"));
+    }
+
+    public CartDetails getCart(String publicCartId, String publicUserId) {
+        if (publicUserId != null) {
+            getUserCart(publicUserId);
+        }
+        return cartDaoService.findCartDetails(publicCartId).orElse(null);
     }
 }

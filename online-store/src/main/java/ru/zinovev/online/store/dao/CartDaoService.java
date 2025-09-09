@@ -59,7 +59,7 @@ public class CartDaoService {
     }
 
     @Transactional
-    public CartDetails getOrCreateCart(String publicUserId, String cartId) {
+    public CartDetails getOrCreateCart(String publicUserId, String publicCartId) {
         if (publicUserId != null) {
             var user = userDaoService.getByPublicId(publicUserId);
             var userCart = cartRepository.findByUserPublicUserId(publicUserId)
@@ -69,7 +69,7 @@ public class CartDaoService {
                                                                  .build()));
             return cartMapper.toCartDetails(userCart);
         } else {
-            var guestCart = cartRepository.findByPublicCartId(cartId)
+            var guestCart = cartRepository.findByPublicCartId(publicCartId)
                     .orElseGet(() -> cartRepository.save(Cart.builder()
                                                                  .publicCartId(UUID.randomUUID().toString())
                                                                  .build()));
@@ -77,6 +77,23 @@ public class CartDaoService {
             return cartMapper.toCartDetails(guestCart);
         }
     }
+
+    @Transactional
+    public void updateCartWithRegisteredUser(String publicUserId, String publicCartId) {
+        var user = userDaoService.getByPublicId(publicUserId);
+        var cart = cartRepository.findByPublicCartId(publicCartId)
+                .orElseThrow(() -> new NotFoundException("Cart with id - " + publicCartId + " not found"));
+        var cartWithUser = cart.toBuilder()
+                .user(user)
+                .build();
+        cartRepository.save(cartWithUser);
+    }
+
+    public Optional<CartDetails> findCartDetails(String publicCartId) {
+        return cartRepository.findByPublicCartId(publicCartId)
+                .map(cartMapper::toCartDetails);
+    }
+
 
     public Optional<CartDetails> findUserCartDetails(String publicUserId) {
         return cartRepository.findByUserPublicUserId(publicUserId).map(cartMapper::toCartDetails);

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Edit-Cart')}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+
+<div class="welcome-container">
+    <h2>Товары в корзине</h2>
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <table>
+        <tr>
+            <th></th>
+            <th>Бренд</th>
+            <th>Название модели</th>
+            <th>Цвет</th>
+            <th>Количество, шт</th>
+            <th>Стоимость, ₽</th>
+        </tr>
+        <tr th:each="cartItem : ${cart.cartItems}">
+            <td>
+                <img th:src="@{${cartItem.imagePath != null ? cartItem.imagePath : '/images/WI-BI.png'}}"
+                     class="product-thumbnail"/>
+            </td>
+            <td th:text="${cartItem.brand}"></td>
+            <td th:text="${cartItem.name}"></td>
+            <td th:text="${cartItem.color}"></td>
+            <td th:text="${cartItem.quantity}"></td>
+            <td th:text="${cartItem.price}"></td>
+        </tr>
+    </table>
+</div>
+
+<div class="welcome-container p">
+    <table>
+        <tr>
+            <th>Общее количество, шт</th>
+            <th>Общая стоимость, руб</th>
+        </tr>
+        <tr>
+            <td th:text="${cart.totalQuantity}"></td>
+            <td th:text="${cart.totalPrice}"></td>
+        </tr>
+    </table>
+</div>
+
+<div class="welcome-container">
+    <table>
+        <form th:action="@{'/api/users/' + ${publicUserId} + '/orders'}"
+              method="post">
+
+            <div class="mb-3">
+                <label class="form-label ">Выберите способ оплаты:</label>
+                <div class="input-group">
+                    <select name="paymentMethodName" class="form-select">
+                        <option th:each="paymentMethod : ${paymentMethods}"
+                                th:value="${paymentMethod}"
+                                th:text="${paymentMethod.displayValue}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Выберите способ доставки:</label>
+                <select name="deliveryMethodName" class="form-select">
+                    <option th:each="deliveryMethod : ${deliveryMethods}"
+                            th:value="${deliveryMethod}"
+                            th:text="${deliveryMethod.displayValue}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Выберите адрес доставки:</label>
+
+                <div class="card mb-3" th:if="${not userAddresses.empty}">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">🏠 Мои адреса</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="address : ${userAddresses}" class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="publicAddressId"
+                                   th:id="${'address_' + address.publicAddressId}"
+                                   th:value="${address.publicAddressId}">
+                            <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber + (address.flatNumber != null ? ', кв. ' + address.flatNumber : '')}"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Пункты выдачи -->
+                <div class="card mb-3" th:if="${not parcelAddresses.empty}">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">📦 Пункты выдачи</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="address : ${parcelAddresses}" class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="publicAddressId"
+                                   th:id="${'address_' + address.publicAddressId}"
+                                   th:value="${address.publicAddressId}">
+                            <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Адреса магазинов -->
+                <div class="card mb-3" th:if="${not storeAddresses.empty}">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">🏬 Магазины</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="address : ${storeAddresses}" class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="publicAddressId"
+                                   th:id="${'address_' + address.publicAddressId}"
+                                   th:value="${address.publicAddressId}">
+                            <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a th:href="@{'/api/users/cart'}"
+                   class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </table>
+</div>
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

@@ -56,7 +56,7 @@ public class AddressService {
 
     public AddressDetails getAddressByPublicId(@NonNull String publicAddressId) {
         return addressDaoService.findByPublicId(publicAddressId)
-                .orElseThrow(() -> new NotFoundException("Address with id - " + publicAddressId + " + not found"));
+                .orElseThrow(() -> new NotFoundException("Address with id - " + publicAddressId + " not found"));
     }
 
     public List<AddressDetails> getAddresses(@NonNull String publicUserId, AddressTypeName name,
