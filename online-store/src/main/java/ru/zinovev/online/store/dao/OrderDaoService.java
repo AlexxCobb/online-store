@@ -62,9 +62,6 @@ public class OrderDaoService {
         var productsList = productDaoService.updateProductsQuantity(products);
         var productMap = productsList.stream()
                 .collect(Collectors.toMap(Product::getPublicProductId, Function.identity()));
-
-
-
         var payMethod = paymentMethodRepository.getByName(orderDto.paymentMethodName());
         var deliveryMethod = deliveryMethodRepository.getByName(orderDto.deliveryMethodName());
         var payStatus = paymentStatusRepository.getByName(PaymentStatusName.PENDING);
@@ -89,7 +86,7 @@ public class OrderDaoService {
                     .build();
         }).toList();
 
-      //  var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
+        //  var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
         order.getItems().addAll(items);
         var newOrd = orderRepository.save(order);
         cartRepository.delete(cart);
@@ -121,6 +118,7 @@ public class OrderDaoService {
                                           OrderStatusName orderStatusName, PaymentStatusName paymentStatusName) {
         var order = orderRepository.findByPublicOrderId(publicOrderId)
                 .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
+        var existedOrderStatus = order.getOrderStatus().getName();
         var orderStatus = orderStatusRepository.getByName(orderStatusName);
         var updatedOrder = order.toBuilder().orderStatus(orderStatus);
 
@@ -130,7 +128,7 @@ public class OrderDaoService {
         }
         var savedOrder = orderRepository.save(updatedOrder.build());
         if (orderStatusName.equals(OrderStatusName.DELIVERED) && !OrderStatusName.DELIVERED.equals(
-                order.getOrderStatus().getName())) {
+                existedOrderStatus)) {
             statisticDaoService.createStatistic(savedOrder); //статистика, проверки
         }
         if (orderStatusName.equals(OrderStatusName.CANCELLED)) {
