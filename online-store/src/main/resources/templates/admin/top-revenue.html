@@ -19,10 +19,10 @@
             <th>Выручка по заказу, руб.</th>
         </tr>
         <tr th:each="revenue : ${topRevenue}">
-            <td th:text="${revenue.publicOrderId}">UUId Id</td>
-            <td th:text="${revenue.name}">DELIVERED</td>
+            <td th:text="${revenue.publicOrderId}"></td>
+            <td th:text="${revenue.name}"></td>
             <td th:text="${#temporals.format(revenue.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
-            <td th:text="${revenue.totalOrderSpent}">1000</td>
+            <td th:text="${revenue.totalOrderSpent}"></td>
         </tr>
         <tr>
             <td colspan="3"><strong>Общая выручка:</strong></td>

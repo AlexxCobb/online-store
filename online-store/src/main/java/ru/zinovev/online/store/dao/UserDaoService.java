@@ -58,8 +58,8 @@ public class UserDaoService {
         return userMapper.toUserDetails(userRepository.save(updateUser));
     }
 
-    public Optional<UserDetails> findByEmailIgnoreCase(UserRegistrationDto userRegistrationDto) {
-        return userRepository.findByEmailIgnoreCase(userRegistrationDto.email()).map(userMapper::toUserDetails);
+    public Boolean findByEmailIgnoreCase(String email) {
+        return userRepository.existsByEmailIgnoreCase(email);
     }
 
     public Optional<UserDetails> findByPublicId(String publicUserId) {

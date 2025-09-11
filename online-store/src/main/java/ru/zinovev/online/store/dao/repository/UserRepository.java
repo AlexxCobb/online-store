@@ -8,12 +8,10 @@ import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findByEmailIgnoreCase(String email);
+    boolean existsByEmailIgnoreCase(String email);
 
     Optional<User> findByPublicUserId(String publicUserId);
 
     @Query("select u.passwordHash from User u where u.publicUserId = :publicUserId")
     Optional<String> findPasswordHashByPublicId(String publicUserId);
-
-
 }

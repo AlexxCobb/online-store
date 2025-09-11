@@ -33,6 +33,11 @@ public class UserRegistrationController {
         if (!userRegistrationDto.password().equals(userRegistrationDto.confirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "error.userRegistrationDto", "Пароли не совпадают");
         }
+        if (userService.checkExistEmail(userRegistrationDto.email())) {
+            bindingResult.rejectValue("confirmPassword", "error.userRegistrationDto",
+                                      "Пользователь с таким email - " + userRegistrationDto.email()
+                                              + " уже существует.");
+        }
         if (bindingResult.hasErrors()) {
             return "add-user";
         }
@@ -41,6 +46,7 @@ public class UserRegistrationController {
         redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ " + user.name() + " " + user.lastname()
                 + " УСПЕШНО ЗАРЕГИСТРИРОВАН");
         redirectAttributes.addFlashAttribute("publicUserId", user.publicUserId());
+
         return "redirect:/api/users/cart"; //login
     }
 

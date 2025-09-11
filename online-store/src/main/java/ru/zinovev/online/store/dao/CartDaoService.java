@@ -98,4 +98,25 @@ public class CartDaoService {
     public Optional<CartDetails> findUserCartDetails(String publicUserId) {
         return cartRepository.findByUserPublicUserId(publicUserId).map(cartMapper::toCartDetails);
     }
+
+    @Transactional
+    public CartDetails removeItemFromCart(CartDetails cartDetails, String publicProductId) {
+        var cart = cartRepository.findByPublicCartId(cartDetails.publicCartId())
+                .orElseThrow(
+                        () -> new NotFoundException("Cart with id - " + cartDetails.publicCartId() + " not found"));
+        var item = cart.getItems()
+                .stream()
+                .filter(cartItem -> cartItem.getProduct().getPublicProductId().equals(publicProductId))
+                .findFirst();
+
+        item.ifPresent(cartItem -> cart.getItems().remove(cartItem));
+        return cartMapper.toCartDetails(cartRepository.save(cart));
+    }
+
+    @Transactional
+    public void clearCart(String publicCartId) {
+        var cart = cartRepository.findByPublicCartId(publicCartId)
+                .orElseThrow(() -> new NotFoundException("Cart with id - " + publicCartId + " not found"));
+        cartRepository.delete(cart);
+    }
 }
