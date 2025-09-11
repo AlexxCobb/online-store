@@ -11,6 +11,7 @@ public record ProductDetails(
         Set<ParametersDetails> parameters,
         BigDecimal weight,
         BigDecimal volume,
-        Integer stockQuantity
+        Integer stockQuantity,
+        String imagePath
 ) {
 }

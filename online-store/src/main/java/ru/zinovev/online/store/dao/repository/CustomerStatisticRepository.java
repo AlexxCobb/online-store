@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import ru.zinovev.online.store.dao.entity.CustomerStatistic;
 import ru.zinovev.online.store.dao.entity.CustomerView;
+import ru.zinovev.online.store.dao.entity.Order;
 import ru.zinovev.online.store.dao.entity.RevenueView;
 
 import java.time.OffsetDateTime;
@@ -33,6 +34,5 @@ public interface CustomerStatisticRepository extends JpaRepository<CustomerStati
             + "ORDER BY o.createdAt DESC")
     List<RevenueView> findRevenueByPeriod(Pageable page, OffsetDateTime dateFrom, OffsetDateTime dateTo);
 
-    @Query("DELETE FROM CustomerStatistic сs WHERE сs.order.publicOrderId = :publicOrderId")
-    void deleteByOrderId(String publicOrderId);
+    void deleteByOrder(Order order);
 }

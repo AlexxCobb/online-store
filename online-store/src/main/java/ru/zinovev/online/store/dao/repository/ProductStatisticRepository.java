@@ -3,6 +3,7 @@ package ru.zinovev.online.store.dao.repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import ru.zinovev.online.store.dao.entity.Order;
 import ru.zinovev.online.store.dao.entity.ProductStatistic;
 import ru.zinovev.online.store.dao.entity.ProductView;
 
@@ -20,6 +21,5 @@ public interface ProductStatisticRepository extends JpaRepository<ProductStatist
             "ORDER BY SUM(ps.purchaseCount) DESC")
     List<ProductView> findTopProductViews(Pageable pageable);
 
-    @Query("DELETE FROM ProductStatistic ps WHERE ps.order.publicOrderId = :publicOrderId")
-    void deleteByOrderId(String publicOrderId);
+    void deleteByOrder(Order order);
 }

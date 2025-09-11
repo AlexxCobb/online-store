@@ -14,6 +14,9 @@ public class BirthDateValidator implements ConstraintValidator<ValidBirthDate, L
 
     @Override
     public boolean isValid(LocalDate value, ConstraintValidatorContext context) {
+        if (value == null) {
+            return true;
+        }
         if (value.isBefore(startBirthDate)) {
             buildValidationError(context, "Birth date cannot be earlier than 1930");
             return false;

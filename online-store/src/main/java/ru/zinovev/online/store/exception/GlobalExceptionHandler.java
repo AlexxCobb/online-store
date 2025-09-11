@@ -16,31 +16,31 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ModelAndView handleInternalServerError(Exception ex, Model model) {
         ModelAndView modelAndView = new ModelAndView();
-        modelAndView.setViewName("error/error"); // Шаблон Thymeleaf для страницы ошибки
-        modelAndView.addObject("errorMessage", "Произошла непредвиденная ошибка: " + ex.getMessage());
+        modelAndView.setViewName("error/error");
+        modelAndView.addObject("error", "Ошибка запроса");
+        modelAndView.addObject("message", ex.getMessage());
         log.error("Something unexpected happened. Please try again later. {}", ex.getMessage(), ex);
         return modelAndView;
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ModelAndView handleNotFoundException(NotFoundException ex, Model model) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("error/404");
-        modelAndView.addObject("errorMessage", ex.getMessage());
+        modelAndView.addObject("error", "Ошибка запроса");
+        modelAndView.addObject("message", ex.getMessage());
         log.warn("The requested resource was not found. {}", ex.getMessage(), ex);
         return modelAndView;
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ModelAndView handleBadRequestException(BadRequestException ex, Model model) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("error/400");
-        modelAndView.addObject("errorMessage", ex.getMessage());
+        modelAndView.addObject("error", "Ошибка запроса");
+        modelAndView.addObject("message", ex.getMessage());
         log.warn("Bad Request with invalid data. {}", ex.getMessage(), ex);
         return modelAndView;
     }
@@ -50,7 +50,8 @@ public class GlobalExceptionHandler {
     public ModelAndView handleForbiddenException(InvalidPasswordException ex, Model model) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("error/403");
-        modelAndView.addObject("errorMessage", ex.getMessage());
+        modelAndView.addObject("error", "Ошибка запроса");
+        modelAndView.addObject("message", ex.getMessage());
         log.warn("Bad Request with invalid data. {}", ex.getMessage(), ex);
         return modelAndView;
     }

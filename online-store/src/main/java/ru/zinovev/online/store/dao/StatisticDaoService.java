@@ -56,8 +56,8 @@ public class StatisticDaoService {
 
     @Transactional(propagation = Propagation.MANDATORY)
     public void cancelStatistic(Order order) {
-        productStatisticRepository.deleteByOrderId(order.getPublicOrderId());
-        customerStatisticRepository.deleteByOrderId(order.getPublicOrderId());
+        productStatisticRepository.deleteByOrder(order);
+        customerStatisticRepository.deleteByOrder(order);
     }
 
     public List<TopProductDetails> findTopProducts(Pageable pageable) {

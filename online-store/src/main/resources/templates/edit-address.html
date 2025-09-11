@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Редактирование адреса')}">
+</head>
+
+<body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+
+<div class="welcome-container">
+  <div th:if="${successMessage}" class="alert alert-success">
+    <span th:text="${successMessage}"></span>
+  </div>
+  <h1>Редактирование адреса <span th:text="${address.publicAddressId}"></span></h1>
+  <table>
+    <form th:action="@{'/api/users/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+          method="post" th:object="${addressUpdateDto}">
+      <input type="hidden" name="_method" value="patch"/>
+      <h3>Редактировать существующий адрес</h3>
+
+      <div class="mb-3">
+        <label for="zipCode">Почтовый индекс</label>
+        <input type="text" class="form-control" th:field="*{zipCode}"/>
+        <span class="validationError"
+              th:if="${#fields.hasErrors('zipCode')}"
+              th:errors="*{zipCode}"></span>
+      </div>
+
+      <div class="mb-3">
+        <label for="street">Улица</label>
+        <input type="text" class="form-control" th:field="*{street}"/>
+        <span class="validationError"
+              th:if="${#fields.hasErrors('street')}"
+              th:errors="*{street}"></span>
+      </div>
+
+      <div class="mb-3">
+        <label for="houseNumber">Номер дома</label>
+        <input type="text" class="form-control" th:field="*{houseNumber}"/>
+        <span class="validationError"
+              th:if="${#fields.hasErrors('houseNumber')}"
+              th:errors="*{houseNumber}"></span>
+      </div>
+
+      <div class="mb-3">
+        <label for="flatNumber">Номер квартиры</label>
+        <input type="text" class="form-control" th:field="*{flatNumber}"/>
+        <span class="validationError"
+              th:if="${#fields.hasErrors('flatNumber')}"
+              th:errors="*{flatNumber}"></span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        <a th:href="@{'/api/users/' + ${publicUserId} + '/addresses'}"
+           class="btn btn-secondary">Отмена</a>
+      </div>
+    </form>
+  </table>
+  <div class="mt-4">
+    <h5>Информация об адресе:</h5>
+    <p><strong>Почтовый индекс:</strong><span th:text="${address.zipCode}"></span></p>
+    <p><strong>Улица:</strong> <span th:text="${address.street}"></span></p>
+    <p><strong>Номер дома:</strong> <span th:text="${address.houseNumber}"></span></p>
+    <p><strong>Номер квартиры:</strong> <span th:text="${address.flatNumber}"></span></p>
+  </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>
