@@ -36,9 +36,9 @@ public class CartService {
         return cartDaoService.addProductToCart(cart, publicProductId, quantity);
     }
 
-    public void updateCartWithRegisteredUser(String publicUserId, String publicCartId){
+    public void updateCartWithRegisteredUser(String publicUserId, String publicCartId) {
         userService.findUserDetails(publicUserId);
-      cartDaoService.updateCartWithRegisteredUser(publicUserId,publicCartId);
+        cartDaoService.updateCartWithRegisteredUser(publicUserId, publicCartId);
     }
 
     public CartDetails getUserCart(String publicUserId) {
@@ -52,5 +52,22 @@ public class CartService {
             getUserCart(publicUserId);
         }
         return cartDaoService.findCartDetails(publicCartId).orElse(null);
+    }
+
+    public CartDetails removeProductFromCart(String publicCartId, String publicUserId, String publicProductId) {
+        if (publicUserId != null) {
+            userService.findUserDetails(publicUserId);
+        }
+        productService.getByPublicId(publicProductId);
+        var cart = getCart(publicCartId, publicUserId);
+        return cartDaoService.removeItemFromCart(cart, publicProductId);
+    }
+
+    public void clearCart(String publicCartId, String publicUserId) {
+        if (publicUserId != null) {
+            userService.findUserDetails(publicUserId);
+        }
+        var cart = getCart(publicCartId, publicUserId);
+        cartDaoService.clearCart(cart.publicCartId());
     }
 }

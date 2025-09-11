@@ -179,7 +179,7 @@ public class UserController {
                                     @RequestParam String publicProductId,
                                     @RequestParam(defaultValue = "1") Integer quantity,
                                     HttpServletResponse response, RedirectAttributes redirectAttributes) {
-
+        log.debug("Received POST request to add product to cart");
         try {
             var cart = cartService.addProductToCart(publicCartId, publicUserId, publicProductId, quantity);
             setCartCookie(response, cart.publicCartId());
@@ -192,6 +192,27 @@ public class UserController {
             redirectAttributes.addFlashAttribute("productId", publicProductId);
             redirectAttributes.addFlashAttribute("requestedQuantity", quantity);
         }
+        return "redirect:/api/users/products";
+    }
+
+    @PatchMapping("/cart/{publicProductId}")
+    public String removeProductFromCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
+                                        @RequestParam(required = false) String publicUserId,
+                                        @PathVariable String publicProductId,
+                                        RedirectAttributes redirectAttributes) {
+        log.debug("Received PATCH request to remove product from cart");
+        cartService.removeProductFromCart(publicCartId, publicUserId, publicProductId);
+        redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УДАЛЕН ИЗ КОРЗИНЫ");
+        return "redirect:/api/users/cart";
+    }
+
+    @DeleteMapping("/cart")
+    public String clearCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
+                            @RequestParam(required = false) String publicUserId,
+                            RedirectAttributes redirectAttributes) {
+        log.debug("Received DELETE request to clear cart");
+        cartService.clearCart(publicCartId, publicUserId);
+        redirectAttributes.addFlashAttribute("successMessage", "КОРЗИНА УСПЕШНО ОЧИЩЕНА");
         return "redirect:/api/users/products";
     }
 

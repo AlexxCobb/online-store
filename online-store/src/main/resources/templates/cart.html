@@ -13,8 +13,20 @@
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <span th:text="${errorMessage}"></span>
+    </div>
 
     <div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
+
+        <div class="d-flex justify-content-end mb-3">
+            <form th:action="@{/api/users/cart}" method="post">
+                <input type="hidden" name="_method" value="delete"/>
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i> Очистить корзину
+                </button>
+            </form>
+        </div>
         <table>
             <tr>
                 <th></th>
@@ -23,6 +35,7 @@
                 <th>Цвет</th>
                 <th>Количество, шт</th>
                 <th>Стоимость, ₽</th>
+                <th>Действия</th>
             </tr>
             <tr th:each="cartItem : ${cart.cartItems}">
                 <td>
@@ -34,6 +47,14 @@
                 <td th:text="${cartItem.color}"></td>
                 <td th:text="${cartItem.quantity}"></td>
                 <td th:text="${cartItem.price}"></td>
+                <td>
+                    <form th:action="@{'/api/users/cart/' + ${cartItem.publicProductId}}" method="post">
+                        <input type="hidden" name="_method" value="patch"/>
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-x-circle"></i> Удалить
+                        </button>
+                    </form>
+                </td>
             </tr>
         </table>
     </div>

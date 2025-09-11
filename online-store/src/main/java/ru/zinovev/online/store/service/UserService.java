@@ -7,7 +7,6 @@ import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
 import ru.zinovev.online.store.controller.dto.UserRegistrationDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
 import ru.zinovev.online.store.dao.UserDaoService;
-import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.InvalidPasswordException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
@@ -20,11 +19,6 @@ public class UserService {
     // private final PasswordEncoder passwordEncoder;
 
     public UserDetails createUser(@NonNull UserRegistrationDto userRegistrationDto) {
-        userDaoService.findByEmailIgnoreCase(userRegistrationDto)
-                .ifPresent(userDetails -> {
-                    throw new BadRequestException(
-                            "User with email - " + userRegistrationDto.email() + " already exist");
-                });
         return userDaoService.createUser(userRegistrationDto);
     }
 
@@ -59,5 +53,9 @@ public class UserService {
     public UserDetails findUserDetails(String publicUserId) {
         return userDaoService.findByPublicId(publicUserId).orElseThrow(
                 () -> new NotFoundException("User with id - " + publicUserId + " not found"));
+    }
+
+    public Boolean checkExistEmail(String email) {
+        return userDaoService.findByEmailIgnoreCase(email);
     }
 }
