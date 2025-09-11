@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('user-info')}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+
+<div class="container mt-4 bg-white rounded shadow-sm p-4">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <div>
+        <h2>Данные о пользователе</h2>
+        <table>
+            <tr>
+                <th>Имя</th>
+                <th>Фамилия</th>
+                <th>Email</th>
+                <th>Действия</th>
+            </tr>
+            <tr>
+                <td th:text="${user.name}"></td>
+                <td th:text="${user.lastname}"></td>
+                <td th:text="${user.email}"></td>
+                <td>
+                    <div class="d-flex gap-2 align-items-center">
+                        <a th:href="@{'/api/users/' + ${publicUserId} + '/edit'}"
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <form th:action="@{'/api/users/' + ${publicUserId}}"
+                              method="post" class="m-0">
+                            <input type="hidden" name="_method" value="delete"/>
+                            <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                        </form>
+                        <a th:href="@{'/api/users/' + ${publicUserId} + '/password'}"
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-pencil"></i> Изменить пароль
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>

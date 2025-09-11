@@ -7,6 +7,9 @@
 
 <div class="welcome-container">
     <h2>Товары в корзине</h2>
+    <div th:if="${cart == null or cart.cartItems == null or cart.cartItems.empty}">
+        <p class="text-muted">Корзина пуста</p>
+    </div>
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
@@ -14,43 +17,48 @@
         <span th:text="${errorMessage}"></span>
     </div>
 
-    <table>
-        <tr>
-            <th></th>
-            <th>Бренд</th>
-            <th>Название модели</th>
-            <th>Цвет</th>
-            <th>Количество, шт</th>
-            <th>Стоимость, ₽</th>
-        </tr>
-        <tr th:each="cartItem : ${cart.cartItems}">
-            <td>
-                <img th:src="@{${cartItem.imagePath != null ? cartItem.imagePath : '/images/WI-BI.png'}}"
-                     class="product-thumbnail"/>
-            </td>
-            <td th:text="${cartItem.brand}"></td>
-            <td th:text="${cartItem.name}"></td>
-            <td th:text="${cartItem.color}"></td>
-            <td th:text="${cartItem.quantity}"></td>
-            <td th:text="${cartItem.price}"></td>
-        </tr>
-    </table>
+    <div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
+        <table>
+            <tr>
+                <th></th>
+                <th>Бренд</th>
+                <th>Название модели</th>
+                <th>Цвет</th>
+                <th>Количество, шт</th>
+                <th>Стоимость, ₽</th>
+            </tr>
+            <tr th:each="cartItem : ${cart.cartItems}">
+                <td>
+                    <img th:src="@{${cartItem.imagePath != null ? cartItem.imagePath : '/images/WI-BI.png'}}"
+                         class="product-thumbnail"/>
+                </td>
+                <td th:text="${cartItem.brand}"></td>
+                <td th:text="${cartItem.name}"></td>
+                <td th:text="${cartItem.color}"></td>
+                <td th:text="${cartItem.quantity}"></td>
+                <td th:text="${cartItem.price}"></td>
+            </tr>
+        </table>
+    </div>
 </div>
 
-<div class="welcome-container p">
-    <table>
-        <tr>
-            <th>Общее количество, шт</th>
-            <th>Общая стоимость, руб</th>
-        </tr>
-        <tr>
-            <td th:text="${cart.totalQuantity}"></td>
-            <td th:text="${cart.totalPrice}"></td>
-        </tr>
-    </table>
+<div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
+    <div class="welcome-container p">
+        <table>
+            <tr>
+                <th>Общее количество, шт</th>
+                <th>Общая стоимость, руб</th>
+            </tr>
+            <tr>
+                <td th:text="${cart.totalQuantity}"></td>
+                <td th:text="${cart.totalPrice}"></td>
+            </tr>
+        </table>
+    </div>
 </div>
 
-<div class="welcome-container">
+
+<div class="welcome-container" th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
     <table>
         <form th:action="@{'/api/users/' + ${publicUserId} + '/orders'}"
               method="post">

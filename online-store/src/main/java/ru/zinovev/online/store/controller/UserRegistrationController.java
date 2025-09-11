@@ -3,7 +3,6 @@ package ru.zinovev.online.store.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,12 +10,9 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.zinovev.online.store.controller.dto.UserRegistrationDto;
-import ru.zinovev.online.store.model.UserDetails;
 import ru.zinovev.online.store.service.CartService;
 import ru.zinovev.online.store.service.UserService;
 
@@ -40,7 +36,7 @@ public class UserRegistrationController {
         if (bindingResult.hasErrors()) {
             return "add-user";
         }
-        var user = userService.createUser(userRegistrationDto);
+        var user = userService.createUser(userRegistrationDto); // Security
         cartService.updateCartWithRegisteredUser(user.publicUserId(), publicCartId);
         redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ " + user.name() + " " + user.lastname()
                 + " УСПЕШНО ЗАРЕГИСТРИРОВАН");

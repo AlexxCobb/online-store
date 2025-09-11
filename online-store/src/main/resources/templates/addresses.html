@@ -3,23 +3,22 @@
 <head th:replace="~{fragments/header :: common-header('Addresses')}">
 </head>
 <body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+
+
+
 <div class="welcome-container">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+
     <div class="address-tab"
          th:classappend="${nameParam == 'USER_ADDRESS'} ? 'active' : ''"
          onclick="location.href='?name=USER_ADDRESS'">Мои адреса
     </div>
 
-    <div class="address-tab"
-         th:classappend="${nameParam == 'PARCEL_LOCKER' && isSystemParam == 'true'} ? 'active' : ''"
-         onclick="location.href='?name=PARCEL_LOCKER&isSystem=true'">Пункты выдачи
-    </div>
-
-    <div class="address-tab"
-         th:classappend="${nameParam == 'STORE_ADDRESS' && isSystemParam == 'true'} ? 'active' : ''"
-         onclick="location.href='?name=STORE_ADDRESS&isSystem=true'">Адреса магазинов
-    </div>
-
     <h2>Адреса</h2>
+
     <table>
         <tr>
             <th>Тип адреса</th>
@@ -28,18 +27,30 @@
             <th>Улица/Проспект</th>
             <th>Номер дома</th>
             <th>Номер квартиры</th>
+            <th>Действия</th>
         </tr>
         <tr th:each="address : ${addresses}">
             <td>
                 <span th:if="${nameParam == 'USER_ADDRESS'}">🏠</span>
-                <span th:if="${nameParam == 'PARCEL_LOCKER'}">📦</span>
-                <span th:if="${nameParam == 'STORE_ADDRESS'}">🏬</span>
             </td>
             <td th:text="${address.zipCode}">190300</td>
             <td th:text="${address.town}">Санкт-Петербург</td>
             <td th:text="${address.street}">Невский проспект</td>
             <td th:text="${address.houseNumber}">1</td>
-            <td th:text="${address.flatNumber} ?: '-'">1</td>
+            <td th:text="${address.flatNumber}">1</td>
+            <td>
+                <div class="d-flex gap-2 align-items-center">
+                    <a th:href="@{'/api/users/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+                       class="btn btn-sm btn-primary">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <form th:action="@{'/api/users/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+                          method="post" class="m-0">
+                        <input type="hidden" name="_method" value="delete"/>
+                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                    </form>
+                </div>
+            </td>
         </tr>
     </table>
 </div>
@@ -50,66 +61,69 @@
             <h5 class="mb-0">➕ Добавить новый адрес</h5>
         </div>
         <div class="card-body">
-            <form th:action="@{'/api/users/' + ${publicUserId} + '/addresses'}" method="post" th:object="${addressDto}">
+            <table>
+                <form th:action="@{'/api/users/' + ${publicUserId} + '/addresses'}" method="post"
+                      th:object="${addressDto}">
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label" for="country">Страна</label>
-                        <input type="text" class="form-control" id="country" th:field="*{country}"/>
-                        <span class="text-danger"
-                              th:if="${#fields.hasErrors('country')}"
-                              th:errors="*{country}"></span>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="country">Страна</label>
+                            <input type="text" class="form-control" id="country" th:field="*{country}"/>
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('country')}"
+                                  th:errors="*{country}"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="town">Город</label>
+                            <input type="text" class="form-control" id="town" th:field="*{town}"/>
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('town')}"
+                                  th:errors="*{town}"></span>
+                        </div>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label" for="town">Город</label>
-                        <input type="text" class="form-control" id="town" th:field="*{town}"/>
-                        <span class="text-danger"
-                              th:if="${#fields.hasErrors('town')}"
-                              th:errors="*{town}"></span>
-                    </div>
-                </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="zipCode">Почтовый индекс</label>
+                            <input type="text" class="form-control" id="zipCode" th:field="*{zipCode}"/>
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('zipCode')}"
+                                  th:errors="*{zipCode}"></span>
+                        </div>
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="zipCode">Почтовый индекс</label>
-                        <input type="text" class="form-control" id="zipCode" th:field="*{zipCode}"/>
-                        <span class="text-danger"
-                              th:if="${#fields.hasErrors('zipCode')}"
-                              th:errors="*{zipCode}"></span>
+                        <div class="col-md-4 mb-3">
+                            <label for="street">Улица</label>
+                            <input type="text" class="form-control" id="street" th:field="*{street}"/>
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('street')}"
+                                  th:errors="*{street}"></span>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="houseNumber">Номер дома</label>
+                            <input type="text" class="form-control" id="houseNumber" th:field="*{houseNumber}"/>
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('houseNumber')}"
+                                  th:errors="*{houseNumber}"></span>
+                        </div>
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label for="street">Улица</label>
-                        <input type="text" class="form-control" id="street" th:field="*{street}"/>
-                        <span class="text-danger"
-                              th:if="${#fields.hasErrors('street')}"
-                              th:errors="*{street}"></span>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="flatNumber">Номер квартиры (если есть)</label>
+                            <input type="text" class="form-control" id="flatNumber" th:field="*{flatNumber}"/>
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('flatNumber')}"
+                                  th:errors="*{flatNumber}"></span>
+                        </div>
                     </div>
 
-                    <div class="col-md-4 mb-3">
-                        <label for="houseNumber">Номер дома</label>
-                        <input type="text" class="form-control" id="houseNumber" th:field="*{houseNumber}"/>
-                        <span class="text-danger"
-                              th:if="${#fields.hasErrors('houseNumber')}"
-                              th:errors="*{houseNumber}"></span>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">Добавить адрес</button>
                     </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="flatNumber">Номер квартиры (если есть)</label>
-                        <input type="text" class="form-control" id="flatNumber" th:field="*{flatNumber}"/>
-                        <span class="text-danger"
-                              th:if="${#fields.hasErrors('flatNumber')}"
-                              th:errors="*{flatNumber}"></span>
-                    </div>
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-success">Добавить адрес</button>
-                </div>
-            </form>
+                </form>
+            </table>
         </div>
     </div>
 </div>

@@ -29,7 +29,6 @@ import ru.zinovev.online.store.dao.entity.enums.PaymentMethodName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.exception.model.OutOfStockException;
-import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.CartDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.ParametersDetails;
@@ -60,7 +59,7 @@ public class UserController {
     private final ProductMapper productMapper;
 
     @GetMapping("/home")
-    public String homePage(Model model) {
+    public String homePage() {
         return "home";
     }
 
@@ -74,23 +73,46 @@ public class UserController {
         }
         addressService.addAddress(publicUserId, addressMapper.toAddressDetails(addressDto));
         redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО ДОБАВЛЕН");
-        return "redirect:/api/users/" + publicUserId + "/addresses";
+        return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
     }
 
     @PatchMapping("/{publicUserId}/addresses/{publicAddressId}")
-    public AddressDetails updateAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
-                                        @Valid AddressUpdateDto addressUpdateDto) {
+    public String updateAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
+                                AddressUpdateDto addressUpdateDto, BindingResult bindingResult, Model model,
+                                RedirectAttributes redirectAttributes) {
         log.debug("Received PATCH request to update user's (id - {}) delivery address (id - {}), dto - {}",
                   publicUserId, publicAddressId, addressUpdateDto);
-        return addressService.updateAddress(publicUserId, publicAddressId,
-                                            addressMapper.toAddressUpdateDetails(addressUpdateDto));
+        if (bindingResult.hasErrors()) {
+            var address = addressService.getAddressByPublicId(publicAddressId);
+            model.addAttribute("address", address);
+            return "edit-address";
+        }
+        addressService.updateAddress(publicUserId, publicAddressId,
+                                     addressMapper.toAddressUpdateDetails(addressUpdateDto));
+        redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО ОБНОВЛЁН");
+        return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
+    }
+
+    @GetMapping("/{publicUserId}/addresses/{publicAddressId}")
+    public String editUserAddress(@PathVariable String publicUserId,
+                                  @ModelAttribute AddressUpdateDto addressUpdateDto,
+                                  @PathVariable String publicAddressId, Model model) {
+        log.debug(
+                "Received GET request to edit user address with id - {}, from user with id - {}",
+                publicAddressId,
+                publicUserId);
+        var address = addressService.getAddressByPublicId(publicAddressId);
+
+        model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("address", address);
+        return "edit-address";
     }
 
     @GetMapping("/{publicUserId}/addresses")
     public String getAddresses(@PathVariable String publicUserId,
                                @RequestParam(required = false) AddressTypeName name,
                                @RequestParam(required = false) Boolean isSystem, Model model,
-                               HttpServletRequest request) {
+                               HttpServletRequest request, @ModelAttribute AddressDto addressDto) {
         log.debug("Received GET request to get addresses");
 
         model.addAttribute("nameParam", request.getParameter("name"));
@@ -104,10 +126,13 @@ public class UserController {
     }
 
     @DeleteMapping("/{publicUserId}/addresses/{publicAddressId}")
-    public void deleteAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId) {
+    public String deleteAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
+                                RedirectAttributes redirectAttributes) {
         log.debug("Received DELETE request to delete address with id = {} from user id - {}", publicAddressId,
                   publicUserId);
         addressService.deleteAddress(publicUserId, publicAddressId, false);
+        redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО УДАЛЕН");
+        return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
     }
 
     @GetMapping("/categories")
@@ -118,7 +143,7 @@ public class UserController {
         return "categories";
     }
 
-    @ModelAttribute("categories") // проверь нужность
+    @ModelAttribute("categories")
     public List<CategoryDetails> getCategoriesForAllPages() {
         return categoryService.getCategories();
     }
@@ -221,11 +246,9 @@ public class UserController {
         try {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
-
             redirectAttributes.addFlashAttribute("errorMessage", //доработать
                                                  "Максимальное количество для добавления: "
                                                          + " шт.");
-
         }
         model.addAttribute("publicUserId", publicUserId);
         redirectAttributes.addFlashAttribute("successMessage", "ЗАКАЗ УСПЕШНО ОФОРМЛЕН");

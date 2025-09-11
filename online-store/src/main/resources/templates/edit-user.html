@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('Edit-User')}">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: main-navbar}"></div>
+
+<div class="container mt-4 bg-white rounded shadow-sm p-4">
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <h2 class="mb-4">Редактирование данных пользователя</h2>
+    <table>
+        <form th:action="@{'/api/users/' + ${publicUserId} + '/profile'}" method="post" th:object="${userUpdateDto}">
+            <input type="hidden" name="_method" value="patch"/>
+            <div class="mb-3">
+                <label for="name" class="form-label">Введите имя</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}"/>
+                <span class="text-danger bg-white px-2 py-1 rounded d-inline-block mt-1"
+                      th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}"></span>
+            </div>
+
+            <div class="mb-3">
+                <label for="lastname" class="form-label">Введите фамилию</label>
+                <input type="text" class="form-control" id="lastname" th:field="*{lastname}"/>
+                <span class="text-danger bg-white px-2 py-1 rounded d-inline-block mt-1"
+                      th:if="${#fields.hasErrors('lastname')}"
+                      th:errors="*{lastname}"></span>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Введите электронную почту</label>
+                <input type="email" class="form-control" id="email" th:field="*{email}"/>
+                <span class="text-danger bg-white px-2 py-1 rounded d-inline-block mt-1"
+                      th:if="${#fields.hasErrors('email')}"
+                      th:errors="*{email}"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a th:href="@{'/api/users/' + ${publicUserId}}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </table>
+
+    <div class="mt-4">
+        <h5>Информация о пользователе:</h5>
+        <p><strong>Имя:</strong><span th:text="${user.name}"></span></p>
+        <p><strong>Фамилия:</strong> <span th:text="${user.lastname}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: copy}"></footer>
+</body>
+</html>
