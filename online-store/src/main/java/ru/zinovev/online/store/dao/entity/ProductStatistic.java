@@ -36,4 +36,18 @@ public class ProductStatistic {
 
     @Column(name = "purchase_count")
     private Integer purchaseCount;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof ProductStatistic productStatistic))
+            return false;
+        return id != null && id.equals(productStatistic.id);
+    }
 }

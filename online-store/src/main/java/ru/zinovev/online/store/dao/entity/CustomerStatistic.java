@@ -43,4 +43,18 @@ public class CustomerStatistic {
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private OffsetDateTime createdAt;
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof CustomerStatistic customerStatistic))
+            return false;
+        return id != null && id.equals(customerStatistic.id);
+    }
 }

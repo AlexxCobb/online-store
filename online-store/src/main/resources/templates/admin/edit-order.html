@@ -18,7 +18,7 @@
       <select name="orderStatusName" class="form-select">
         <option th:each="status : ${orderStatuses}"
                 th:value="${status}"
-                th:text="${status}"
+                th:text="${status.displayValue}"
                 th:selected="${status == order.orderStatusName}">
         </option>
       </select>
@@ -30,7 +30,7 @@
         <option value="">-- Не изменять --</option>
         <option th:each="status : ${paymentStatuses}"
                 th:value="${status}"
-                th:text="${status}"
+                th:text="${status.displayValue}"
                 th:selected="${status == order.paymentStatusName}">
         </option>
       </select>
@@ -46,7 +46,7 @@
   <div class="mt-4">
     <h5>Информация о заказе:</h5>
     <p><strong>Email клиента:</strong> <span th:text="${order.userDetails?.email} ?: 'Не указан'"></span></p>
-    <p><strong>Способ доставки:</strong> <span th:text="${order.deliveryMethodName}"></span></p>
+    <p><strong>Способ доставки:</strong> <span th:text="${order.deliveryMethodName.displayValue}"></span></p>
     <p><strong>Дата создания:</strong> <span th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
   </div>
 </div>

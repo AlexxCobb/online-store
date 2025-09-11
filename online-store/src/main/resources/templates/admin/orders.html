@@ -18,16 +18,16 @@
             <th>Email клиента</th>
             <th>Способ доставки</th>
             <th>Статус оплаты</th>
-            <th>Статус заказы</th>
+            <th>Статус заказа</th>
             <th>Дата</th>
             <th>Действия</th>
         </tr>
         <tr th:each="order : ${orders}">
             <td th:text="${order.publicOrderId}"></td>
             <td th:text="${order.userDetails.email}"></td>
-            <td th:text="${order.deliveryMethodName}"></td>
-            <td th:text="${order.paymentStatusName}"></td>
-            <td th:text="${order.orderStatusName}"></td>
+            <td th:text="${order.deliveryMethodName.displayValue}"></td>
+            <td th:text="${order.paymentStatusName.displayValue}"></td>
+            <td th:text="${order.orderStatusName.displayValue}"></td>
             <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
             <td>
                 <a th:href="@{'/api/admins/' + ${publicUserId} + '/orders/' + ${order.publicOrderId} + '/edit'}"

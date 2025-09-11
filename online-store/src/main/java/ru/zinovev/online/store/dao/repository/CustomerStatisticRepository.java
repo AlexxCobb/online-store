@@ -14,12 +14,12 @@ import java.util.List;
 
 public interface CustomerStatisticRepository extends JpaRepository<CustomerStatistic, Long> {
 
-    @Query("SELECT u.publicUserId as publicUserId, u.email as email, u.name as name, u.lastname as lastname, SUM(cs.totalSpent) "
+    @Query("SELECT u.publicUserId as publicUserId, u.email as email, u.name as name, u.lastname as lastname, SUM(cs.totalSpent) as totalSpent "
             + "FROM CustomerStatistic cs "
             + "JOIN cs.user u "
             + "WHERE cs.createdAt "
             + "BETWEEN :dateFrom AND :dateTo "
-            + "GROUP BY u "
+            + "GROUP BY u.publicUserId, u.email, u.name, u.lastname "
             + "ORDER BY SUM(cs.totalSpent) DESC")
     List<CustomerView> findTopCustomers(Pageable page, OffsetDateTime dateFrom, OffsetDateTime dateTo);
 

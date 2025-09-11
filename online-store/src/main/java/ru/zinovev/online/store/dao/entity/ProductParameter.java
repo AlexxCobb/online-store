@@ -37,4 +37,17 @@ public class ProductParameter {
     @Column(name = "param_value")
     private String value;
 
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (!(obj instanceof ProductParameter productParameter))
+            return false;
+        return id != null && id.equals(productParameter.id);
+    }
 }
