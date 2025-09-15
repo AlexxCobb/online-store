@@ -20,9 +20,13 @@ public interface UserMapper {
     @Mapping(target = "publicUserId", ignore = true)
     UserDetails toUserDetails(UserUpdateDto userUpdateDto);
 
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-                 nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    void updateUserFromUserUpdateDto(UserUpdateDto userUpdateDto, @MappingTarget User user);
-
     TopCustomerDetails toTopCustomerDetails(CustomerView customerView);
+
+    default User updateUserFromDto(UserUpdateDto dto, User user) {
+        return user.toBuilder()
+                .name(dto.name() != null && !dto.name().isEmpty() ? dto.name() : user.getName())
+                .lastname(dto.lastname() != null && !dto.lastname().isEmpty()  ? dto.lastname() : user.getLastname())
+                .email(dto.email() != null && !dto.email().isEmpty() ? dto.email() : user.getEmail())
+                .build();
+    }
 }

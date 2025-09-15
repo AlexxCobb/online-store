@@ -33,4 +33,6 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1755080114-add-product-statistic-table.yaml
   - include:
       file: classpath:db/changelog/changeset/1756832459-add-column-image-path.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1757663991-add-constraint-product-stock-quantity.yaml
 

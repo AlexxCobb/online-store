@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1757663991-add-constraint-product-stock-quantity
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1757663991-add-constraint-product-stock-quantity.sql

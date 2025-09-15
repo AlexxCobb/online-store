@@ -13,10 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -41,15 +40,11 @@ public class DeliveryAddress {
 
     private String country;
     private String town;
-    @Setter
     @Column(name = "zip_code")
     private Integer zipCode;
-    @Setter
     private String street;
-    @Setter
     @Column(name = "house_number")
     private Integer houseNumber;
-    @Setter // костыль, но по другому не генерит обновление из деталей в сущность MapStruct, подумать
     @Column(name = "flat_number")
     private Integer flatNumber;
     @Column(name = "is_active")

@@ -20,7 +20,7 @@
         </tr>
         <tr th:each="revenue : ${topRevenue}">
             <td th:text="${revenue.publicOrderId}"></td>
-            <td th:text="${revenue.name}"></td>
+            <td th:text="${revenue.name.displayValue}"></td>
             <td th:text="${#temporals.format(revenue.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
             <td th:text="${revenue.totalOrderSpent}"></td>
         </tr>

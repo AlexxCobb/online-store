@@ -47,7 +47,7 @@
             <div class="mb-3">
                 <label class="form-label" for="name">Название категории</label>
                 <input type="text" class="form-control" th:field="*{name}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('name')}"
                       th:errors="*{name}"></span>
             </div>
