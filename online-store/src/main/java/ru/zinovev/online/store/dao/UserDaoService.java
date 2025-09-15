@@ -40,8 +40,8 @@ public class UserDaoService {
     @Transactional
     public UserDetails updateUser(UserDetails userDetails, UserUpdateDto userUpdateDto) {
         var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
-        userMapper.updateUserFromUserUpdateDto(userUpdateDto, user);
-        return userMapper.toUserDetails(userRepository.save(user));
+        var updatedUser = userMapper.updateUserFromDto(userUpdateDto, user);
+        return userMapper.toUserDetails(userRepository.save(updatedUser));
     }
 
     @Transactional

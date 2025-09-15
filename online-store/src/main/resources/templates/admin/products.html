@@ -64,7 +64,7 @@
             <div class="mb-3">
                 <label class="form-label" for="name">Название товара</label>
                 <input type="text" class="form-control" th:field="*{name}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('name')}"
                       th:errors="*{name}"></span>
             </div>
@@ -72,7 +72,7 @@
             <div class="mb-3">
                 <label class="form-label" for="price">Стоимость товара, руб</label>
                 <input type="number" step="0.01" class="form-control" th:field="*{price}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('price')}"
                       th:errors="*{price}"></span>
             </div>
@@ -86,7 +86,7 @@
                             th:text="${category.name}">
                     </option>
                 </select>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('categoryPublicId')}"
                       th:errors="*{categoryPublicId}"></span>
             </div>
@@ -130,21 +130,21 @@
             <div class="mb-3">
                 <label for="weight">Вес товара, гр</label>
                 <input type="number" step="0.01" class="form-control" th:field="*{weight}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('weight')}"
                       th:errors="*{weight}"></span>
             </div>
             <div class="mb-3">
                 <label for="volume">Объем товара, см3</label>
                 <input type="number" step="0.01" class="form-control" th:field="*{volume}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('volume')}"
                       th:errors="*{volume}"></span>
             </div>
             <div class="mb-3">
                 <label for="stockQuantity">Количество, шт</label>
                 <input type="number" class="form-control" th:field="*{stockQuantity}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('stockQuantity')}"
                       th:errors="*{stockQuantity}"></span>
             </div>
@@ -154,7 +154,7 @@
                 <small class="form-text text-muted">
                     Положите изображение в папку static/images/products/ и укажите путь относительно static
                 </small>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('imagePath')}"
                       th:errors="*{imagePath}"></span>
             </div>

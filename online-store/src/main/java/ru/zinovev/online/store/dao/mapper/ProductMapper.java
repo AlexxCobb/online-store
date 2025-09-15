@@ -3,14 +3,12 @@ package ru.zinovev.online.store.dao.mapper;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.zinovev.online.store.controller.dto.ParametersDto;
 import ru.zinovev.online.store.controller.dto.ProductDto;
 import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
-import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductParameter;
 import ru.zinovev.online.store.dao.entity.ProductView;
@@ -47,18 +45,7 @@ public interface ProductMapper {
 
     ProductShortDetails toProductShortDetails(Product product);
 
-    @Mapping(target = "publicProductId", source = "product.publicProductId")
-    @Mapping(target = "name", source = "product.name")
-    ProductShortDetails toProductShortDetails(OrderItem orderItem);
-
     TopProductDetails toTopProductDetails(ProductView productView);
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-                 nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "name", source = "name")
-    @Mapping(target = "price", source = "price")
-    @Mapping(target = "stockQuantity", source = "stockQuantity")
-    void updateProductFromProductUpdateDetails(@MappingTarget Product product, ProductUpdateDetails updateDetails);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
                  nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
@@ -69,6 +56,17 @@ public interface ProductMapper {
     @Mapping(target = "name", expression = "java(checkValue(productUpdateDto.name()))")
     @Mapping(target = "publicCategoryId", expression = "java(checkValue(productUpdateDto.categoryPublicId()))")
     ProductUpdateDetails toProductUpdateDetails(ProductUpdateDto productUpdateDto);
+
+    default Product updateProductFromDetails(ProductUpdateDetails productUpdateDetails,
+                                             Product product) {
+        return product.toBuilder()
+                .name(productUpdateDetails.name() != null && !productUpdateDetails.name().isEmpty()
+                              ? productUpdateDetails.name() : product.getName())
+                .price(productUpdateDetails.price() != null ? productUpdateDetails.price() : product.getPrice())
+                .stockQuantity(productUpdateDetails.stockQuantity() != null ? productUpdateDetails.stockQuantity()
+                                       : product.getStockQuantity())
+                .build();
+    }
 
     default Set<ParametersDetails> toParametersDetails(List<ParametersDto> parameters) {
         if (parameters == null) {

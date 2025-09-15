@@ -15,7 +15,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -37,15 +36,12 @@ public class Product {
     @Column(name = "product_public_id")
     private String publicProductId;
 
-    @Setter
     @Column(name = "product_name")
     private String name;
 
-    @Setter
     @Column(name = "product_price")
     private BigDecimal price;
 
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
@@ -60,7 +56,6 @@ public class Product {
     @Column(name = "product_volume")
     private BigDecimal volume;
 
-    @Setter
     @Column(name = "product_stock_quantity")
     private Integer stockQuantity;
 

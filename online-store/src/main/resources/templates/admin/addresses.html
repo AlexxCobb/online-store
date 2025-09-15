@@ -62,7 +62,7 @@
             <div class="mb-3">
                 <label class="form-label" for="country">Страна</label>
                 <input type="text" class="form-control" th:field="*{country}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('country')}"
                       th:errors="*{country}"></span>
             </div>
@@ -70,7 +70,7 @@
             <div class="mb-3">
                 <label class="form-label" for="town">Город</label>
                 <input type="text" class="form-control" th:field="*{town}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('town')}"
                       th:errors="*{town}"></span>
             </div>
@@ -78,7 +78,7 @@
             <div class="mb-3">
                 <label for="zipCode">Почтовый индекс</label>
                 <input type="text" class="form-control" th:field="*{zipCode}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('zipCode')}"
                       th:errors="*{zipCode}"></span>
             </div>
@@ -86,7 +86,7 @@
             <div class="mb-3">
                 <label for="street">Улица</label>
                 <input type="text" class="form-control" th:field="*{street}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('street')}"
                       th:errors="*{street}"></span>
             </div>
@@ -94,7 +94,7 @@
             <div class="mb-3">
                 <label for="houseNumber">Номер дома</label>
                 <input type="text" class="form-control" th:field="*{houseNumber}"/>
-                <span class="validationError"
+                <span class="text-danger"
                       th:if="${#fields.hasErrors('houseNumber')}"
                       th:errors="*{houseNumber}"></span>
             </div>
@@ -105,7 +105,7 @@
                     <option value="">-- Выберите тип адреса --</option>
                     <option th:each="type : ${addressTypes}"
                             th:value="${type}"
-                            th:text="${type}">
+                            th:text="${type.displayValue}">
                     </option>
                 </select>
 

@@ -19,8 +19,8 @@
 
       <div class="mb-3">
         <label for="zipCode">Почтовый индекс</label>
-        <input type="text" class="form-control" th:field="*{zipCode}"/>
-        <span class="validationError"
+        <input type="number" class="form-control" th:field="*{zipCode}"/>
+        <span class="text-danger"
               th:if="${#fields.hasErrors('zipCode')}"
               th:errors="*{zipCode}"></span>
       </div>
@@ -28,23 +28,23 @@
       <div class="mb-3">
         <label for="street">Улица</label>
         <input type="text" class="form-control" th:field="*{street}"/>
-        <span class="validationError"
+        <span class="text-danger"
               th:if="${#fields.hasErrors('street')}"
               th:errors="*{street}"></span>
       </div>
 
       <div class="mb-3">
         <label for="houseNumber">Номер дома</label>
-        <input type="text" class="form-control" th:field="*{houseNumber}"/>
-        <span class="validationError"
+        <input type="number" class="form-control" th:field="*{houseNumber}"/>
+        <span class="text-danger"
               th:if="${#fields.hasErrors('houseNumber')}"
               th:errors="*{houseNumber}"></span>
       </div>
 
       <div class="mb-3">
         <label for="flatNumber">Номер квартиры</label>
-        <input type="text" class="form-control" th:field="*{flatNumber}"/>
-        <span class="validationError"
+        <input type="number" class="form-control" th:field="*{flatNumber}"/>
+        <span class="text-danger"
               th:if="${#fields.hasErrors('flatNumber')}"
               th:errors="*{flatNumber}"></span>
       </div>

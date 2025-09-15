@@ -5,12 +5,12 @@ import jakarta.validation.constraints.Size;
 
 
 public record UserUpdateDto(
-        @Size(min = 1, max = 250)
+        @Size(max = 250)
         String name,
-        @Size(min = 2, max = 250)
+        @Size(max = 250)
         String lastname,
         @Email
-        @Size(min = 6, max = 254)
+        @Size(max = 254)
         String email
 ) {
 }

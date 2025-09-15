@@ -86,7 +86,7 @@
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="zipCode">Почтовый индекс</label>
-                            <input type="text" class="form-control" id="zipCode" th:field="*{zipCode}"/>
+                            <input type="number" class="form-control" id="zipCode" th:field="*{zipCode}"/>
                             <span class="text-danger"
                                   th:if="${#fields.hasErrors('zipCode')}"
                                   th:errors="*{zipCode}"></span>
@@ -102,7 +102,7 @@
 
                         <div class="col-md-4 mb-3">
                             <label for="houseNumber">Номер дома</label>
-                            <input type="text" class="form-control" id="houseNumber" th:field="*{houseNumber}"/>
+                            <input type="number" class="form-control" id="houseNumber" th:field="*{houseNumber}"/>
                             <span class="text-danger"
                                   th:if="${#fields.hasErrors('houseNumber')}"
                                   th:errors="*{houseNumber}"></span>
@@ -112,7 +112,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="flatNumber">Номер квартиры (если есть)</label>
-                            <input type="text" class="form-control" id="flatNumber" th:field="*{flatNumber}"/>
+                            <input type="number" class="form-control" id="flatNumber" th:field="*{flatNumber}"/>
                             <span class="text-danger"
                                   th:if="${#fields.hasErrors('flatNumber')}"
                                   th:errors="*{flatNumber}"></span>

@@ -221,7 +221,7 @@ public class AdminController {
                                  @RequestParam(required = false) BigDecimal maxPrice,
                                  @Valid ProductParamDto productParamDto,
                                  Model model, @ModelAttribute
-                                 ProductDto productDto) { // если все параметры null вернуть все товары постранично
+                                 ProductDto productDto) {
         log.debug("Received GET request to search products with parameters");
         var products = productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
                                                                    productMapper.toProductParamDetails(

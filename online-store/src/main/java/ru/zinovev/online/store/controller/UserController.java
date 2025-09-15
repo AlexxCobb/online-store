@@ -28,6 +28,7 @@ import ru.zinovev.online.store.dao.entity.enums.DeliveryMethodName;
 import ru.zinovev.online.store.dao.entity.enums.PaymentMethodName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
+import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.CartDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
@@ -78,7 +79,7 @@ public class UserController {
 
     @PatchMapping("/{publicUserId}/addresses/{publicAddressId}")
     public String updateAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
-                                AddressUpdateDto addressUpdateDto, BindingResult bindingResult, Model model,
+                                @Valid AddressUpdateDto addressUpdateDto, BindingResult bindingResult, Model model,
                                 RedirectAttributes redirectAttributes) {
         log.debug("Received PATCH request to update user's (id - {}) delivery address (id - {}), dto - {}",
                   publicUserId, publicAddressId, addressUpdateDto);
@@ -263,13 +264,25 @@ public class UserController {
             model.addAttribute("paymentMethods", PaymentMethodName.values());
             return "edit-cart";
         }
-
         try {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
             redirectAttributes.addFlashAttribute("errorMessage", //доработать
-                                                 "Максимальное количество для добавления: "
-                                                         + " шт.");
+                                                e.getMessage());
+        } catch (BadRequestException e) {
+            if (e.getMessage()
+                    .equals("Address with id - " + orderDto.publicAddressId()
+                                    + " is not the address of the user with id - "
+                                    + publicUserId)) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                                                     "Выбранный адрес не является адресом покупателя");
+                return "redirect:/api/users/" + publicUserId + "/cart";
+            } else if (e.getMessage().equals("The selected address does not match the selected delivery method - "
+                                                     + orderDto.deliveryMethodName().name())){
+                redirectAttributes.addFlashAttribute("errorMessage",
+                                                     "Выбранный адрес не соответствует выбранному способу доставки");
+                return "redirect:/api/users/" + publicUserId + "/cart";
+            }
         }
         model.addAttribute("publicUserId", publicUserId);
         redirectAttributes.addFlashAttribute("successMessage", "ЗАКАЗ УСПЕШНО ОФОРМЛЕН");

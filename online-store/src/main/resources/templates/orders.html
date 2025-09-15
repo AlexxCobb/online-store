@@ -6,26 +6,52 @@
 <div th:replace="~{fragments/navbar :: main-navbar}"></div>
 
 <div class="welcome-container">
-  <div th:if="${orders == null or orders.empty}">
-    <p>Еще нет сделанных заказов</p>
-  </div>
-  <h1>Заказы</h1>
-  <table >
-    <tr>
-      <th>Email клиента</th>
-      <th>Способ доставки</th>
-      <th>Статус оплаты</th>
-      <th>Статус заказа</th>
-      <th>Дата</th>
-    </tr>
-    <tr th:each="order : ${orders}">
-      <td th:text="${order.userDetails.email}"></td>
-      <td th:text="${order.deliveryMethodName.displayValue}"></td>
-      <td th:text="${order.paymentStatusName.displayValue}"></td>
-      <td th:text="${order.orderStatusName.displayValue}"></td>
-      <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
-    </tr>
-  </table>
+    <div th:if="${successMessage}" class="alert alert-success">
+        <span th:text="${successMessage}"></span>
+    </div>
+
+    <div th:if="${orders == null or orders.empty}">
+        <p>Еще нет сделанных заказов</p>
+    </div>
+    <h1>Заказы</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Email</th>
+            <th>Способ доставки</th>
+            <th>Город</th>
+            <th>Улица/Проспект</th>
+            <th>Номер дома</th>
+            <th>Номер квартиры</th>
+            <th>Статус оплаты</th>
+            <th>Статус заказа</th>
+            <th>Дата</th>
+            <th>Товары</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="order : ${orders}">
+            <td th:text="${order.userDetails.email}"></td>
+            <td th:text="${order.deliveryMethodName.displayValue}"></td>
+            <td th:text="${order.addressShortDetails.town}"></td>
+            <td th:text="${order.addressShortDetails.street}"></td>
+            <td th:text="${order.addressShortDetails.houseNumber}"></td>
+            <td th:text="${order.addressShortDetails.flatNumber}"></td>
+            <td th:text="${order.paymentStatusName.displayValue}"></td>
+            <td th:text="${order.orderStatusName.displayValue}"></td>
+            <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
+            <td>
+                <table>
+                    <tr th:each="product : ${order.productShortDetails}">
+                        <td th:text="${product.name}"></td>
+                        <td th:text="${product.quantity} + ' шт.'"></td>
+                        <td th:text="${product.priceAtPurchase} + ' ₽'"></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>

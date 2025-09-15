@@ -94,10 +94,10 @@ public class OrderDaoService {
         return orderMapper.toOrderDetails(newOrd);
     }
 
-    public List<OrderShortDetails> getUserOrders(String publicUserId) {
+    public List<OrderDetails> getUserOrders(String publicUserId) {
         return orderRepository.findByUserPublicUserIdOrderByCreatedAtAsc(publicUserId)
                 .stream()
-                .map(orderMapper::toOrderShortDetails)
+                .map(orderMapper::toOrderDetails)
                 .collect(Collectors.toList());
     }
 
@@ -114,8 +114,8 @@ public class OrderDaoService {
 
 
     @Transactional
-    public OrderDetails changeOrderStatus(String publicOrderId,
-                                          OrderStatusName orderStatusName, PaymentStatusName paymentStatusName) {
+    public void changeOrderStatus(String publicOrderId,
+                                  OrderStatusName orderStatusName, PaymentStatusName paymentStatusName) {
         var order = orderRepository.findByPublicOrderId(publicOrderId)
                 .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
         var existedOrderStatus = order.getOrderStatus().getName();
@@ -129,12 +129,11 @@ public class OrderDaoService {
         var savedOrder = orderRepository.save(updatedOrder.build());
         if (orderStatusName.equals(OrderStatusName.DELIVERED) && !OrderStatusName.DELIVERED.equals(
                 existedOrderStatus)) {
-            statisticDaoService.createStatistic(savedOrder); //статистика, проверки
+            statisticDaoService.createStatistic(savedOrder);
         }
         if (orderStatusName.equals(OrderStatusName.CANCELLED)) {
             statisticDaoService.cancelStatistic(savedOrder);
             productDaoService.returnProductsToWarehouse(order.getItems());
         }
-        return orderMapper.toOrderDetails(savedOrder);
     }
 }

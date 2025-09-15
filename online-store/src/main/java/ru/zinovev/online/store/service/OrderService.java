@@ -33,7 +33,7 @@ public class OrderService {
         return orderDaoService.createOrder(userDetails, cartDetails, orderDto);
     }
 
-    public List<OrderShortDetails> getUserOrders(String publicUserId) {
+    public List<OrderDetails> getUserOrders(String publicUserId) {
         userService.findUserDetails(publicUserId);
         return orderDaoService.getUserOrders(publicUserId);
     }
@@ -49,11 +49,11 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
     }
 
-    public OrderDetails changeOrderStatus(@NonNull String publicUserId, @NonNull String publicOrderId,
+    public void changeOrderStatus(@NonNull String publicUserId, @NonNull String publicOrderId,
                                           @NonNull OrderStatusName orderStatusName,
                                           PaymentStatusName paymentStatusName) {
         userService.findUserDetails(publicUserId);
-        return orderDaoService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
+        orderDaoService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
     }
 
     private void checkDeliveryMethodWithAddress(String publicUserId, String publicAddressId, DeliveryMethodName name) {

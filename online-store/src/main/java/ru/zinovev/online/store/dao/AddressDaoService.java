@@ -71,8 +71,8 @@ public class AddressDaoService {
         var deliveryAddress = addressRepository.findByPublicDeliveryAddressId(addressDetails.publicAddressId())
                 .orElseThrow(() -> new NotFoundException(
                         "Address with id - " + addressDetails.publicAddressId() + " + not found"));
-        addressMapper.updateAddressFromAddressUpdateDetails(addressUpdateDetails, deliveryAddress);
-        return addressMapper.toAddressDetails(addressRepository.save(deliveryAddress));
+        var updatedAddress = addressMapper.updateAddressFromDetails(addressUpdateDetails, deliveryAddress);
+        return addressMapper.toAddressDetails(addressRepository.save(updatedAddress));
     }
 
     @Transactional

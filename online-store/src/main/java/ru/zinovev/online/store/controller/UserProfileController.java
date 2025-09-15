@@ -41,7 +41,6 @@ public class UserProfileController {
         log.debug("Received GET request to edit user with id = {}", publicUserId);
         var user = userService.findUserDetails(publicUserId);
         model.addAttribute("user", user);
-        // model.addAttribute("publicUserId", publicUserId);
         return "edit-user";
     }
 
