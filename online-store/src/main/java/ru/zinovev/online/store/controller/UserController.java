@@ -41,6 +41,7 @@ import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -165,11 +166,19 @@ public class UserController {
         var colorValues = getUniqueParametersByKey(products, "color");
         var ramValues = getUniqueParametersByKey(products, "ram");
         var memoryValues = getUniqueParametersByKey(products, "memory");
+        var priceMin =
+                products.stream().map(ProductDetails::price).min(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
+        var priceMax =
+                products.stream().map(ProductDetails::price).max(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
 
         model.addAttribute("brandValues", brandValues);
         model.addAttribute("colorValues", colorValues);
         model.addAttribute("ramValues", ramValues);
         model.addAttribute("memoryValues", memoryValues);
+        model.addAttribute("minPrice", minPrice);
+        model.addAttribute("maxPrice", maxPrice);
+        model.addAttribute("priceMin", priceMin);
+        model.addAttribute("priceMax", priceMax);
         model.addAttribute("products", products);
         return "products";
     }
@@ -268,7 +277,7 @@ public class UserController {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
             redirectAttributes.addFlashAttribute("errorMessage", //доработать
-                                                e.getMessage());
+                                                 e.getMessage());
         } catch (BadRequestException e) {
             if (e.getMessage()
                     .equals("Address with id - " + orderDto.publicAddressId()
@@ -278,7 +287,7 @@ public class UserController {
                                                      "Выбранный адрес не является адресом покупателя");
                 return "redirect:/api/users/" + publicUserId + "/cart";
             } else if (e.getMessage().equals("The selected address does not match the selected delivery method - "
-                                                     + orderDto.deliveryMethodName().name())){
+                                                     + orderDto.deliveryMethodName().name())) {
                 redirectAttributes.addFlashAttribute("errorMessage",
                                                      "Выбранный адрес не соответствует выбранному способу доставки");
                 return "redirect:/api/users/" + publicUserId + "/cart";

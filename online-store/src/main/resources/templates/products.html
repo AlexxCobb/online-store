@@ -48,6 +48,39 @@
                 </div>
             </div>
 
+            <div class="col-md-5">
+                <label class="form-label">Цена, руб.</label>
+
+                <div class="row mb-2">
+                    <div class="col">
+                        <input type="number" class="form-control"
+                               name="minPrice"
+                               th:value="${minPrice != null ? minPrice : priceMin}"
+                               th:min="${priceMin}"
+                               th:max="${priceMax}"
+                               placeholder="От"
+                               step="50">
+                    </div>
+                    <div class="col">
+                        <input type="number" class="form-control"
+                               name="maxPrice"
+                               th:value="${maxPrice != null ? maxPrice : priceMax}"
+                               th:min="${priceMin}"
+                               th:max="${priceMax}"
+                               placeholder="До"
+                               step="100">
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <small class="text-muted">
+                        Выбранный диапазон:
+                        <span th:text="${minPrice != null ? #numbers.formatDecimal(minPrice, 1, 2) : #numbers.formatDecimal(priceMin, 1, 2)}"></span> ₽ -
+                        <span th:text="${maxPrice != null ? #numbers.formatDecimal(maxPrice, 1, 2) : #numbers.formatDecimal(priceMax, 1, 2)}"></span> ₽
+                    </small>
+                </div>
+            </div>
+
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">Применить фильтры</button>
                 <a th:href="@{/api/users/products}" class="btn btn-outline-secondary">Сбросить</a>
@@ -68,13 +101,13 @@
             <h1>Товары</h1>
 
             <div class="row">
-                <div th:each="product : ${products}" class="col-md-8 col-lg-8 mb-4 col-xl-3">
-                    <div class="card h-100 product-card">
+                <div th:each="product : ${products}" class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                    <div class="card h-100 product-card" style="max-width: 20rem;">
                         <img th:src="@{${product.imagePath != null ? product.imagePath : '/images/WI-BI.png'}}"
                              class="card-img-top shop-image"
                              alt="Product image">
                         <div class="card-body">
-                            <h5 class="card-title" th:text="${product.name}">Product Name</h5>
+                            <h5 class="card-title" th:text="${product.name}"></h5>
                             <p class="card-text">
                                 <strong>Бренд:</strong>
                                 <span th:text="${#lists.isEmpty(product.parameters.?[key == 'brand']) ?
@@ -96,7 +129,6 @@
                                 <span th:text="${product.stockQuantity} + ' шт.'"></span>
                             </p>
 
-                            <!-- Форма добавления в корзину -->
                             <div th:if="${product.stockQuantity > 0}">
                                 <form th:action="@{'/api/users/cart'}" method="post" class="add-to-cart-form">
                                     <input type="hidden" name="publicProductId" th:value="${product.publicProductId}">
@@ -117,7 +149,6 @@
         </div>
     </div>
 </div>
-
 <footer th:replace="~{fragments/footer :: copy}"></footer>
 </body>
 </html>
