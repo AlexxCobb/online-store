@@ -30,9 +30,6 @@ public class ProductService {
                                         @NonNull String publicProductId) {
         userService.findUserDetails(publicUserId);
         getByPublicId(publicProductId);
-        if (productUpdateDetails.publicCategoryId() != null) { // нужна ли проверка, если ниже буду опять это делать
-            categoryService.getCategoryByPublicId(productUpdateDetails.publicCategoryId());
-        }
         return productDaoService.updateProduct(productUpdateDetails, publicProductId);
     }
 
@@ -58,9 +55,5 @@ public class ProductService {
             }
         }
         return productDaoService.findProducts(categoryPublicIds, minPrice, maxPrice, productParamDetails);
-    }
-
-    public boolean existProducts(List<String> productsIds) {
-        return productDaoService.existProducts(productsIds);
     }
 }
