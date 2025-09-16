@@ -2,6 +2,7 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
 import ru.zinovev.online.store.controller.dto.UserRegistrationDto;
@@ -16,7 +17,7 @@ import ru.zinovev.online.store.model.UserDetails;
 public class UserService {
 
     private final UserDaoService userDaoService;
-    // private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public UserDetails createUser(@NonNull UserRegistrationDto userRegistrationDto) {
         return userDaoService.createUser(userRegistrationDto);
@@ -35,18 +36,12 @@ public class UserService {
         var userDetails = findUserDetails(publicUserId);
         var userPassword = userDaoService.findPasswordHashByPublicId(userDetails)
                 .orElseThrow(() -> new NotFoundException("Password not found"));
-        if (!userPassword.equals(changePasswordDto.currentPassword())) {
-            throw new InvalidPasswordException("Current password is incorrect");
-        }
-        if (userPassword.equals(changePasswordDto.newPassword())) {
-            throw new InvalidPasswordException("New password cannot match current password");
-        }
-       /* if (!passwordEncoder.matches(changePasswordDto.currentPassword(), userPassword)) {
+        if (!passwordEncoder.matches(changePasswordDto.currentPassword(), userPassword)) {
             throw new InvalidPasswordException("Current password is incorrect");
         }
         if (passwordEncoder.matches(changePasswordDto.newPassword(), userPassword)) {
             throw new InvalidPasswordException("New password cannot match current password");
-        }*/
+        }
         return userDaoService.changePassword(userDetails, changePasswordDto);
     }
 
@@ -56,6 +51,6 @@ public class UserService {
     }
 
     public Boolean checkExistEmail(String email) {
-        return userDaoService.findByEmailIgnoreCase(email);
+        return userDaoService.existByEmailIgnoreCase(email);
     }
 }

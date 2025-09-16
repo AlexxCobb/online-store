@@ -58,7 +58,7 @@ public class UserDaoService {
         return userMapper.toUserDetails(userRepository.save(updateUser));
     }
 
-    public Boolean findByEmailIgnoreCase(String email) {
+    public Boolean existByEmailIgnoreCase(String email) {
         return userRepository.existsByEmailIgnoreCase(email);
     }
 
