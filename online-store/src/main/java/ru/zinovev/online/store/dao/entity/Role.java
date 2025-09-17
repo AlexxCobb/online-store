@@ -27,11 +27,15 @@ import java.util.Set;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "role_id")
+    private Integer id;
 
     @Enumerated(EnumType.STRING)
-    @Column(unique = true, nullable = false)
+    @Column(name = "role_name")
     private RoleName name;
+
+    @Column(name = "role_description")
+    private String description;
 
     @ManyToMany(mappedBy = "roles")
     @Builder.Default

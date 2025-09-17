@@ -24,3 +24,7 @@ spring:
     hidden method:
       filter:
         enabled: true
+  logging:
+    level:
+      org.springframework.security: DEBUG
+      online-store: DEBUG

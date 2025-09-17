@@ -5,12 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
-import ru.zinovev.online.store.controller.dto.UserRegistrationDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
 import ru.zinovev.online.store.dao.UserDaoService;
 import ru.zinovev.online.store.exception.model.InvalidPasswordException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
+import ru.zinovev.online.store.model.UserRegistrationDetails;
 
 @Service
 @RequiredArgsConstructor
@@ -19,8 +19,12 @@ public class UserService {
     private final UserDaoService userDaoService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserDetails createUser(@NonNull UserRegistrationDto userRegistrationDto) {
-        return userDaoService.createUser(userRegistrationDto);
+    public UserDetails createUser(@NonNull UserRegistrationDetails userRegistrationDetails) {
+        return userDaoService.createUser(userRegistrationDetails);
+    }
+
+    public UserDetails singIn(@NonNull String email, @NonNull String password) {
+        return userDaoService.singIn(email, password);
     }
 
     public UserDetails updateUser(@NonNull String publicUserId, @NonNull UserUpdateDto userUpdateDto) {
@@ -51,6 +55,12 @@ public class UserService {
     }
 
     public Boolean checkExistEmail(String email) {
-        return userDaoService.existByEmailIgnoreCase(email);
+        var user = userDaoService.findByEmailIgnoreCase(email);
+        return user.isPresent();
+    }
+
+    public UserDetails findUserDetailsByEmail(String email) {
+        return userDaoService.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new NotFoundException("User with email - " + email + " not found"));
     }
 }

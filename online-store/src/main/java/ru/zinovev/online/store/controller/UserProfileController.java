@@ -77,7 +77,6 @@ public class UserProfileController {
         try {
             userService.changePassword(publicUserId, changePasswordDto);
             redirectAttributes.addFlashAttribute("successMessage", "ПАРОЛЬ УСПЕШНО ОБНОВЛЕН");
-
         } catch (InvalidPasswordException e) {
             if (e.getMessage().equals("Current password is incorrect")) {
                 redirectAttributes.addFlashAttribute("errorMessage",
