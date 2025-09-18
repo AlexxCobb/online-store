@@ -5,7 +5,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
@@ -71,7 +70,7 @@ public class ProductDaoService {
                 productRepository.findByPublicProductId(publicProductId)
                         .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId
                                                                          + " , not found"));
-        var category = new Category();
+        var category = existedProduct.getCategory();
         if (updateDetails.publicCategoryId() != null) {
             category = categoryRepository.findByPublicCategoryId(updateDetails.publicCategoryId())
                     .orElseThrow(() -> new NotFoundException(
@@ -79,7 +78,7 @@ public class ProductDaoService {
         }
 
         var updatedProductFromDetails = productMapper.updateProductFromDetails(updateDetails, existedProduct);
-        var updatedProduct =  updatedProductFromDetails.toBuilder().category(category).build();
+        var updatedProduct = updatedProductFromDetails.toBuilder().category(category).build();
         return productMapper.toProductDetails(productRepository.save(updatedProduct));
     }
 
@@ -137,10 +136,6 @@ public class ProductDaoService {
                 .get();
 
         return productRepository.findAll(allConditions).stream().map(productMapper::toProductDetails).toList();
-    }
-
-    public boolean existProducts(List<String> productIds) {
-        return productRepository.existsByPublicProductIdIn(productIds);
     }
 
     @Transactional(propagation = Propagation.MANDATORY)

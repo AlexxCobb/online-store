@@ -35,7 +35,7 @@ public class UserRegistrationController {
         if (!userRegistrationDto.password().equals(userRegistrationDto.confirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "error.userRegistrationDto", "Пароли не совпадают");
         }
-        if (userService.checkExistEmail(userRegistrationDto.email())) {
+        if (userService.checkExistByEmail(userRegistrationDto.email())) {
             bindingResult.rejectValue("confirmPassword", "error.userRegistrationDto",
                                       "Пользователь с таким email - " + userRegistrationDto.email()
                                               + " уже существует.");

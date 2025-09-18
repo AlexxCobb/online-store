@@ -23,7 +23,6 @@ public class OrderService {
     private final OrderDaoService orderDaoService;
     private final UserService userService;
     private final AddressService addressService;
-    private final ProductService productService;
     private final CartService cartService;
 
     public OrderDetails createOrder(@NonNull String publicUserId, @NonNull OrderDto orderDto) {
@@ -50,8 +49,8 @@ public class OrderService {
     }
 
     public void changeOrderStatus(@NonNull String publicUserId, @NonNull String publicOrderId,
-                                          @NonNull OrderStatusName orderStatusName,
-                                          PaymentStatusName paymentStatusName) {
+                                  @NonNull OrderStatusName orderStatusName,
+                                  PaymentStatusName paymentStatusName) {
         userService.findUserDetails(publicUserId);
         orderDaoService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
     }

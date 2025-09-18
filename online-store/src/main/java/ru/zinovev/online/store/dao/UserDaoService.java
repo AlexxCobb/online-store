@@ -1,23 +1,23 @@
 package ru.zinovev.online.store.dao;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
+import ru.zinovev.online.store.dao.entity.Role;
 import ru.zinovev.online.store.dao.entity.User;
 import ru.zinovev.online.store.dao.entity.enums.RoleName;
 import ru.zinovev.online.store.dao.mapper.UserMapper;
 import ru.zinovev.online.store.dao.repository.UserRepository;
-import ru.zinovev.online.store.exception.model.ForbiddenException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
 import ru.zinovev.online.store.model.UserRegistrationDetails;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -29,11 +29,10 @@ public class UserDaoService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final PasswordEncoder passwordEncoder;
     private final RoleDaoService roleDaoService;
 
     @Transactional
-    public UserDetails createUser(UserRegistrationDetails userRegistrationDetails) {
+    public UserDetails createUser(UserRegistrationDetails userRegistrationDetails, String password) {
         var role = roleDaoService.findByName(RoleName.ROLE_USER);
 
         var newUser = User.builder()
@@ -42,18 +41,23 @@ public class UserDaoService implements UserDetailsService {
                 .email(userRegistrationDetails.email())
                 .name(userRegistrationDetails.name())
                 .lastname(userRegistrationDetails.lastname())
-                .passwordHash(passwordEncoder.encode(userRegistrationDetails.password()))
+                .passwordHash(password)
                 .roles(Set.of(role))
                 .build();
         return userMapper.toUserDetails(userRepository.save(newUser));
     }
 
-    public UserDetails singIn(@NonNull String email, @NonNull String password) {
-        var user = userRepository.findByEmailIgnoreCase(email);
-        if (user.isEmpty() || !passwordEncoder.matches(password, user.get().getPasswordHash())) {
-            throw new ForbiddenException("User with email: %s not found or password is incorrect".formatted(email));
-        }
-        return userMapper.toUserDetails(user.get());
+    public void initAdmin(String adminEmail, String adminPassword, LocalDate adminBirthday, Role adminRole) {
+        var admin = User.builder()
+                .email(adminEmail)
+                .passwordHash(adminPassword)
+                .name("Admin")
+                .lastname("System")
+                .birthday(adminBirthday)
+                .roles(Collections.singleton(adminRole))
+                .publicUserId(UUID.randomUUID().toString())
+                .build();
+        userRepository.save(admin);
     }
 
     @Transactional

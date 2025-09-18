@@ -28,3 +28,7 @@ spring:
     level:
       org.springframework.security: DEBUG
       online-store: DEBUG
+admin:
+  email: admin@sys.com
+  password: Admin90210
+  birthday: 01.01.2000

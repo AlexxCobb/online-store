@@ -1,22 +1,21 @@
 package ru.zinovev.online.store.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import ru.zinovev.online.store.config.CustomAuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,7 +34,7 @@ public class SecurityConfig {
                 .formLogin(form -> form
                         .loginPage("/api/auth/sign-in")
                         .loginProcessingUrl("/api/auth/sign-in")
-                        .defaultSuccessUrl("/api/users/home", true)
+                        .successHandler(customAuthenticationSuccessHandler)
                         .failureUrl("/api/auth/sign-in?error=true")
                         .usernameParameter("email")
                         .passwordParameter("password")

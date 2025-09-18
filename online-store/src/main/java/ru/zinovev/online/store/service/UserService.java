@@ -6,11 +6,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
+import ru.zinovev.online.store.dao.RoleDaoService;
 import ru.zinovev.online.store.dao.UserDaoService;
+import ru.zinovev.online.store.dao.entity.enums.RoleName;
 import ru.zinovev.online.store.exception.model.InvalidPasswordException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
 import ru.zinovev.online.store.model.UserRegistrationDetails;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -18,13 +22,16 @@ public class UserService {
 
     private final UserDaoService userDaoService;
     private final PasswordEncoder passwordEncoder;
+    private final RoleDaoService roleDaoService;
 
     public UserDetails createUser(@NonNull UserRegistrationDetails userRegistrationDetails) {
-        return userDaoService.createUser(userRegistrationDetails);
+        var password = passwordEncoder.encode(userRegistrationDetails.password());
+        return userDaoService.createUser(userRegistrationDetails, password);
     }
 
-    public UserDetails singIn(@NonNull String email, @NonNull String password) {
-        return userDaoService.singIn(email, password);
+    public void initAdmin(String adminEmail, String adminPassword, LocalDate adminBirthday, RoleName roleName) {
+        var adminRole = roleDaoService.findByName(roleName);
+        userDaoService.initAdmin(adminEmail, passwordEncoder.encode(adminPassword), adminBirthday, adminRole);
     }
 
     public UserDetails updateUser(@NonNull String publicUserId, @NonNull UserUpdateDto userUpdateDto) {
@@ -54,7 +61,7 @@ public class UserService {
                 () -> new NotFoundException("User with id - " + publicUserId + " not found"));
     }
 
-    public Boolean checkExistEmail(String email) {
+    public Boolean checkExistByEmail(String email) {
         var user = userDaoService.findByEmailIgnoreCase(email);
         return user.isPresent();
     }

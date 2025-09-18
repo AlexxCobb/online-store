@@ -60,9 +60,7 @@ public class AdminController {
     private final CategoryMapper categoryMapper;
 
     @GetMapping("/home")
-    public String homePage(Model model) {
-        var publicUserId = "userPublicId1";
-        model.addAttribute("publicUserId", publicUserId);
+    public String homePage() {
         return "admin/admin-home";
     }
 
