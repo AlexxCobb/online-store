@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/header :: common-header('NavBar')}">
 </head>
 <body>
@@ -80,21 +80,22 @@
             </ul>
 
             <ul class="navbar-nav ms-auto">
-                <li th:if="${publicUserId == null}" class="nav-item">
-                    <a class="nav-link" th:href="@{/api/auth}">
+                <li sec:authorize="!isAuthenticated()" class="nav-item">
+                    <a class="nav-link" th:href="@{/api/auth/sign-in}">
                         <i class="bi bi-person me-1"></i> Войти
                     </a>
                 </li>
-                <li th:if="${publicUserId == null}" class="nav-item">
+                <li sec:authorize="!isAuthenticated()" class="nav-item">
                     <a class="nav-link" th:href="@{/api/auth}">
                         <i class="bi bi-person-plus me-1"></i> Регистрация
                     </a>
                 </li>
 
-                <li th:if="${publicUserId != null}" class="nav-item dropdown">
+                <li sec:authorize="isAuthenticated()" class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle me-1"></i> Мой аккаунт
+                        <span sec:authentication="name"></span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>

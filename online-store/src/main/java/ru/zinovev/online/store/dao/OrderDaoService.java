@@ -86,8 +86,8 @@ public class OrderDaoService {
                     .build();
         }).toList();
 
-        //  var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
-        order.getItems().addAll(items);
+        var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
+        order.getItems().addAll(updatedItems);
         var newOrd = orderRepository.save(order);
         cartRepository.delete(cart);
 

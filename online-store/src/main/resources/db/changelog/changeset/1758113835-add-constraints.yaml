@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1758113835-add-constraint-user-id
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1758113835-add-constraint-user-id.sql
+  - changeSet:
+      id: 1758113835-add-constraint-role-id
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1758113835-add-constraint-role-id.sql

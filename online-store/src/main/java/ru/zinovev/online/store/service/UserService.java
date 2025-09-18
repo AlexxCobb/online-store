@@ -2,24 +2,36 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
-import ru.zinovev.online.store.controller.dto.UserRegistrationDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
+import ru.zinovev.online.store.dao.RoleDaoService;
 import ru.zinovev.online.store.dao.UserDaoService;
+import ru.zinovev.online.store.dao.entity.enums.RoleName;
 import ru.zinovev.online.store.exception.model.InvalidPasswordException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
+import ru.zinovev.online.store.model.UserRegistrationDetails;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserDaoService userDaoService;
-    // private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleDaoService roleDaoService;
 
-    public UserDetails createUser(@NonNull UserRegistrationDto userRegistrationDto) {
-        return userDaoService.createUser(userRegistrationDto);
+    public UserDetails createUser(@NonNull UserRegistrationDetails userRegistrationDetails) {
+        var password = passwordEncoder.encode(userRegistrationDetails.password());
+        return userDaoService.createUser(userRegistrationDetails, password);
+    }
+
+    public void initAdmin(String adminEmail, String adminPassword, LocalDate adminBirthday, RoleName roleName) {
+        var adminRole = roleDaoService.findByName(roleName);
+        userDaoService.initAdmin(adminEmail, passwordEncoder.encode(adminPassword), adminBirthday, adminRole);
     }
 
     public UserDetails updateUser(@NonNull String publicUserId, @NonNull UserUpdateDto userUpdateDto) {
@@ -35,18 +47,12 @@ public class UserService {
         var userDetails = findUserDetails(publicUserId);
         var userPassword = userDaoService.findPasswordHashByPublicId(userDetails)
                 .orElseThrow(() -> new NotFoundException("Password not found"));
-        if (!userPassword.equals(changePasswordDto.currentPassword())) {
-            throw new InvalidPasswordException("Current password is incorrect");
-        }
-        if (userPassword.equals(changePasswordDto.newPassword())) {
-            throw new InvalidPasswordException("New password cannot match current password");
-        }
-       /* if (!passwordEncoder.matches(changePasswordDto.currentPassword(), userPassword)) {
+        if (!passwordEncoder.matches(changePasswordDto.currentPassword(), userPassword)) {
             throw new InvalidPasswordException("Current password is incorrect");
         }
         if (passwordEncoder.matches(changePasswordDto.newPassword(), userPassword)) {
             throw new InvalidPasswordException("New password cannot match current password");
-        }*/
+        }
         return userDaoService.changePassword(userDetails, changePasswordDto);
     }
 
@@ -55,7 +61,13 @@ public class UserService {
                 () -> new NotFoundException("User with id - " + publicUserId + " not found"));
     }
 
-    public Boolean checkExistEmail(String email) {
-        return userDaoService.findByEmailIgnoreCase(email);
+    public Boolean checkExistByEmail(String email) {
+        var user = userDaoService.findByEmailIgnoreCase(email);
+        return user.isPresent();
+    }
+
+    public UserDetails findUserDetailsByEmail(String email) {
+        return userDaoService.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new NotFoundException("User with email - " + email + " not found"));
     }
 }

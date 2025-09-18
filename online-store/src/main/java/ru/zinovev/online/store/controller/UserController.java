@@ -209,10 +209,11 @@ public class UserController {
     public String removeProductFromCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
                                         @RequestParam(required = false) String publicUserId,
                                         @PathVariable String publicProductId,
-                                        RedirectAttributes redirectAttributes) {
+                                        RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received PATCH request to remove product from cart");
         cartService.removeProductFromCart(publicCartId, publicUserId, publicProductId);
         redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УДАЛЕН ИЗ КОРЗИНЫ");
+        model.addAttribute("publicProductId", publicProductId);
         return "redirect:/api/users/cart";
     }
 

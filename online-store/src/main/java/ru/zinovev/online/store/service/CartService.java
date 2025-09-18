@@ -54,13 +54,13 @@ public class CartService {
         return cartDaoService.findCartDetails(publicCartId).orElse(null);
     }
 
-    public CartDetails removeProductFromCart(String publicCartId, String publicUserId, String publicProductId) {
+    public void removeProductFromCart(String publicCartId, String publicUserId, String publicProductId) {
         if (publicUserId != null) {
             userService.findUserDetails(publicUserId);
         }
         productService.getByPublicId(publicProductId);
         var cart = getCart(publicCartId, publicUserId);
-        return cartDaoService.removeItemFromCart(cart, publicProductId);
+        cartDaoService.removeItemFromCart(cart, publicProductId);
     }
 
     public void clearCart(String publicCartId, String publicUserId) {

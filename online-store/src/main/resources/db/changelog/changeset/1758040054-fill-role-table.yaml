@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1758040054-fill-role-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1758040054-fill-role-table.sql
