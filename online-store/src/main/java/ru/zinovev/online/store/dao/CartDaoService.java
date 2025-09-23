@@ -83,13 +83,15 @@ public class CartDaoService {
         var cart = cartRepository.findByPublicCartId(publicCartId);
         var userCart = cartRepository.findByUserPublicUserId(publicUserId);
 
-        if (cart.isEmpty() && userCart.isEmpty()) {
-            cartRepository.save(Cart.builder()
-                                        .user(user)
-                                        .publicCartId(UUID.randomUUID().toString())
-                                        .build());
-
-        } else if (cart.isPresent()) {
+        if (cart.isEmpty()) {
+            if (userCart.isEmpty()) {
+                cartRepository.save(Cart.builder()
+                                            .user(user)
+                                            .publicCartId(UUID.randomUUID().toString())
+                                            .build());
+            }
+        }
+        if (cart.isPresent()) {
             if (userCart.isEmpty()) {
                 var cartWithUser = cart.get().toBuilder()
                         .user(user)
@@ -100,7 +102,7 @@ public class CartDaoService {
                 var userCartItems = userCart.get().getItems();
                 tempItems.forEach(cartItem -> {
                     var item = userCartItems.stream()
-                            .filter(userCartItem -> userCartItem.getProduct().equals(cartItem.getProduct()))
+                            .filter(userCartItem -> userCartItem.getProduct().getPublicProductId().equals(cartItem.getProduct().getPublicProductId()))
                             .findFirst();
                     if (item.isPresent()) {
                         var newQuantity = item.get().getQuantity() + cartItem.getQuantity();
@@ -111,11 +113,13 @@ public class CartDaoService {
                         userCartItems.add(cartItem);
                     }
                 });
+
                 cartRepository.save(userCart.get());
+               // cart.get().getItems().clear();
+                cartRepository.delete(cart.get());
             }
         }
     }
-
 
     public Optional<CartDetails> findCartDetails(String publicCartId) {
         return cartRepository.findByPublicCartId(publicCartId)

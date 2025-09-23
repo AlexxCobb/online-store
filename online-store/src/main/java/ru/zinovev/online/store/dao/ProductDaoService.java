@@ -144,8 +144,8 @@ public class ProductDaoService {
         products.forEach((product, integer) -> {
             if (product.getStockQuantity() < integer) {
                 throw new OutOfStockException(
-                        "You cannot order the selected quantity - " + integer + " of product with id - "
-                                + product.getPublicProductId() + ", the remainder in the warehouse is - "
+                        "You cannot order the selected quantity - " + integer + " of product name - "
+                                + product.getName() + ", the remainder in the warehouse is - "
                                 + product.getStockQuantity());
             }
             var productToUpdate = product.toBuilder()

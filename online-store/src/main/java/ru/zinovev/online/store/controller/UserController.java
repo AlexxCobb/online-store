@@ -277,8 +277,9 @@ public class UserController {
         try {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", //доработать
+            redirectAttributes.addFlashAttribute("errorMessage",
                                                  e.getMessage());
+            return "redirect:/api/users/" + publicUserId + "/cart";
         } catch (BadRequestException e) {
             if (e.getMessage()
                     .equals("Address with id - " + orderDto.publicAddressId()

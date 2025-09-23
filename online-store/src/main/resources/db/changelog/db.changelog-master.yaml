@@ -43,4 +43,5 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1758040157-add-users-roles-table.yaml
   - include:
       file: classpath:db/changelog/changeset/1758113835-add-constraints.yaml
-
+  - include:
+      file: classpath:db/changelog/changeset/1758546216-add-constraint-cart-item-table.yaml

@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -32,6 +34,7 @@ import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.exception.model.BadRequestException;
+import ru.zinovev.online.store.model.RevenueDetails;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
@@ -311,9 +314,11 @@ public class AdminController {
     }
 
     @GetMapping("/{publicUserId}/orders")
-    public String getOrders(@PathVariable String publicUserId, Model model) {
+    public String getOrders(@PathVariable String publicUserId, Model model,
+                            @RequestParam(defaultValue = "0") Integer page,
+                            @RequestParam(defaultValue = "10") Integer limit) {
         log.debug("Received GET request to get all user orders");
-        var orders = orderService.getAllOrders(publicUserId);
+        var orders = orderService.getAllOrders(publicUserId, page, limit);
 
         model.addAttribute("publicUserId", publicUserId);
         model.addAttribute("orders", orders);
@@ -344,9 +349,10 @@ public class AdminController {
 
     @GetMapping("/{publicUserId}/statistics/top-products")
     public String getProductStatistic(@PathVariable String publicUserId,
-                                      @RequestParam(defaultValue = "6") Integer limit, Model model) {
+                                      @RequestParam(defaultValue = "0") Integer page,
+                                      @RequestParam(defaultValue = "5") Integer limit, Model model) {
         log.debug("Received GET request to get product statistic");
-        var topProducts = statisticService.getTopProducts(publicUserId, limit);
+        var topProducts = statisticService.getTopProducts(publicUserId, PageRequest.of(page, limit));
         model.addAttribute("publicUserId", publicUserId);
         model.addAttribute("topProducts", topProducts);
         return "admin/top-products";
@@ -355,6 +361,7 @@ public class AdminController {
     @GetMapping("/{publicUserId}/statistics/top-users")
     public String getTopUsers(
             @PathVariable String publicUserId,
+            @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer limit,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
@@ -373,7 +380,8 @@ public class AdminController {
         var startDateTime = dateFrom.atStartOfDay(zone).toOffsetDateTime();
         var endDateTime = dateTo.atTime(currentUtcTime.toOffsetTime());
 
-        var topUsers = statisticService.getTopUsersByOrders(publicUserId, limit, startDateTime, endDateTime);
+        var topUsers = statisticService.getTopUsersByOrders(publicUserId, PageRequest.of(page, limit), startDateTime,
+                                                            endDateTime);
         model.addAttribute("topUsers", topUsers);
         model.addAttribute("publicUserId", publicUserId);
         return "admin/top-users";
@@ -382,6 +390,7 @@ public class AdminController {
     @GetMapping("/{publicUserId}/statistics/top-revenue")
     public String getTopRevenue(
             @PathVariable String publicUserId,
+            @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer limit,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
@@ -400,9 +409,13 @@ public class AdminController {
         var startDateTime = dateFrom.atStartOfDay(zone).toOffsetDateTime();
         var endDateTime = dateTo.atTime(currentUtcTime.toOffsetTime());
 
-        var topRevenue = statisticService.getStatistic(publicUserId, limit, startDateTime, endDateTime);
+        var topRevenue =
+                statisticService.getStatistic(publicUserId, PageRequest.of(page, limit), startDateTime, endDateTime);
+        var totalRevenue = statisticService.getTotalRevenue(topRevenue);
+
         model.addAttribute("topRevenue", topRevenue);
         model.addAttribute("publicUserId", publicUserId);
+        model.addAttribute("totalRevenue", totalRevenue);
         return "admin/top-revenue";
     }
 }

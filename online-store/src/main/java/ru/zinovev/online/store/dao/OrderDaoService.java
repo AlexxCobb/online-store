@@ -1,6 +1,10 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.zinovev.online.store.controller.dto.OrderDto;
@@ -86,8 +90,8 @@ public class OrderDaoService {
                     .build();
         }).toList();
 
-        var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
-        order.getItems().addAll(updatedItems);
+        //   var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
+        order.getItems().addAll(items);
         var newOrd = orderRepository.save(order);
         cartRepository.delete(cart);
 
@@ -101,11 +105,16 @@ public class OrderDaoService {
                 .collect(Collectors.toList());
     }
 
-    public List<OrderShortDetails> getAllOrders() {
-        return orderRepository.findAll()
+    public Page<OrderShortDetails> getAllOrders(Integer page, Integer limit) {
+        var sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        var pageable = PageRequest.of(page, limit, sort);
+
+        var orders = orderRepository.findAll(pageable);
+        var orderDetails = orders
                 .stream()
                 .map(orderMapper::toOrderShortDetails)
                 .collect(Collectors.toList());
+        return new PageImpl<>(orderDetails, pageable, orders.getTotalElements());
     }
 
     public Optional<OrderShortDetails> findOrderById(String publicOrderId) {

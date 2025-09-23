@@ -23,6 +23,19 @@
       <td th:text="${user.totalSpent}">1000</td>
     </tr>
   </table>
+  <div th:if="${topUsers.totalPages > 0}" class="pagination">
+    <a th:if="${topUsers.hasPrevious()}"
+       th:href="@{/api/admins/{publicUserId}/statistics/top-users(publicUserId=${publicUserId}, page=${topUsers.number - 1}, limit=${topUsers.size})}"
+       class="page-link previous">Предыдущая</a>
+
+    <span class="page-number">
+                <em th:text="${topUsers.number + 1}"></em> из <em th:text="${topUsers.totalPages}"></em>
+            </span>
+
+    <a th:if="${topUsers.hasNext()}"
+       th:href="@{/api/admins/{publicUserId}/statistics/top-users(publicUserId=${publicUserId}, page=${topUsers.number + 1}, limit=${topUsers.size})}"
+       class="page-link next">Следующая</a>
+  </div>
 </div>
 <footer th:replace="~{fragments/footer :: copy}"></footer>
 </body>

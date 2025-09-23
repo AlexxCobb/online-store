@@ -9,7 +9,6 @@ public record RevenueDetails(
         String publicOrderId,
         OrderStatusName name,
         OffsetDateTime createdAt,
-        BigDecimal totalOrderSpent,
-        BigDecimal totalRevenue
+        BigDecimal totalOrderSpent
 ) {
 }
