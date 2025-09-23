@@ -15,8 +15,6 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -33,9 +31,9 @@ public class OrderService {
         return orderDaoService.createOrder(userDetails, cartDetails, orderDto);
     }
 
-    public List<OrderDetails> getUserOrders(String publicUserId) {
+    public Page<OrderDetails> getUserOrders(String publicUserId, Integer page, Integer limit) {
         userService.findUserDetails(publicUserId);
-        return orderDaoService.getUserOrders(publicUserId);
+        return orderDaoService.getUserOrders(publicUserId, page, limit);
     }
 
     public Page<OrderShortDetails> getAllOrders(String publicUserId, Integer page, Integer limit) {

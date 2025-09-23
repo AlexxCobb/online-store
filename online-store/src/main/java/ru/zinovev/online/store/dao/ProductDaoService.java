@@ -1,6 +1,10 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -94,16 +98,20 @@ public class ProductDaoService {
         productRepository.delete(product);
     }
 
-    public List<ProductDetails> findProducts(List<String> categoryPublicIds, BigDecimal minPrice,
+    public Page<ProductDetails> findProducts(List<String> categoryPublicIds, BigDecimal minPrice,
                                              BigDecimal maxPrice,
-                                             ProductParamDetails productParamDetails) {
+                                             ProductParamDetails productParamDetails, Integer page, Integer limit) {
         if (Objects.isNull(categoryPublicIds) && Objects.isNull(minPrice) && Objects.isNull(maxPrice) && Objects.isNull(
                 productParamDetails.brand()) && Objects.isNull(productParamDetails.memory()) && Objects.isNull(
                 productParamDetails.ram()) && Objects.isNull(productParamDetails.color())) {
-            return productRepository.findAllWithParameters()
+            var sort = Sort.by(Sort.Direction.DESC,"stockQuantity");
+            var pageable = PageRequest.of(page, limit, sort);
+            var products = productRepository.findAllWithParameters(pageable);
+            var productDetails = products
                     .stream()
                     .map(productMapper::toProductDetails)
-                    .collect(Collectors.toList());
+                    .toList();
+            return new PageImpl<>(productDetails, pageable, products.getTotalElements());
         }
 
         List<Specification<Product>> spec = new ArrayList<>();
@@ -134,8 +142,23 @@ public class ProductDaoService {
         Specification<Product> allConditions = spec.stream()
                 .reduce(Specification::and)
                 .get();
+        var sort = Sort.by(Sort.Direction.DESC,"stockQuantity");
+        var pageable = PageRequest.of(page, limit, sort);
+        var products = productRepository.findAll(allConditions, pageable);
+        var productDetails = products.stream().map(productMapper::toProductDetails).toList();
+        return new PageImpl<>(productDetails, pageable, products.getTotalElements());
+    }
 
-        return productRepository.findAll(allConditions).stream().map(productMapper::toProductDetails).toList();
+    public Set<String> findUniqueParametersByKey(String key){
+        return productRepository.findUniqueParametersByKey(key);
+    }
+
+    public BigDecimal getMinPrice(){
+        return productRepository.getMinPrice();
+    }
+
+    public BigDecimal getMaxPrice(){
+        return productRepository.getMaxPrice();
     }
 
     @Transactional(propagation = Propagation.MANDATORY)

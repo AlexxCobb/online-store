@@ -52,6 +52,19 @@
         </tr>
         </tbody>
     </table>
+    <div th:if="${orders.totalPages > 0}" class="pagination">
+        <a th:if="${orders.hasPrevious()}"
+           th:href="@{/api/users/{publicUserId}/orders(publicUserId=${publicUserId}, page=${orders.number - 1}, limit=${orders.size})}"
+           class="page-link previous">Предыдущая</a>
+
+        <span class="page-number">
+                <em th:text="${orders.number + 1}"></em> из <em th:text="${orders.totalPages}"></em>
+            </span>
+
+        <a th:if="${orders.hasNext()}"
+           th:href="@{/api/users/{publicUserId}/orders(publicUserId=${publicUserId}, page=${orders.number + 1}, limit=${orders.size})}"
+           class="page-link next">Следующая</a>
+    </div>
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>

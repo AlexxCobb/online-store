@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -34,7 +33,6 @@ import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.exception.model.BadRequestException;
-import ru.zinovev.online.store.model.RevenueDetails;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
@@ -220,13 +218,15 @@ public class AdminController {
                                  @RequestParam(required = false) List<String> publicCategoryIds,
                                  @RequestParam(required = false) BigDecimal minPrice,
                                  @RequestParam(required = false) BigDecimal maxPrice,
+                                 @RequestParam(defaultValue = "0") Integer page,
+                                 @RequestParam(defaultValue = "5") Integer limit,
                                  @Valid ProductParamDto productParamDto,
                                  Model model, @ModelAttribute
                                  ProductDto productDto) {
         log.debug("Received GET request to search products with parameters");
         var products = productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
                                                                    productMapper.toProductParamDetails(
-                                                                           productParamDto));
+                                                                           productParamDto), page, limit);
         var categories = categoryService.getCategories();
         model.addAttribute("categories", categories);
         model.addAttribute("publicUserId", publicUserId);

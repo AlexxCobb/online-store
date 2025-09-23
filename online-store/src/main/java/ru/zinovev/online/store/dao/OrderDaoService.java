@@ -28,7 +28,6 @@ import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -98,11 +97,15 @@ public class OrderDaoService {
         return orderMapper.toOrderDetails(newOrd);
     }
 
-    public List<OrderDetails> getUserOrders(String publicUserId) {
-        return orderRepository.findByUserPublicUserIdOrderByCreatedAtAsc(publicUserId)
+    public Page<OrderDetails> getUserOrders(String publicUserId, Integer page, Integer limit) {
+        var pageable = PageRequest.of(page, limit);
+
+        var orders = orderRepository.findByUserPublicUserIdOrderByCreatedAtDesc(publicUserId, pageable);
+        var orderDetails = orders
                 .stream()
                 .map(orderMapper::toOrderDetails)
-                .collect(Collectors.toList());
+                .toList();
+        return new PageImpl<>(orderDetails, pageable, orders.getTotalElements());
     }
 
     public Page<OrderShortDetails> getAllOrders(Integer page, Integer limit) {
@@ -113,7 +116,7 @@ public class OrderDaoService {
         var orderDetails = orders
                 .stream()
                 .map(orderMapper::toOrderShortDetails)
-                .collect(Collectors.toList());
+                .toList();
         return new PageImpl<>(orderDetails, pageable, orders.getTotalElements());
     }
 
