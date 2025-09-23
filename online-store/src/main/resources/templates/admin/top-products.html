@@ -25,6 +25,20 @@
             <td th:text="${product.purchaseCount}">333</td>
         </tr>
     </table>
+    <div th:if="${topProducts.totalPages > 0}" class="pagination">
+        <a th:if="${topProducts.hasPrevious()}"
+           th:href="@{/api/admins/{publicUserId}/statistics/top-products(publicUserId=${publicUserId}, page=${topProducts.number - 1}, limit=${topProducts.size})}"
+           class="page-link previous">Предыдущая</a>
+
+        <span class="page-number">
+                <em th:text="${topProducts.number + 1}"></em> из <em th:text="${topProducts.totalPages}"></em>
+            </span>
+
+        <a th:if="${topProducts.hasNext()}"
+           th:href="@{/api/admins/{publicUserId}/statistics/top-products(publicUserId=${publicUserId}, page=${topProducts.number + 1}, limit=${topProducts.size})}"
+           class="page-link next">Следующая</a>
+    </div>
+
 </div>
 <footer th:replace="~{fragments/footer :: copy}"></footer>
 </body>

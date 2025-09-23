@@ -55,6 +55,20 @@
             </td>
         </tr>
     </table>
+    <div th:if="${products.totalPages > 0}" class="pagination">
+        <a th:if="${products.hasPrevious()}"
+           th:href="@{/api/admins/{publicUserId}/products(publicUserId=${publicUserId}, page=${products.number - 1}, limit=${products.size})}"
+           class="page-link previous">Предыдущая</a>
+
+        <span class="page-number">
+                <em th:text="${products.number + 1}"></em> из <em th:text="${products.totalPages}"></em>
+            </span>
+
+        <a th:if="${products.hasNext()}"
+           th:href="@{/api/admins/{publicUserId}/products(publicUserId=${publicUserId}, page=${products.number + 1}, limit=${products.size})}"
+           class="page-link next">Следующая</a>
+    </div>
+
 
     <table>
         <form th:action="@{'/api/admins/' + ${publicUserId} + '/products'}"

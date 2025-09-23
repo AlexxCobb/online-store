@@ -49,9 +49,11 @@ public class CartService {
 
     public CartDetails getCart(String publicCartId, String publicUserId) {
         if (publicUserId != null) {
-            getUserCart(publicUserId);
+            return getUserCart(publicUserId);
+        } else if (publicCartId != null) {
+            return cartDaoService.findCartDetails(publicCartId).orElse(null);
         }
-        return cartDaoService.findCartDetails(publicCartId).orElse(null);
+        return null;
     }
 
     public void removeProductFromCart(String publicCartId, String publicUserId, String publicProductId) {

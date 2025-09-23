@@ -10,5 +10,4 @@ public interface RevenueView {
     OrderStatusName getName();
     OffsetDateTime getCreatedAt();
     BigDecimal getTotalOrderSpent();
-    BigDecimal getTotalRevenue();
 }

@@ -1,16 +1,17 @@
 package ru.zinovev.online.store.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.dao.StatisticDaoService;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.model.RevenueDetails;
 import ru.zinovev.online.store.model.TopCustomerDetails;
 import ru.zinovev.online.store.model.TopProductDetails;
-import ru.zinovev.online.store.utils.PaginationServiceClass;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -19,26 +20,33 @@ public class StatisticService {
     private final StatisticDaoService statisticDaoService;
     private final UserService userService;
 
-    public List<TopProductDetails> getTopProducts(String publicUserId, Integer limit) {
+    public Page<TopProductDetails> getTopProducts(String publicUserId, Pageable pageable) {
         userService.findUserDetails(publicUserId);
-        var page = PaginationServiceClass.pagination(0, limit);
-        return statisticDaoService.findTopProducts(page);
+        return statisticDaoService.findTopProducts(pageable);
     }
 
-    public List<TopCustomerDetails> getTopUsersByOrders(String publicUserId, Integer limit, OffsetDateTime dateFrom,
+    public Page<TopCustomerDetails> getTopUsersByOrders(String publicUserId, Pageable pageable, OffsetDateTime dateFrom,
                                                         OffsetDateTime dateTo) {
         userService.findUserDetails(publicUserId);
-        var page = PaginationServiceClass.pagination(0, limit);
         checkPeriodOfTime(dateFrom, dateTo);
-        return statisticDaoService.findTopUsersByOrders(page, dateFrom, dateTo);
+        return statisticDaoService.findTopUsersByOrders(pageable, dateFrom, dateTo);
     }
 
-    public List<RevenueDetails> getStatistic(String publicUserId, Integer limit, OffsetDateTime dateFrom,
+    public Page<RevenueDetails> getStatistic(String publicUserId, Pageable pageable, OffsetDateTime dateFrom,
                                              OffsetDateTime dateTo) {
         userService.findUserDetails(publicUserId);
-        var page = PaginationServiceClass.pagination(0, limit);
         checkPeriodOfTime(dateFrom, dateTo);
-        return statisticDaoService.findRevenueByPeriod(page, dateFrom, dateTo);
+        return statisticDaoService.findRevenueByPeriod(pageable, dateFrom, dateTo);
+    }
+
+    public BigDecimal getTotalRevenue(Page<RevenueDetails> revenueDetails) {
+        if (revenueDetails.hasContent()) {
+            return revenueDetails.getContent()
+                    .stream()
+                    .map(RevenueDetails::totalOrderSpent)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+        return BigDecimal.ZERO;
     }
 
     private void checkPeriodOfTime(OffsetDateTime dateFrom, OffsetDateTime dateTo) {

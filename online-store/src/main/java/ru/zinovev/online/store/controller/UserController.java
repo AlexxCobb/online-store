@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -156,20 +157,21 @@ public class UserController {
             @RequestParam(required = false) List<String> publicCategoryIds,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @Valid @ModelAttribute ProductParamDto productParamDto,
-            Model model) { // если все параметры null вернуть все товары постранично
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "5") Integer limit,
+            @Valid @ModelAttribute ProductParamDto productParamDto,// добавить параметры в Dto
+            Model model) {
         log.debug("Received GET request to search products with parameters");
-        var products = productService.searchProductsWithParameters(publicCategoryIds, minPrice, maxPrice,
-                                                                   productMapper.toProductParamDetails(
-                                                                           productParamDto));
-        var brandValues = getUniqueParametersByKey(products, "brand");
-        var colorValues = getUniqueParametersByKey(products, "color");
-        var ramValues = getUniqueParametersByKey(products, "ram");
-        var memoryValues = getUniqueParametersByKey(products, "memory");
-        var priceMin =
-                products.stream().map(ProductDetails::price).min(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
-        var priceMax =
-                products.stream().map(ProductDetails::price).max(Comparator.naturalOrder()).orElse(BigDecimal.ZERO);
+        var products = productService.searchProductsWithParameters(
+                publicCategoryIds, minPrice, maxPrice,
+                productMapper.toProductParamDetails(productParamDto), page, limit);
+
+        var brandValues = productService.getUniqueParametersByKey("brand");
+        var colorValues = productService.getUniqueParametersByKey("color");
+        var ramValues = productService.getUniqueParametersByKey("ram");
+        var memoryValues = productService.getUniqueParametersByKey("memory");
+        var priceMin = productService.getMinPrice();
+        var priceMax = productService.getMaxPrice();
 
         model.addAttribute("brandValues", brandValues);
         model.addAttribute("colorValues", colorValues);
@@ -277,8 +279,9 @@ public class UserController {
         try {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", //доработать
+            redirectAttributes.addFlashAttribute("errorMessage",
                                                  e.getMessage());
+            return "redirect:/api/users/" + publicUserId + "/cart";
         } catch (BadRequestException e) {
             if (e.getMessage()
                     .equals("Address with id - " + orderDto.publicAddressId()
@@ -300,9 +303,12 @@ public class UserController {
     }
 
     @GetMapping("/{publicUserId}/orders")
-    public String getOrders(@PathVariable String publicUserId, Model model) {
+    public String getOrders(@PathVariable String publicUserId,
+                            @RequestParam(defaultValue = "0") Integer page,
+                            @RequestParam(defaultValue = "5") Integer limit,
+                            Model model) {
         log.debug("Received GET request to get user orders with userId - {}", publicUserId);
-        var orders = orderService.getUserOrders(publicUserId);
+        var orders = orderService.getUserOrders(publicUserId, page, limit);
 
         model.addAttribute("paymentMethods", PaymentMethodName.values());
         model.addAttribute("orders", orders);
@@ -315,13 +321,5 @@ public class UserController {
         cookie.setMaxAge(30 * 24 * 60 * 60);
         cookie.setHttpOnly(true);
         response.addCookie(cookie);
-    }
-
-    private Set<String> getUniqueParametersByKey(List<ProductDetails> products, String paramKey) {
-        return products.stream()
-                .flatMap(productDetails -> productDetails.parameters().stream())
-                .filter(parametersDetails1 -> parametersDetails1.key().equals(paramKey))
-                .map(ParametersDetails::value)
-                .collect(Collectors.toSet());
     }
 }

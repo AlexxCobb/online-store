@@ -1,6 +1,8 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,7 +21,6 @@ import ru.zinovev.online.store.model.TopProductDetails;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -60,26 +61,23 @@ public class StatisticDaoService {
         customerStatisticRepository.deleteByOrder(order);
     }
 
-    public List<TopProductDetails> findTopProducts(Pageable pageable) {
-        return productStatisticRepository.findTopProductViews(pageable)
-                .stream()
-                .map(productMapper::toTopProductDetails)
-                .toList();
+    public Page<TopProductDetails> findTopProducts(Pageable pageable) {
+        var topProductViews = productStatisticRepository.findTopProductViews(pageable);
+        var topDetails = topProductViews.stream().map(productMapper::toTopProductDetails).toList();
+        return new PageImpl<>(topDetails, pageable, topProductViews.getTotalElements());
     }
 
-    public List<TopCustomerDetails> findTopUsersByOrders(Pageable page, OffsetDateTime dateFrom,
+    public Page<TopCustomerDetails> findTopUsersByOrders(Pageable pageable, OffsetDateTime dateFrom,
                                                          OffsetDateTime dateTo) {
-        return customerStatisticRepository.findTopCustomers(page, dateFrom, dateTo)
-                .stream()
-                .map(userMapper::toTopCustomerDetails)
-                .toList();
+        var topUserViews = customerStatisticRepository.findTopCustomers(pageable, dateFrom, dateTo);
+        var topDetails = topUserViews.stream().map(userMapper::toTopCustomerDetails).toList();
+        return new PageImpl<>(topDetails, pageable, topUserViews.getTotalElements());
     }
 
-    public List<RevenueDetails> findRevenueByPeriod(Pageable page, OffsetDateTime dateFrom,
+    public Page<RevenueDetails> findRevenueByPeriod(Pageable pageable, OffsetDateTime dateFrom,
                                                     OffsetDateTime dateTo) {
-        return customerStatisticRepository.findRevenueByPeriod(page, dateFrom, dateTo)
-                .stream()
-                .map(orderMapper::toRevenueDetails)
-                .toList();
+        var topRevenue = customerStatisticRepository.findRevenueByPeriod(pageable, dateFrom, dateTo);
+        var topDetails = topRevenue.stream().map(orderMapper::toRevenueDetails).toList();
+        return new PageImpl<>(topDetails, pageable, topRevenue.getTotalElements());
     }
 }

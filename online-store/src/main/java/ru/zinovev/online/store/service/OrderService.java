@@ -2,6 +2,7 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.controller.dto.OrderDto;
 import ru.zinovev.online.store.dao.OrderDaoService;
@@ -13,8 +14,6 @@ import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,14 +31,14 @@ public class OrderService {
         return orderDaoService.createOrder(userDetails, cartDetails, orderDto);
     }
 
-    public List<OrderDetails> getUserOrders(String publicUserId) {
+    public Page<OrderDetails> getUserOrders(String publicUserId, Integer page, Integer limit) {
         userService.findUserDetails(publicUserId);
-        return orderDaoService.getUserOrders(publicUserId);
+        return orderDaoService.getUserOrders(publicUserId, page, limit);
     }
 
-    public List<OrderShortDetails> getAllOrders(String publicUserId) {
+    public Page<OrderShortDetails> getAllOrders(String publicUserId, Integer page, Integer limit) {
         userService.findUserDetails(publicUserId);
-        return orderDaoService.getAllOrders();
+        return orderDaoService.getAllOrders(page, limit);
     }
 
     public OrderShortDetails getOrderById(String publicOrderId, String publicUserId) {

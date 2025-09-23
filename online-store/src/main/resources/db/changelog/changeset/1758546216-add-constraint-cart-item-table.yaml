@@ -1,0 +1,7 @@
+databaseChangeLog:
+- changeSet:
+    id: 1758546216-add-constraint-cart-item-table
+    author: a.zinovev
+    changes:
+      - sqlFile:
+          path: classpath:db/changelog/sql/1758546216-add-constraint-cart-item-table.sql

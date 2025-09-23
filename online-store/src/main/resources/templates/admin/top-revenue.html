@@ -26,9 +26,22 @@
         </tr>
         <tr>
             <td colspan="3"><strong>Общая выручка:</strong></td>
-            <td th:text="${topRevenue[0].totalRevenue}"></td>
+            <td th:text="${totalRevenue}"></td>
         </tr>
     </table>
+    <div th:if="${topRevenue.totalPages > 0}" class="pagination">
+        <a th:if="${topRevenue.hasPrevious()}"
+           th:href="@{/api/admins/{publicUserId}/statistics/top-revenue(publicUserId=${publicUserId}, page=${topRevenue.number - 1}, limit=${topRevenue.size})}"
+           class="page-link previous">Предыдущая</a>
+
+        <span class="page-number">
+                <em th:text="${topRevenue.number + 1}"></em> из <em th:text="${topRevenue.totalPages}"></em>
+            </span>
+
+        <a th:if="${topRevenue.hasNext()}"
+           th:href="@{/api/admins/{publicUserId}/statistics/top-revenue(publicUserId=${publicUserId}, page=${topRevenue.number + 1}, limit=${topRevenue.size})}"
+           class="page-link next">Следующая</a>
+    </div>
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>
