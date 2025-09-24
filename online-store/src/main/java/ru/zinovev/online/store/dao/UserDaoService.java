@@ -47,6 +47,7 @@ public class UserDaoService implements UserDetailsService {
         return userMapper.toUserDetails(userRepository.save(newUser));
     }
 
+    @Transactional
     public void initAdmin(String adminEmail, String adminPassword, LocalDate adminBirthday, Role adminRole) {
         var admin = User.builder()
                 .email(adminEmail)
@@ -73,10 +74,10 @@ public class UserDaoService implements UserDetailsService {
     }
 
     @Transactional
-    public UserDetails changePassword(UserDetails userDetails, ChangePasswordDto changePasswordDto) {
+    public UserDetails changePassword(UserDetails userDetails, String password) {
         var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
         var updateUser = user.toBuilder()
-                .passwordHash(changePasswordDto.newPassword())
+                .passwordHash(password)
                 .build();
         return userMapper.toUserDetails(userRepository.save(updateUser));
     }
