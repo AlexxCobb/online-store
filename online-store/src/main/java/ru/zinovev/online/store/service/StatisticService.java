@@ -2,6 +2,7 @@ package ru.zinovev.online.store.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.dao.StatisticDaoService;
@@ -12,6 +13,7 @@ import ru.zinovev.online.store.model.TopProductDetails;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +25,15 @@ public class StatisticService {
     public Page<TopProductDetails> getTopProducts(String publicUserId, Pageable pageable) {
         userService.findUserDetails(publicUserId);
         return statisticDaoService.findTopProducts(pageable);
+    }
+
+    public List<TopProductDetails> findSixPopularProducts() {
+        return statisticDaoService.findTopProducts(PageRequest.of(0, 10))
+                .getContent()
+                .stream()
+                .filter(topProductDetails -> topProductDetails.stockQuantity() > 0)
+                .limit(6)
+                .toList();
     }
 
     public Page<TopCustomerDetails> getTopUsersByOrders(String publicUserId, Pageable pageable, OffsetDateTime dateFrom,

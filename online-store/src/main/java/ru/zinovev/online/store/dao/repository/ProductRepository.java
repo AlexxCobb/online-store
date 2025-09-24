@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import ru.zinovev.online.store.dao.entity.Product;
+import ru.zinovev.online.store.dao.entity.ProductView;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -17,8 +19,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     Optional<Product> findByPublicProductId(String publicProductId);
 
     List<Product> findByCategoryPublicCategoryId(String publicCategoryId);
-
-    boolean existsByPublicProductIdIn(List<String> productIds);
 
     @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.parameters",
            countQuery = "SELECT COUNT(DISTINCT p) FROM Product p")
@@ -32,4 +32,16 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query("SELECT MAX(p.price) FROM Product p")
     BigDecimal getMaxPrice();
+
+    @Query("SELECT p.publicProductId as publicProductId, p.name as name, " +
+            "p.price as price, " +
+            "(SELECT pp.value FROM ProductParameter pp WHERE pp.product = p AND pp.key = 'brand') as brand, " +
+            "(SELECT pp.value FROM ProductParameter pp WHERE pp.product = p AND pp.key = 'color') as color, " +
+            "p.imagePath as imagePath, p.stockQuantity as stockQuantity " +
+            "FROM Product p " +
+            "WHERE p.publicProductId IN " +
+            "   (SELECT MIN(p2.publicProductId) " +
+            "   FROM Product p2 WHERE p2.category.id IN :categoryIds " +
+            "   GROUP BY p2.category.id)")
+    List<ProductView> getOneProductFromEachCategory(Collection<Long> categoryIds, Pageable pageable);
 }

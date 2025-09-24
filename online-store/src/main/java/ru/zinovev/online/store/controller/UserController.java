@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -33,19 +32,15 @@ import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.CartDetails;
 import ru.zinovev.online.store.model.CategoryDetails;
-import ru.zinovev.online.store.model.ParametersDetails;
-import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CartService;
 import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
+import ru.zinovev.online.store.service.StatisticService;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -58,11 +53,18 @@ public class UserController {
     private final CategoryService categoryService;
     private final OrderService orderService;
     private final CartService cartService;
+    private final StatisticService statisticService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
 
     @GetMapping("/home")
-    public String homePage() {
+    public String homePage(Model model) {
+        var popularProducts = statisticService.findSixPopularProducts();
+        if (popularProducts.isEmpty()) {
+            popularProducts =
+                    productService.getOneProductFromEachCategory();
+        }
+        model.addAttribute("popularProducts", popularProducts);
         return "home";
     }
 

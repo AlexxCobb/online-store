@@ -9,4 +9,6 @@ public interface ProductView {
     Integer getPurchaseCount();
     String getBrand();
     String getColor();
+    String getImagePath();
+    Integer getStockQuantity();
 }

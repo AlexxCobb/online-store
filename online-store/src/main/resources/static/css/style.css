@@ -16,17 +16,17 @@ body {
     max-width: 100%;
     width: 100%;
     padding: 2rem;
-    background: white;
+    background: #FDF5E6;
     border-radius: 15px;
     box-shadow: 0 5px 25px rgba(0,0,0,0.1);
     box-sizing: border-box;
 }
 
 .welcome-text {
-    color: #2c3e50;
+    color: #4D3C2F;
     font-size: 2.2rem;
     text-align: center;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
     margin-bottom: 30px;
     line-height: 1.4;
 }
@@ -45,8 +45,6 @@ body {
     box-shadow: 0 6px 15px rgba(0,0,0,0.15);
     transition: all 0.4s ease;
     border: none;
-    display: block;
-    margin: 0 auto;
 }
 
 .shop-image:hover {
@@ -178,4 +176,20 @@ a.button {
     justify-content: center;
     align-items: center;
     gap: 15px;
+}
+.btn-beige {
+    background-color: #C6AA8B;
+    border-color: #A38C75;
+    color: #4D3C2F;
+}
+
+.btn-beige:hover {
+    background-color: #A38C75;
+    border-color: #8A7664;
+    color: #fff;
+}
+
+.card-sand {
+    background-color: #FDF5E6;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
