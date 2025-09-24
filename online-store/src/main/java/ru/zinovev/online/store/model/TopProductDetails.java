@@ -8,6 +8,8 @@ public record TopProductDetails(
         BigDecimal price,
         Integer purchaseCount,
         String brand,
-        String color
+        String color,
+        String imagePath,
+        Integer stockQuantity
 ) {
 }

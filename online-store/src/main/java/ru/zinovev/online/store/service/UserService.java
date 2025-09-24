@@ -53,7 +53,8 @@ public class UserService {
         if (passwordEncoder.matches(changePasswordDto.newPassword(), userPassword)) {
             throw new InvalidPasswordException("New password cannot match current password");
         }
-        return userDaoService.changePassword(userDetails, changePasswordDto);
+        var password = passwordEncoder.encode(changePasswordDto.newPassword());
+        return userDaoService.changePassword(userDetails, password);
     }
 
     public UserDetails findUserDetails(String publicUserId) {

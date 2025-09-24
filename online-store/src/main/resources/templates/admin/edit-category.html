@@ -11,6 +11,9 @@
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <span th:text="${errorMessage}"></span>
+    </div>
     <table>
         <form th:action="@{'/api/admins/' + ${publicUserId} + '/categories/' + ${category.publicCategoryId}}"
               method="post" th:object="${categoryDto}">

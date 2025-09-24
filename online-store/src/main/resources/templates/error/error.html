@@ -6,18 +6,15 @@
 
 <div class="welcome-container">
     <h2>Пояснительная бригада в пути!</h2>
-    <div th:if="${error}" class="error-message" style="color: #333; margin-bottom: 20px;">
-        <p th:text="${error}"></p>
-    </div>
-
-    <div th:if="${message}" class="error-details" style="color: #666; font-size: 0.9em;">
-        <p th:text="${message}"></p>
-    </div>
     <img
             src="/images/wake up.png"
             class="shop-image">
     <div style="text-align: center; margin-top: 20px;">
-        <a href="/api/users/home" style="color: #337ab7; text-decoration: none;">← Вернуться на главную</a>
+        <a th:href="@{/api/admins/home}" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}"
+           style="color: #337ab7; text-decoration: none;">← Вернуться на главную</a>
+
+        <a th:href="@{/api/users/home}"
+           style="color: #337ab7; text-decoration: none;">← Вернуться на главную</a>
     </div>
 </div>
 <footer th:replace="~{fragments/footer :: copy}"></footer>

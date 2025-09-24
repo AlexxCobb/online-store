@@ -198,8 +198,16 @@ public class AdminController {
             model.addAttribute("category", category);
             return "admin/edit-category";
         }
-        categoryService.updateCategory(publicUserId, publicCategoryId,
-                                       categoryMapper.toCategoryDetails(categoryDto));
+        try {
+            categoryService.updateCategory(publicUserId, publicCategoryId,
+                                           categoryMapper.toCategoryDetails(categoryDto));
+        } catch (BadRequestException e){
+            var category = categoryService.getCategoryByPublicId(publicCategoryId);
+            model.addAttribute("errorMessage", "КАТЕГОРИЯ " + categoryDto.name() + " УЖЕ СУЩЕСТВУЕТ");
+            model.addAttribute("category", category);
+            return "admin/edit-category";
+        }
+
         redirectAttributes.addFlashAttribute("successMessage", "КАТЕГОРИЯ УСПЕШНО ОБНОВЛЕНА");
         return "redirect:/api/admins/" + publicUserId + "/categories";
     }

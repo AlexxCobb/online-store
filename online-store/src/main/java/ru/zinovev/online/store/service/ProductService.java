@@ -9,6 +9,7 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductParamDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
+import ru.zinovev.online.store.model.TopProductDetails;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -46,6 +47,10 @@ public class ProductService {
                                                                  " , not found"));
     }
 
+    public List<TopProductDetails> getOneProductFromEachCategory() {
+        return productDaoService.getOneProductFromEachCategory();
+    }
+
     public Page<ProductDetails> searchProductsWithParameters(
             List<String> categoryPublicIds, BigDecimal minPrice,
             BigDecimal maxPrice,
@@ -59,15 +64,15 @@ public class ProductService {
         return productDaoService.findProducts(categoryPublicIds, minPrice, maxPrice, productParamDetails, page, limit);
     }
 
-    public Set<String> getUniqueParametersByKey(String key){
+    public Set<String> getUniqueParametersByKey(String key) {
         return productDaoService.findUniqueParametersByKey(key);
     }
 
-    public BigDecimal getMinPrice(){
+    public BigDecimal getMinPrice() {
         return productDaoService.getMinPrice();
     }
 
-    public BigDecimal getMaxPrice(){
+    public BigDecimal getMaxPrice() {
         return productDaoService.getMaxPrice();
     }
 }

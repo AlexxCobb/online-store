@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{fragments/header :: common-header('404')}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: common-header('403')}">
 </head>
 <body>
 
 <div class="welcome-container">
-  <h2>Похоже тут ничего нет, вернитесь на главную страницу!</h2>
+  <h2>Доступ запрещён</h2>
   <img
-          src="/images/404.gif"
-          class="shop-image" alt="404 Not Found">
+          src="/images/403.gif"
+          class="shop-image">
   <div style="text-align: center; margin-top: 20px;">
     <a th:href="@{/api/admins/home}" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}"
        style="color: #337ab7; text-decoration: none;">← Вернуться на главную</a>
