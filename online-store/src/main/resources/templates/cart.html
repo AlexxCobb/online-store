@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/header :: common-header('Cart')}">
 </head>
 <body>
@@ -71,24 +71,20 @@
             <td th:text="${cart.totalPrice}"></td>
         </tr>
     </table>
-    <div th:if="${cart != null and not cart.cartItems.empty}">
-        <div class="d-flex gap-2" th:if="${cart.publicUserId != null}">
+    <div class="d-flex gap-2">
+        <div sec:authorize="isAuthenticated()">
             <a th:href="@{'/api/users/' + ${cart.publicUserId} + '/cart'}"
                class="btn btn-primary">Оформить заказ</a>
         </div>
 
-        <div class="d-flex gap-2" th:if="${cart.publicUserId == null}">
-            <div class="d-flex gap-2" th:if="${publicUserId != null}">
-                <p class="text-muted">Для оформления заказа необходимо
-                    <a th:href="@{'/api/users/cart?publicUserId=' + ${publicUserId}}"
-                       class="btn btn-outline-primary btn-sm">Войти</a>
-                </p>
-            </div>
-            <div class="d-flex gap-2" th:if="${publicUserId == null}">
-                <p class="text-muted">Для оформления заказа необходимо
-                    <a th:href="@{/api/auth}" class="btn btn-outline-secondary btn-sm">Зарегистрироваться</a>
-                </p>
-            </div>
+        <div class="d-flex gap-2" sec:authorize="!isAuthenticated()">
+            <p class="text-muted">Для оформления заказа необходимо
+                <a th:href="@{/api/auth/sign-in}"
+                   class="btn btn-outline-primary btn-sm">Войти</a>
+            </p>
+            <p class="text-muted">Для оформления заказа необходимо
+                <a th:href="@{/api/auth}" class="btn btn-outline-secondary btn-sm">Зарегистрироваться</a>
+            </p>
         </div>
     </div>
 </div>

@@ -38,8 +38,10 @@ import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
 import ru.zinovev.online.store.service.StatisticService;
+import ru.zinovev.online.store.service.UserService;
 
 import java.math.BigDecimal;
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -53,6 +55,7 @@ public class UserController {
     private final CategoryService categoryService;
     private final OrderService orderService;
     private final CartService cartService;
+    private final UserService userService;
     private final StatisticService statisticService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
@@ -189,15 +192,22 @@ public class UserController {
 
     @PostMapping("/cart")
     public String addProductsToCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
-                                    @RequestParam(required = false) String publicUserId,
                                     @RequestParam String publicProductId,
                                     @RequestParam(defaultValue = "1") Integer quantity,
-                                    HttpServletResponse response, RedirectAttributes redirectAttributes) {
+                                    HttpServletResponse response, RedirectAttributes redirectAttributes,
+                                    Principal principal) {
         log.debug("Received POST request to add product to cart");
         try {
-            var cart = cartService.addProductToCart(publicCartId, publicUserId, publicProductId, quantity);
-            setCartCookie(response, cart.publicCartId());
-            redirectAttributes.addFlashAttribute("successMessage", "ТОВАР ДОБАВЛЕН В КОРЗИНУ");
+            String publicUserId = null;
+            if (principal != null) {
+                publicUserId = userService.findPublicUserId(principal);
+                cartService.addProductToCart(publicCartId, publicUserId, publicProductId, quantity);
+                redirectAttributes.addFlashAttribute("successMessage", "ТОВАР ДОБАВЛЕН В КОРЗИНУ");
+            } else {
+                var cart = cartService.addProductToCart(publicCartId, publicUserId, publicProductId, quantity);
+                setCartCookie(response, cart.publicCartId());
+                redirectAttributes.addFlashAttribute("successMessage", "ТОВАР ДОБАВЛЕН В КОРЗИНУ");
+            }
         } catch (OutOfStockException e) {
             var product = productService.getByPublicId(publicProductId);
             redirectAttributes.addFlashAttribute("errorMessage",
@@ -211,10 +221,13 @@ public class UserController {
 
     @PatchMapping("/cart/{publicProductId}")
     public String removeProductFromCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
-                                        @RequestParam(required = false) String publicUserId,
                                         @PathVariable String publicProductId,
-                                        RedirectAttributes redirectAttributes, Model model) {
+                                        RedirectAttributes redirectAttributes, Model model, Principal principal) {
         log.debug("Received PATCH request to remove product from cart");
+        String publicUserId = null;
+        if (principal != null) {
+            publicUserId = userService.findPublicUserId(principal);
+        }
         cartService.removeProductFromCart(publicCartId, publicUserId, publicProductId);
         redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УДАЛЕН ИЗ КОРЗИНЫ");
         model.addAttribute("publicProductId", publicProductId);
@@ -223,9 +236,12 @@ public class UserController {
 
     @DeleteMapping("/cart")
     public String clearCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
-                            @RequestParam(required = false) String publicUserId,
-                            RedirectAttributes redirectAttributes) {
+                            RedirectAttributes redirectAttributes, Principal principal) {
         log.debug("Received DELETE request to clear cart");
+        String publicUserId = null;
+        if (principal != null) {
+            publicUserId = userService.findPublicUserId(principal);
+        }
         cartService.clearCart(publicCartId, publicUserId);
         redirectAttributes.addFlashAttribute("successMessage", "КОРЗИНА УСПЕШНО ОЧИЩЕНА");
         return "redirect:/api/users/products";
@@ -239,9 +255,10 @@ public class UserController {
 
     @ModelAttribute("cart")
     public CartDetails getCartForNavbar(@CookieValue(value = "CART_ID", required = false) String publicCartId,
-                                        @RequestParam(required = false) String publicUserId) {
-        if (publicCartId == null) {
-            return null;
+                                        Principal principal) {
+        String publicUserId = null;
+        if (principal != null) {
+            publicUserId = userService.findPublicUserId(principal);
         }
         return cartService.getCart(publicCartId, publicUserId);
     }
