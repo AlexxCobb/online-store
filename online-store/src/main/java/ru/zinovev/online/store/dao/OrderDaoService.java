@@ -92,7 +92,8 @@ public class OrderDaoService {
         //   var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
         order.getItems().addAll(items);
         var newOrd = orderRepository.save(order);
-        cartRepository.delete(cart);
+        cart.getItems().clear();
+        cartRepository.save(cart);
 
         return orderMapper.toOrderDetails(newOrd);
     }

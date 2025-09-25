@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/api/auth/sign-in?logout=true")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
+                        .deleteCookies("CART_ID")
                         .permitAll()
                 );
         return http.build();

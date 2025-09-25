@@ -11,8 +11,10 @@ import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CartDetails;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional(readOnly = true)
@@ -90,35 +92,47 @@ public class CartDaoService {
                                             .publicCartId(UUID.randomUUID().toString())
                                             .build());
             }
+            return;
         }
-        if (cart.isPresent()) {
-            if (userCart.isEmpty()) {
-                var cartWithUser = cart.get().toBuilder()
-                        .user(user)
-                        .build();
-                cartRepository.save(cartWithUser);
-            } else {
-                var tempItems = cart.get().getItems();
-                var userCartItems = userCart.get().getItems();
-                tempItems.forEach(cartItem -> {
-                    var item = userCartItems.stream()
-                            .filter(userCartItem -> userCartItem.getProduct().getPublicProductId().equals(cartItem.getProduct().getPublicProductId()))
-                            .findFirst();
-                    if (item.isPresent()) {
-                        var newQuantity = item.get().getQuantity() + cartItem.getQuantity();
-                        var updatedItem = item.get().toBuilder().quantity(newQuantity).build();
-                        userCartItems.remove(item.get());
-                        userCartItems.add(updatedItem);
-                    } else {
-                        userCartItems.add(cartItem);
-                    }
-                });
+        if (userCart.isEmpty()) {
+            var cartWithUser = cart.get().toBuilder()
+                    .user(user)
+                    .build();
+            cartRepository.save(cartWithUser);
+        } else {
+            if (cart.get().getUser() != null) {
+                if (cart.get().getUser().equals(userCart.get().getUser())) {
+                    return;
+                }
+            } // доделать
+            var updatedUserCart = mergeCarts(cart.get(), userCart.get());
+            cartRepository.save(updatedUserCart);
+            cartRepository.delete(cart.get());
+        }
+    }
 
-                cartRepository.save(userCart.get());
-               // cart.get().getItems().clear();
-                cartRepository.delete(cart.get());
+    private Cart mergeCarts(Cart cart, Cart userCart) {
+        var tempItems = cart.getItems();
+        var userItemsMap = userCart.getItems()
+                .stream()
+                .collect(
+                        Collectors.toMap(cartItem -> cartItem.getProduct().getPublicProductId(), cartItem -> cartItem));
+        var newUserItems = new ArrayList<>(userCart.getItems());
+
+        tempItems.forEach(cartItem -> {
+            var item = userItemsMap.get(cartItem.getProduct().getPublicProductId());
+
+            if (item != null) {
+                var newQuantity = item.getQuantity() + cartItem.getQuantity();
+                var updatedItem = item.toBuilder().quantity(newQuantity).build();
+                newUserItems.remove(item);
+                newUserItems.add(updatedItem);
+            } else {
+                var newItem = cartItem.toBuilder().cart(userCart).build();
+                newUserItems.add(newItem);
             }
-        }
+        });
+        return userCart.toBuilder().items(newUserItems).build();
     }
 
     public Optional<CartDetails> findCartDetails(String publicCartId) {
@@ -148,6 +162,7 @@ public class CartDaoService {
     public void clearCart(String publicCartId) {
         var cart = cartRepository.findByPublicCartId(publicCartId)
                 .orElseThrow(() -> new NotFoundException("Cart with id - " + publicCartId + " not found"));
-        cartRepository.delete(cart);
+        cart.getItems().clear();
+        cartRepository.save(cart);
     }
 }
