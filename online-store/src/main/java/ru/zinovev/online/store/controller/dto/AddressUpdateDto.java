@@ -10,7 +10,7 @@ public record AddressUpdateDto(
         @Min(value = 100000, message = "Индекс должен состоять из 6 цифр")
         @Max(value = 999999, message = "Индекс должен состоять из 6 цифр")
         Integer zipCode,
-        @Size(max = 200)
+        @Size(max = 200,message = "Название должно содержать до {max} символов")
         String street,
         @Positive(message = "Номер дома может быть только положительным числом")
         Integer houseNumber,

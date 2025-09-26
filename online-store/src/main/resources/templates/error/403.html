@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/header :: common-header('403')}">
 </head>
 <body>
@@ -10,11 +10,16 @@
           src="/images/403.gif"
           class="shop-image">
   <div style="text-align: center; margin-top: 20px;">
-    <a th:href="@{/api/admins/home}" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}"
+    <a th:if="${previousUrl}" th:href="${previousUrl}"
+       style="color: #337ab7; text-decoration: none;">← Вернуться назад</a>
+
+    <a th:unless="${previousUrl}"
+       th:href="@{/api/users/home}"
        style="color: #337ab7; text-decoration: none;">← Вернуться на главную</a>
 
-    <a th:href="@{/api/users/home}"
-       style="color: #337ab7; text-decoration: none;">← Вернуться на главную</a>
+    <a sec:authorize="hasRole('ROLE_ADMIN')"
+       th:href="@{/api/admins/home}"
+       style="color: #337ab7; text-decoration: none; margin-left: 15px;">← Вернуться на главную (Админ)</a>
   </div>
 </div>
 <footer th:replace="~{fragments/footer :: copy}"></footer>

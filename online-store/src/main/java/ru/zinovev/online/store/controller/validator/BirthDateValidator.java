@@ -18,11 +18,11 @@ public class BirthDateValidator implements ConstraintValidator<ValidBirthDate, L
             return true;
         }
         if (value.isBefore(startBirthDate)) {
-            buildValidationError(context, "Birth date cannot be earlier than 1930");
+            buildValidationError(context, "Дата рождения не может быть раньше 1930 года.");
             return false;
         }
         if (value.isAfter(endBirthDate)) {
-            buildValidationError(context, "User must be at least 14 years old");
+            buildValidationError(context, "Пользователь должен быть не моложе 14 лет.");
             return false;
         }
         return true;

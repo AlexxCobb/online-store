@@ -11,23 +11,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public record ProductDto(
-        @NotBlank(message = "Название товара ")
-        @Size(min = 3, max = 150)
+        @NotBlank(message = "Укажите название товара")
+        @Size(min = 3, max = 150, message = "Название должно содержать от {min} до {max} символов")
         String name,
-        @NotNull
-        @Positive
+        @NotNull(message = "Укажите цену товара")
+        @Positive(message = "Цена товара только положительная")
         BigDecimal price,
-        @NotBlank
+        @NotBlank(message = "Укажите цену товара")
         String categoryPublicId,
         List<ParametersDto> parameters,
-        @NotNull
-        @Positive
+        @NotNull(message = "Укажите вес товара")
+        @Positive(message = "Вес товара только положительное число")
         BigDecimal weight,
-        @NotNull
-        @Positive
+        @NotNull(message = "Укажите объем товара")
+        @Positive(message = "Объем товара только положительное число")
         BigDecimal volume,
-        @NotNull
-        @PositiveOrZero
+        @NotNull(message = "Укажите количество товара")
+        @PositiveOrZero(message = "Количество товара положительное число или 0")
         Integer stockQuantity,
         String imagePath
 ) {

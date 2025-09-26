@@ -7,6 +7,13 @@
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
 <div class="welcome-container">
+
+  <div th:if="${successMessage}" class="alert alert-success">
+    <span th:text="${successMessage}"></span>
+  </div>
+  <div th:if="${errorMessage}" class="alert alert-danger">
+    <span th:text="${errorMessage}"></span>
+  </div>
   <h1>Редактирование заказа <span th:text="${order.publicOrderId}"></span></h1>
 
   <form th:action="@{'/api/admins/' + ${publicUserId} + '/orders/' + ${order.publicOrderId}}"

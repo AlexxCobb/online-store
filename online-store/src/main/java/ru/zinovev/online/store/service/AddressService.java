@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.dao.AddressDaoService;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
+import ru.zinovev.online.store.exception.model.ForbiddenException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.exception.model.NotValidArgumentException;
 import ru.zinovev.online.store.model.AddressDetails;
@@ -21,7 +22,6 @@ public class AddressService {
     private final UserService userService;
 
     public AddressDetails addAddress(@NonNull String publicUserId, @NonNull AddressDetails addressDetails) {
-        // разобраться с получением прав admin/user для корректного сохранения адреса (security)
         var userDetails = userService.findUserDetails(publicUserId);
         return addressDaoService.addAddress(userDetails, addressDetails);
     }
@@ -30,7 +30,7 @@ public class AddressService {
                                            @NonNull AddressTypeName addressTypeName) {
         userService.findUserDetails(publicUserId);
         if (addressTypeName.equals(AddressTypeName.USER_ADDRESS)) {
-            throw new BadRequestException("Administrator cannot create addresses of type USER_ADDRESS"); //403
+            throw new ForbiddenException("Administrator cannot create addresses of type USER_ADDRESS");
         }
         return addressDaoService.addSystemAddress(addressDetails, addressTypeName);
     }

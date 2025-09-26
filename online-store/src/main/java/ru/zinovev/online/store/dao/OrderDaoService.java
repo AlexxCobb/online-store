@@ -22,6 +22,7 @@ import ru.zinovev.online.store.dao.repository.OrderRepository;
 import ru.zinovev.online.store.dao.repository.OrderStatusRepository;
 import ru.zinovev.online.store.dao.repository.PaymentMethodRepository;
 import ru.zinovev.online.store.dao.repository.PaymentStatusRepository;
+import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CartDetails;
 import ru.zinovev.online.store.model.OrderDetails;
@@ -132,6 +133,10 @@ public class OrderDaoService {
         var order = orderRepository.findByPublicOrderId(publicOrderId)
                 .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
         var existedOrderStatus = order.getOrderStatus().getName();
+        if (existedOrderStatus.equals(OrderStatusName.DELIVERED) && !orderStatusName.equals(
+                OrderStatusName.CANCELLED)) {
+            throw new BadRequestException("The DELIVERED status can only be changed to CANCELLED.");
+        }
         var orderStatus = orderStatusRepository.getByName(orderStatusName);
         var updatedOrder = order.toBuilder().orderStatus(orderStatus);
 
@@ -140,8 +145,7 @@ public class OrderDaoService {
             updatedOrder.paymentStatus(payStatus);
         }
         var savedOrder = orderRepository.save(updatedOrder.build());
-        if (orderStatusName.equals(OrderStatusName.DELIVERED) && !OrderStatusName.DELIVERED.equals(
-                existedOrderStatus)) {
+        if (orderStatusName.equals(OrderStatusName.DELIVERED)) {
             statisticDaoService.createStatistic(savedOrder);
         }
         if (orderStatusName.equals(OrderStatusName.CANCELLED)) {

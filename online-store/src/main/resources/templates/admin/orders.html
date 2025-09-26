@@ -7,11 +7,19 @@
 <body>
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
+<div th:if="${successMessage}" class="alert alert-success">
+    <span th:text="${successMessage}"></span>
+</div>
+<div th:if="${errorMessage}" class="alert alert-danger">
+    <span th:text="${errorMessage}"></span>
+</div>
 <div class="welcome-container">
+
     <div th:if="${orders == null or orders.empty}">
         <p>Еще нет сделанных заказов</p>
     </div>
     <h1>Заказы</h1>
+
     <table>
         <tr>
             <th>ID заказа</th>
