@@ -81,15 +81,15 @@ public class AdminController {
 
     @PostMapping("/{publicUserId}/addresses")
     public String addSystemAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto,
-                                   BindingResult bindingResult, @RequestParam AddressTypeName name,
+                                   BindingResult bindingResult,
                                    RedirectAttributes redirectAttributes, Model model) {
-        log.debug("Received POST request to add system address dto - {}, with type - {}, from user with id - {}",
-                  addressDto, name, publicUserId);
+        log.debug("Received POST request to add system address dto - {}, from admin with id - {}",
+                  addressDto, publicUserId);
         if (bindingResult.hasErrors()) {
             model.addAttribute("addressTypes", List.of(AddressTypeName.STORE_ADDRESS, AddressTypeName.PARCEL_LOCKER));
             return "admin/addresses";
         }
-        addressService.addSystemAddress(publicUserId, addressMapper.toAddressDetails(addressDto), name);
+        addressService.addSystemAddress(publicUserId, addressMapper.toAddressDetails(addressDto), addressDto.name());
         redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО ДОБАВЛЕН");
         return "redirect:/api/admins/" + publicUserId + "/addresses";
     }
@@ -201,7 +201,7 @@ public class AdminController {
         try {
             categoryService.updateCategory(publicUserId, publicCategoryId,
                                            categoryMapper.toCategoryDetails(categoryDto));
-        } catch (BadRequestException e){
+        } catch (BadRequestException e) {
             var category = categoryService.getCategoryByPublicId(publicCategoryId);
             model.addAttribute("errorMessage", "КАТЕГОРИЯ " + categoryDto.name() + " УЖЕ СУЩЕСТВУЕТ");
             model.addAttribute("category", category);
@@ -311,13 +311,31 @@ public class AdminController {
     @PatchMapping("/{publicUserId}/orders/{publicOrderId}")
     public String changeOrderStatus(@PathVariable String publicUserId, @PathVariable String publicOrderId,
                                     @RequestParam OrderStatusName orderStatusName,
-                                    @RequestParam(required = false) PaymentStatusName paymentStatusName, Model model) {
+                                    @RequestParam(required = false) PaymentStatusName paymentStatusName, Model model,
+                                    RedirectAttributes redirectAttributes) {
         log.debug(
                 "Received PATCH request to change order status, with id - {}, orderStatusName - {}, paymentStatusName -{}",
                 publicOrderId, orderStatusName, paymentStatusName);
-        orderService.changeOrderStatus(publicUserId, publicOrderId, orderStatusName, paymentStatusName);
-        model.addAttribute("publicUserId", publicUserId);
+        try {
+            orderService.changeOrderStatus(publicUserId, publicOrderId, orderStatusName, paymentStatusName);
+            model.addAttribute("publicUserId", publicUserId);
 
+        } catch (BadRequestException e) {
+            if (e.getMessage().equals("The DELIVERED status can only be changed to CANCELLED")) {
+                model.addAttribute("errorMessage", "Статус ДОСТАВЛЕН можно поменять только на статус ОТМЕНЕН");
+            }
+            if (e.getMessage().equals("The CANCELLED status can not be changed")) {
+                model.addAttribute("errorMessage", "Статус ОТМЕНЕН не может быть изменен");
+            }
+            var order = orderService.getOrderById(publicOrderId, publicUserId);
+            model.addAttribute("publicUserId", publicUserId);
+            model.addAttribute("order", order);
+            model.addAttribute("orderStatuses", OrderStatusName.values());
+            model.addAttribute("paymentStatuses", PaymentStatusName.values());
+
+            return "admin/edit-order";
+        }
+        redirectAttributes.addFlashAttribute("successMessage", "ЗАКАЗ УСПЕШНО ОТРЕДАКТИРОВАН");
         return "redirect:/api/admins/" + publicUserId + "/orders";
     }
 

@@ -299,7 +299,10 @@ public class UserController {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
             redirectAttributes.addFlashAttribute("errorMessage",
-                                                 e.getMessage());
+                                                 String.format(
+                                                         "Недостаточно товара: %s. Вы добавили %d шт., в наличии осталось %d шт.",
+                                                         e.getProductName(), e.getRequestedQuantity(),
+                                                         e.getAvailableQuantity()));
             return "redirect:/api/users/" + publicUserId + "/cart";
         } catch (BadRequestException e) {
             if (e.getMessage()

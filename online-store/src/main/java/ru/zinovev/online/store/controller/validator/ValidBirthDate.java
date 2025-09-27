@@ -13,7 +13,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Constraint(validatedBy = {BirthDateValidator.class})
 public @interface ValidBirthDate {
-    String message() default "Invalid birth date";
+    String message() default "Некорректная дата рождения";
 
     Class<?>[] groups() default {};
 

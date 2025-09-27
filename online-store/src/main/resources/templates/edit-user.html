@@ -14,6 +14,12 @@
     </div>
 
     <h2 class="mb-4">Редактирование данных пользователя</h2>
+    <div class="mt-4">
+        <h5>Информация о пользователе:</h5>
+        <p><strong>Имя:</strong><span th:text="${user.name}"></span></p>
+        <p><strong>Фамилия:</strong> <span th:text="${user.lastname}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+    </div>
     <table>
         <form th:action="@{'/api/users/' + ${publicUserId} + '/profile'}" method="post" th:object="${userUpdateDto}">
             <input type="hidden" name="_method" value="patch"/>
@@ -47,13 +53,6 @@
             </div>
         </form>
     </table>
-
-    <div class="mt-4">
-        <h5>Информация о пользователе:</h5>
-        <p><strong>Имя:</strong><span th:text="${user.name}"></span></p>
-        <p><strong>Фамилия:</strong> <span th:text="${user.lastname}"></span></p>
-        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
-    </div>
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>

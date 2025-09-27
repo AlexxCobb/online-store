@@ -1,5 +1,7 @@
 package ru.zinovev.online.store.model;
 
+import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
+
 public record AddressDetails(
         String publicAddressId,
         UserDetails userDetails,
@@ -9,7 +11,7 @@ public record AddressDetails(
         String street,
         Integer houseNumber,
         Integer flatNumber,
-        String addressTypeName,
+        AddressTypeName addressTypeName,
         Boolean isSystem
 ) {
 }

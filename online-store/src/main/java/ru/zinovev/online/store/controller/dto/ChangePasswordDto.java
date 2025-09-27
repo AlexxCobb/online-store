@@ -4,13 +4,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record ChangePasswordDto(
-        @NotBlank
+        @NotBlank(message = "Текущий пароль обязателен!")
         @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$",
-                 message = "Password must contain at least 8 characters, one uppercase, one lowercase and one digit")
+                 message = "Пароль должен содержать не менее 8 символов: одну заглавную букву, одну строчную букву и одну цифру.")
         String currentPassword,
-        @NotBlank
+        @NotBlank(message = "Новый пароль обязателен!")
         @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$",
-                 message = "Password must contain at least 8 characters, one uppercase, one lowercase and one digit")
+                 message = "Пароль должен содержать не менее 8 символов: одну заглавную букву, одну строчную букву и одну цифру.")
         String newPassword
 ) {
 }

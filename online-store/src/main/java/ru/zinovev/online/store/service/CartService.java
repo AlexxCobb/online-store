@@ -31,7 +31,8 @@ public class CartService {
                 existedCartItem.map(cartItemDetails -> cartItemDetails.quantity() + quantity).orElse(quantity);
 
         if (availableQuantity < newQuantity) {
-            throw new OutOfStockException("Maximum quantity in stock that can be added - " + availableQuantity);
+            throw new OutOfStockException("Maximum quantity in stock that can be added - ", product.name(), newQuantity,
+                                          availableQuantity);
         }
         return cartDaoService.addProductToCart(cart, publicProductId, quantity);
     }
