@@ -7,15 +7,33 @@
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
 <div class="welcome-container">
-    <h1>Редактирование товара <span th:text="${product.publicProductId}"></span></h1>
+    <h1>Редактирование товара <span th:text="${product.parameters.?[key == 'brand'][0]?.value}">
+    </span></h1>
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
+    </div>
+
+    <div class="mt-4">
+        <h5>Информация о товаре:</h5>
+        <p><strong>Бренд товара:</strong>
+            <span th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
+                        ? ''
+                        : product.parameters.?[key == 'brand'][0].value}">
+
+            </span></p>
+        <p><strong>Название товара:</strong> <span th:text="${product.name} ?: 'Не указан'"></span></p>
+        <p><strong>Стоимость товара:</strong> <span th:text="${product.price} + ' ₽'"></span></p>
+        <p><strong>Категория товара:</strong>
+            <span th:each="category : ${categories}"
+                  th:if="${category.publicCategoryId == product.categoryPublicId}"
+                  th:text="${category.name}">
+            </span>
+        <p><strong>Количество товара:</strong> <span th:text="${product.stockQuantity} + ' шт.'"></span></p>
     </div>
     <table>
         <form th:action="@{'/api/admins/' + ${publicUserId} + '/products/' + ${product.publicProductId}}"
               method="post" th:object="${productUpdateDto}">
             <input type="hidden" name="_method" value="patch"/>
-            <h3>Редактировать существующий товар</h3>
 
             <div class="mb-3">
                 <label class="form-label" for="name">Название товара</label>
@@ -59,23 +77,6 @@
             </div>
         </form>
     </table>
-    <div class="mt-4">
-        <h5>Информация о товаре:</h5>
-        <p><strong>Бренд товара:</strong>
-            <span th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
-                        ? ''
-                        : product.parameters.?[key == 'brand'][0].value}">
-
-            </span></p>
-        <p><strong>Название товара:</strong> <span th:text="${product.name} ?: 'Не указан'"></span></p>
-        <p><strong>Стоимость товара:</strong> <span th:text="${product.price} + ' ₽'"></span></p>
-        <p><strong>Категория товара:</strong>
-            <span th:each="category : ${categories}"
-                  th:if="${category.publicCategoryId == product.categoryPublicId}"
-                  th:text="${category.name}">
-            </span>
-        <p><strong>Количество товара:</strong> <span th:text="${product.stockQuantity} + ' шт.'"></span></p>
-    </div>
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>

@@ -311,7 +311,8 @@ public class AdminController {
     @PatchMapping("/{publicUserId}/orders/{publicOrderId}")
     public String changeOrderStatus(@PathVariable String publicUserId, @PathVariable String publicOrderId,
                                     @RequestParam OrderStatusName orderStatusName,
-                                    @RequestParam(required = false) PaymentStatusName paymentStatusName, Model model, RedirectAttributes redirectAttributes) {
+                                    @RequestParam(required = false) PaymentStatusName paymentStatusName, Model model,
+                                    RedirectAttributes redirectAttributes) {
         log.debug(
                 "Received PATCH request to change order status, with id - {}, orderStatusName - {}, paymentStatusName -{}",
                 publicOrderId, orderStatusName, paymentStatusName);
@@ -320,12 +321,18 @@ public class AdminController {
             model.addAttribute("publicUserId", publicUserId);
 
         } catch (BadRequestException e) {
+            if (e.getMessage().equals("The DELIVERED status can only be changed to CANCELLED")) {
+                model.addAttribute("errorMessage", "Статус ДОСТАВЛЕН можно поменять только на статус ОТМЕНЕН");
+            }
+            if (e.getMessage().equals("The CANCELLED status can not be changed")) {
+                model.addAttribute("errorMessage", "Статус ОТМЕНЕН не может быть изменен");
+            }
             var order = orderService.getOrderById(publicOrderId, publicUserId);
             model.addAttribute("publicUserId", publicUserId);
             model.addAttribute("order", order);
             model.addAttribute("orderStatuses", OrderStatusName.values());
             model.addAttribute("paymentStatuses", PaymentStatusName.values());
-            model.addAttribute("errorMessage", "Статус ДОСТАВЛЕН можно поменять только на статус ОТМЕНЕН");
+
             return "admin/edit-order";
         }
         redirectAttributes.addFlashAttribute("successMessage", "ЗАКАЗ УСПЕШНО ОТРЕДАКТИРОВАН");

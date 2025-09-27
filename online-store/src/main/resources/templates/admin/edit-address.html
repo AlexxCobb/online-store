@@ -7,7 +7,14 @@
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
 <div class="welcome-container">
-    <h1>Редактирование адреса <span th:text="${address.publicAddressId}"></span></h1>
+    <h1>Редактирование адреса, тип -  <span th:text="${address.addressTypeName.displayValue}"></span></h1>
+    <div class="mt-4">
+        <h5>Информация об адресе:</h5>
+        <p><strong>Почтовый индекс:</strong><span th:text="${address.zipCode}"></span></p>
+        <p><strong>Улица:</strong> <span th:text="${address.street}"></span></p>
+        <p><strong>Номер дома:</strong> <span th:text="${address.houseNumber}"></span></p>
+    </div>
+
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
@@ -15,7 +22,6 @@
         <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
               method="post" th:object="${addressUpdateDto}">
             <input type="hidden" name="_method" value="patch"/>
-            <h3>Редактировать существующий адрес</h3>
 
             <div class="mb-3">
                 <label for="zipCode">Почтовый индекс</label>
@@ -48,12 +54,6 @@
             </div>
         </form>
     </table>
-    <div class="mt-4">
-        <h5>Информация об адресе:</h5>
-        <p><strong>Почтовый индекс:</strong><span th:text="${address.zipCode}"></span></p>
-        <p><strong>Улица:</strong> <span th:text="${address.street}"></span></p>
-        <p><strong>Номер дома:</strong> <span th:text="${address.houseNumber}"></span></p>
-    </div>
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>

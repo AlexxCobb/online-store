@@ -135,7 +135,10 @@ public class OrderDaoService {
         var existedOrderStatus = order.getOrderStatus().getName();
         if (existedOrderStatus.equals(OrderStatusName.DELIVERED) && !orderStatusName.equals(
                 OrderStatusName.CANCELLED)) {
-            throw new BadRequestException("The DELIVERED status can only be changed to CANCELLED.");
+            throw new BadRequestException("The DELIVERED status can only be changed to CANCELLED");
+        }
+        if (existedOrderStatus.equals(OrderStatusName.CANCELLED)) {
+            throw new BadRequestException("The CANCELLED status can not be changed");
         }
         var orderStatus = orderStatusRepository.getByName(orderStatusName);
         var updatedOrder = order.toBuilder().orderStatus(orderStatus);

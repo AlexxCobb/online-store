@@ -7,7 +7,6 @@
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
 <div class="welcome-container">
-    <h1>Редактирование категории <span th:text="${category.name}"></span></h1>
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
@@ -18,7 +17,11 @@
         <form th:action="@{'/api/admins/' + ${publicUserId} + '/categories/' + ${category.publicCategoryId}}"
               method="post" th:object="${categoryDto}">
             <input type="hidden" name="_method" value="patch" />
-            <h3>Редактировать категорию</h3>
+
+            <h3>Редактирование категории</h3>
+            <div class="mt-4">
+                <p><strong>Название текущей категории:  </strong><span th:text="${category.name}"></span></p>
+            </div>
 
             <div class="mb-3">
                 <label class="form-label" for="name"></label>

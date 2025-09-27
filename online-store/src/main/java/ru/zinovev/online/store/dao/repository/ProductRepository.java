@@ -20,9 +20,11 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     List<Product> findByCategoryPublicCategoryId(String publicCategoryId);
 
-    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.parameters",
-           countQuery = "SELECT COUNT(DISTINCT p) FROM Product p")
-    Page<Product> findAllWithParameters(Pageable pageable);
+    @Query("SELECT p.id FROM Product p")
+    Page<Long> findProductIds(Pageable pageable);
+
+    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.parameters WHERE p.id IN :ids ORDER BY p.stockQuantity DESC")
+    List<Product> findProductsWithParametersInIds(List<Long> ids);
 
     @Query("SELECT DISTINCT pp.value FROM ProductParameter pp WHERE pp.key = :key ORDER BY pp.value")
     Set<String> findUniqueParametersByKey(String key);
@@ -41,7 +43,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "FROM Product p " +
             "WHERE p.publicProductId IN " +
             "   (SELECT MIN(p2.publicProductId) " +
-            "   FROM Product p2 WHERE p2.category.id IN :categoryIds " +
+            "   FROM Product p2 WHERE p2.category.id IN :categoryIds AND p2.stockQuantity > 0 " +
             "   GROUP BY p2.category.id)")
     List<ProductView> getOneProductFromEachCategory(Collection<Long> categoryIds, Pageable pageable);
 }

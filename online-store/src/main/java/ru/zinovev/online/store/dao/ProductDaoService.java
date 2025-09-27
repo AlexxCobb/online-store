@@ -117,12 +117,13 @@ public class ProductDaoService {
                 productParamDetails.ram()) && Objects.isNull(productParamDetails.color())) {
             var sort = Sort.by(Sort.Direction.DESC, "stockQuantity");
             var pageable = PageRequest.of(page, limit, sort);
-            var products = productRepository.findAllWithParameters(pageable);
+            var ids = productRepository.findProductIds(pageable);
+            var products = productRepository.findProductsWithParametersInIds(ids.getContent());
             var productDetails = products
                     .stream()
                     .map(productMapper::toProductDetails)
                     .toList();
-            return new PageImpl<>(productDetails, pageable, products.getTotalElements());
+            return new PageImpl<>(productDetails, pageable, ids.getTotalElements());
         }
 
         List<Specification<Product>> spec = new ArrayList<>();
@@ -178,9 +179,9 @@ public class ProductDaoService {
         products.forEach((product, integer) -> {
             if (product.getStockQuantity() < integer) {
                 throw new OutOfStockException(
-                        "You cannot order the selected quantity - " + integer + " of product name - "
-                                + product.getName() + ", the remainder in the warehouse is - "
-                                + product.getStockQuantity());
+                        "You cannot order the selected quantity - @d of product name - %s , the remainder in the warehouse is - %s",
+                        product.getName(), integer,
+                        product.getStockQuantity());
             }
             var productToUpdate = product.toBuilder()
                     .stockQuantity(product.getStockQuantity() - integer)

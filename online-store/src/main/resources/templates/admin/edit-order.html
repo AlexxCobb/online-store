@@ -16,6 +16,12 @@
   </div>
   <h1>Редактирование заказа <span th:text="${order.publicOrderId}"></span></h1>
 
+  <div class="mt-4">
+    <h5>Информация о заказе:</h5>
+    <p><strong>Email клиента:</strong> <span th:text="${order.userDetails?.email} ?: 'Не указан'"></span></p>
+    <p><strong>Способ доставки:</strong> <span th:text="${order.deliveryMethodName.displayValue}"></span></p>
+    <p><strong>Дата создания:</strong> <span th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
+  </div>
   <form th:action="@{'/api/admins/' + ${publicUserId} + '/orders/' + ${order.publicOrderId}}"
         method="post">
     <input type="hidden" name="_method" value="patch" />
@@ -50,12 +56,7 @@
     </div>
   </form>
 
-  <div class="mt-4">
-    <h5>Информация о заказе:</h5>
-    <p><strong>Email клиента:</strong> <span th:text="${order.userDetails?.email} ?: 'Не указан'"></span></p>
-    <p><strong>Способ доставки:</strong> <span th:text="${order.deliveryMethodName.displayValue}"></span></p>
-    <p><strong>Дата создания:</strong> <span th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
-  </div>
+
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>
