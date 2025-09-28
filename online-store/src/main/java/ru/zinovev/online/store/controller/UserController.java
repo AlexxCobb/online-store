@@ -23,6 +23,7 @@ import ru.zinovev.online.store.controller.dto.AddressDto;
 import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.controller.dto.OrderDto;
 import ru.zinovev.online.store.controller.dto.ProductParamDto;
+import ru.zinovev.online.store.controller.dto.UserDto;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.entity.enums.DeliveryMethodName;
 import ru.zinovev.online.store.dao.entity.enums.PaymentMethodName;
@@ -38,10 +39,8 @@ import ru.zinovev.online.store.service.CategoryService;
 import ru.zinovev.online.store.service.OrderService;
 import ru.zinovev.online.store.service.ProductService;
 import ru.zinovev.online.store.service.StatisticService;
-import ru.zinovev.online.store.service.UserService;
 
 import java.math.BigDecimal;
-import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -55,10 +54,10 @@ public class UserController {
     private final CategoryService categoryService;
     private final OrderService orderService;
     private final CartService cartService;
-    private final UserService userService;
     private final StatisticService statisticService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
+    private final UserDto sessionUserDto;
 
     @GetMapping("/home")
     public String homePage(Model model) {
@@ -68,87 +67,91 @@ public class UserController {
                     productService.getOneProductFromEachCategory();
         }
         model.addAttribute("popularProducts", popularProducts);
+        model.addAttribute("sessionUserDto", sessionUserDto);
         return "home";
     }
 
-    @PostMapping("/{publicUserId}/addresses")
-    public String addAddress(@PathVariable String publicUserId, @Valid AddressDto addressDto,
+    @PostMapping("/addresses")
+    public String addAddress(@Valid AddressDto addressDto,
                              BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-        log.debug("Received POST request to add user delivery address with userId - {}, dto - {}", publicUserId,
-                  addressDto);
         if (bindingResult.hasErrors()) {
             return "addresses";
         }
-        addressService.addAddress(publicUserId, addressMapper.toAddressDetails(addressDto));
+        if (sessionUserDto.getPublicUserId() != null) {
+            var publicUserId = sessionUserDto.getPublicUserId();
+            log.debug("Received POST request to add user delivery address with userId - {}, dto - {}",
+                      publicUserId, addressDto);
+            addressService.addAddress(publicUserId, addressMapper.toAddressDetails(addressDto));
+        }
         redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО ДОБАВЛЕН");
-        return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
+        return "redirect:/api/users/addresses?name=USER_ADDRESS";
     }
 
-    @PatchMapping("/{publicUserId}/addresses/{publicAddressId}")
-    public String updateAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
+    @PatchMapping("/addresses/{publicAddressId}")
+    public String updateAddress(@PathVariable String publicAddressId,
                                 @Valid AddressUpdateDto addressUpdateDto, BindingResult bindingResult, Model model,
                                 RedirectAttributes redirectAttributes) {
-        log.debug("Received PATCH request to update user's (id - {}) delivery address (id - {}), dto - {}",
-                  publicUserId, publicAddressId, addressUpdateDto);
         if (bindingResult.hasErrors()) {
             var address = addressService.getAddressByPublicId(publicAddressId);
             model.addAttribute("address", address);
             return "edit-address";
         }
-        addressService.updateAddress(publicUserId, publicAddressId,
-                                     addressMapper.toAddressUpdateDetails(addressUpdateDto));
+        if (sessionUserDto.getPublicUserId() != null) {
+            var publicUserId = sessionUserDto.getPublicUserId();
+            log.debug("Received PATCH request to update user's (id - {}) delivery address (id - {}), dto - {}",
+                      publicUserId, publicAddressId, addressUpdateDto);
+            addressService.updateAddress(publicUserId, publicAddressId,
+                                         addressMapper.toAddressUpdateDetails(addressUpdateDto));
+        }
         redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО ОБНОВЛЁН");
-        return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
+        return "redirect:/api/users/addresses?name=USER_ADDRESS";
     }
 
-    @GetMapping("/{publicUserId}/addresses/{publicAddressId}")
-    public String editUserAddress(@PathVariable String publicUserId,
-                                  @ModelAttribute AddressUpdateDto addressUpdateDto,
+    @GetMapping("/addresses/{publicAddressId}")
+    public String editUserAddress(@ModelAttribute AddressUpdateDto addressUpdateDto,
                                   @PathVariable String publicAddressId, Model model) {
-        log.debug(
-                "Received GET request to edit user address with id - {}, from user with id - {}",
-                publicAddressId,
-                publicUserId);
-        var address = addressService.getAddressByPublicId(publicAddressId);
-
-        model.addAttribute("publicUserId", publicUserId);
-        model.addAttribute("address", address);
+        if (sessionUserDto.getPublicUserId() != null) { //нужна ли?
+            var publicUserId = sessionUserDto.getPublicUserId();
+            log.debug(
+                    "Received GET request to edit user address with id - {}, from user with id - {}",
+                    publicAddressId,
+                    publicUserId);
+            var address = addressService.getAddressByPublicId(publicAddressId);
+            model.addAttribute("address", address);
+        }
         return "edit-address";
     }
 
-    @GetMapping("/{publicUserId}/addresses")
-    public String getAddresses(@PathVariable String publicUserId,
-                               @RequestParam(required = false) AddressTypeName name,
-                               @RequestParam(required = false) Boolean isSystem, Model model,
-                               HttpServletRequest request, @ModelAttribute AddressDto addressDto) {
+    @GetMapping("/addresses")
+    public String getAddresses(
+            @RequestParam(required = false) AddressTypeName name,
+            @RequestParam(required = false) Boolean isSystem, Model model,
+            HttpServletRequest request, @ModelAttribute AddressDto addressDto) {
         log.debug("Received GET request to get addresses");
 
         model.addAttribute("nameParam", request.getParameter("name"));
         model.addAttribute("isSystemParam", request.getParameter("isSystem"));
         if (name == null && isSystem == null) {
-            return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
+            return "redirect:/api/users/addresses?name=USER_ADDRESS";
         }
-        var addresses = addressService.getAddresses(publicUserId, name, isSystem);
-        model.addAttribute("addresses", addresses);
+        if (sessionUserDto.getPublicUserId() != null) {
+            var addresses = addressService.getAddresses(sessionUserDto.getPublicUserId(), name, isSystem);
+            model.addAttribute("addresses", addresses);
+        }
         return "addresses";
     }
 
-    @DeleteMapping("/{publicUserId}/addresses/{publicAddressId}")
-    public String deleteAddress(@PathVariable String publicUserId, @PathVariable String publicAddressId,
+    @DeleteMapping("/addresses/{publicAddressId}")
+    public String deleteAddress(@PathVariable String publicAddressId,
                                 RedirectAttributes redirectAttributes) {
-        log.debug("Received DELETE request to delete address with id = {} from user id - {}", publicAddressId,
-                  publicUserId);
-        addressService.deleteAddress(publicUserId, publicAddressId, false);
+        if (sessionUserDto.getPublicUserId() != null) {
+            var publicUserId = sessionUserDto.getPublicUserId();
+            log.debug("Received DELETE request to delete address with id = {} from user id - {}", publicAddressId,
+                      publicUserId);
+            addressService.deleteAddress(publicUserId, publicAddressId, false);
+        }
         redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО УДАЛЕН");
-        return "redirect:/api/users/" + publicUserId + "/addresses?name=USER_ADDRESS";
-    }
-
-    @GetMapping("/categories")
-    public String getCategories(Model model) {
-        log.debug("Received GET request to get all categories");
-        var categories = categoryService.getCategories();
-        model.addAttribute("categories", categories);
-        return "categories";
+        return "redirect:/api/users/addresses?name=USER_ADDRESS";
     }
 
     @ModelAttribute("categories")
@@ -187,6 +190,7 @@ public class UserController {
         model.addAttribute("priceMin", priceMin);
         model.addAttribute("priceMax", priceMax);
         model.addAttribute("products", products);
+        model.addAttribute("sessionUserDto", sessionUserDto);
         return "products";
     }
 
@@ -194,17 +198,15 @@ public class UserController {
     public String addProductsToCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
                                     @RequestParam String publicProductId,
                                     @RequestParam(defaultValue = "1") Integer quantity,
-                                    HttpServletResponse response, RedirectAttributes redirectAttributes,
-                                    Principal principal) {
+                                    HttpServletResponse response, RedirectAttributes redirectAttributes) {
         log.debug("Received POST request to add product to cart");
         try {
-            String publicUserId = null;
-            if (principal != null) {
-                publicUserId = userService.findPublicUserId(principal);
+            if (sessionUserDto.getPublicUserId() != null) {
+                var publicUserId = sessionUserDto.getPublicUserId();
                 cartService.addProductToCart(publicCartId, publicUserId, publicProductId, quantity);
                 redirectAttributes.addFlashAttribute("successMessage", "ТОВАР ДОБАВЛЕН В КОРЗИНУ");
             } else {
-                var cart = cartService.addProductToCart(publicCartId, publicUserId, publicProductId, quantity);
+                var cart = cartService.addProductToCart(publicCartId, null, publicProductId, quantity);
                 setCartCookie(response, cart.publicCartId());
                 redirectAttributes.addFlashAttribute("successMessage", "ТОВАР ДОБАВЛЕН В КОРЗИНУ");
             }
@@ -222,118 +224,127 @@ public class UserController {
     @PatchMapping("/cart/{publicProductId}")
     public String removeProductFromCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
                                         @PathVariable String publicProductId,
-                                        RedirectAttributes redirectAttributes, Model model, Principal principal) {
+                                        RedirectAttributes redirectAttributes, Model model) {
         log.debug("Received PATCH request to remove product from cart");
-        String publicUserId = null;
-        if (principal != null) {
-            publicUserId = userService.findPublicUserId(principal);
+        if (sessionUserDto.getPublicUserId() != null) {
+            var publicUserId = sessionUserDto.getPublicUserId();
+            cartService.removeProductFromCart(publicCartId, publicUserId, publicProductId);
         }
-        cartService.removeProductFromCart(publicCartId, publicUserId, publicProductId);
+        else {
+            cartService.removeProductFromCart(publicCartId, null, publicProductId);
+        }
         redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УДАЛЕН ИЗ КОРЗИНЫ");
-        model.addAttribute("publicProductId", publicProductId);
+        //  model.addAttribute("publicProductId", publicProductId);
         return "redirect:/api/users/cart";
     }
 
     @DeleteMapping("/cart")
     public String clearCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
-                            RedirectAttributes redirectAttributes, Principal principal) {
+                            RedirectAttributes redirectAttributes) {
         log.debug("Received DELETE request to clear cart");
-        String publicUserId = null;
-        if (principal != null) {
-            publicUserId = userService.findPublicUserId(principal);
+
+        if (sessionUserDto.getPublicUserId() != null) {
+            var publicUserId = sessionUserDto.getPublicUserId();
+            cartService.clearCart(publicCartId, publicUserId);
+        } else {
+            cartService.clearCart(publicCartId, null);
         }
-        cartService.clearCart(publicCartId, publicUserId);
         redirectAttributes.addFlashAttribute("successMessage", "КОРЗИНА УСПЕШНО ОЧИЩЕНА");
         return "redirect:/api/users/products";
     }
 
     @GetMapping("/cart")
-    public String getCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
-                          @RequestParam(required = false) String publicUserId) {
+    public String getCart(@CookieValue(value = "CART_ID", required = false) String publicCartId, Model model) {
+        //  model.addAttribute("sessionUserDto", sessionUserDto);
         return "cart";
     }
 
     @ModelAttribute("cart")
-    public CartDetails getCartForNavbar(@CookieValue(value = "CART_ID", required = false) String publicCartId,
-                                        Principal principal) {
-        String publicUserId = null;
-        if (principal != null) {
-            publicUserId = userService.findPublicUserId(principal);
+    public CartDetails getCartForNavbar(@CookieValue(value = "CART_ID", required = false) String publicCartId) {
+        if (sessionUserDto.getPublicUserId() != null) {
+            return cartService.getCart(publicCartId, sessionUserDto.getPublicUserId());
         }
-        return cartService.getCart(publicCartId, publicUserId);
+        return cartService.getCart(publicCartId, null);
     }
 
-    @GetMapping("/{publicUserId}/cart")
-    public String editCartToOrder(@PathVariable String publicUserId,
-                                  Model model, @ModelAttribute OrderDto orderDto,
-                                  @ModelAttribute AddressDto addressDto) {
-        log.debug("Received GET request to edit cart to order from user with id- : {}", publicUserId);
+    @GetMapping("/cart/edit")
+    public String getEditCartToOrder(Model model, @ModelAttribute OrderDto orderDto) {
+        log.debug("Received GET request to edit cart to order from user with email- : {}", sessionUserDto.getEmail());
 
-        var userAddresses = addressService.getAddresses(publicUserId, AddressTypeName.USER_ADDRESS, false);
-        var parcelAddresses = addressService.getAddresses(publicUserId, AddressTypeName.PARCEL_LOCKER, true);
-        var storeAddresses = addressService.getAddresses(publicUserId, AddressTypeName.STORE_ADDRESS, true);
-        model.addAttribute("userAddresses", userAddresses);
-        model.addAttribute("parcelAddresses", parcelAddresses);
-        model.addAttribute("storeAddresses", storeAddresses);
-        model.addAttribute("deliveryMethods", DeliveryMethodName.values());
-        model.addAttribute("paymentMethods", PaymentMethodName.values());
-        return "edit-cart";
-    }
-
-    @PostMapping("/{publicUserId}/orders")
-    public String addOrder(@PathVariable String publicUserId, @Valid OrderDto orderDto, BindingResult bindingResult,
-                           RedirectAttributes redirectAttributes, Model model) {
-        log.debug("Received POST request to add order, dto - {}, from user with id - {}", orderDto, publicUserId);
-        if (bindingResult.hasErrors()) {
+        if (sessionUserDto.getPublicUserId() != null) {
+            var publicUserId = sessionUserDto.getPublicUserId();
             var userAddresses = addressService.getAddresses(publicUserId, AddressTypeName.USER_ADDRESS, false);
             var parcelAddresses = addressService.getAddresses(publicUserId, AddressTypeName.PARCEL_LOCKER, true);
             var storeAddresses = addressService.getAddresses(publicUserId, AddressTypeName.STORE_ADDRESS, true);
+
             model.addAttribute("userAddresses", userAddresses);
             model.addAttribute("parcelAddresses", parcelAddresses);
             model.addAttribute("storeAddresses", storeAddresses);
             model.addAttribute("deliveryMethods", DeliveryMethodName.values());
             model.addAttribute("paymentMethods", PaymentMethodName.values());
-            return "edit-cart";
         }
-        try {
-            orderService.createOrder(publicUserId, orderDto);
-        } catch (OutOfStockException e) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                                                 String.format(
-                                                         "Недостаточно товара: %s. Вы добавили %d шт., в наличии осталось %d шт.",
-                                                         e.getProductName(), e.getRequestedQuantity(),
-                                                         e.getAvailableQuantity()));
-            return "redirect:/api/users/" + publicUserId + "/cart";
-        } catch (BadRequestException e) {
-            if (e.getMessage()
-                    .equals("Address with id - " + orderDto.publicAddressId()
-                                    + " is not the address of the user with id - "
-                                    + publicUserId)) {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                                                     "Выбранный адрес не является адресом покупателя");
-                return "redirect:/api/users/" + publicUserId + "/cart";
-            } else if (e.getMessage().equals("The selected address does not match the selected delivery method - "
-                                                     + orderDto.deliveryMethodName().name())) {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                                                     "Выбранный адрес не соответствует выбранному способу доставки");
-                return "redirect:/api/users/" + publicUserId + "/cart";
-            }
-        }
-        model.addAttribute("publicUserId", publicUserId);
-        redirectAttributes.addFlashAttribute("successMessage", "ЗАКАЗ УСПЕШНО ОФОРМЛЕН");
-        return "redirect:/api/users/" + publicUserId + "/orders";
+        return "edit-cart";
     }
 
-    @GetMapping("/{publicUserId}/orders")
-    public String getOrders(@PathVariable String publicUserId,
-                            @RequestParam(defaultValue = "0") Integer page,
+    @PostMapping("/orders")
+    public String addOrder(@Valid OrderDto orderDto, BindingResult bindingResult,
+                           RedirectAttributes redirectAttributes, Model model) {
+        if (sessionUserDto.getPublicUserId() != null) {
+            log.debug("Received POST request to add order, dto - {}, from user with id - {}", orderDto,
+                      sessionUserDto.getPublicUserId());
+            var publicUserId = sessionUserDto.getPublicUserId();
+            if (bindingResult.hasErrors()) {
+                var userAddresses = addressService.getAddresses(publicUserId, AddressTypeName.USER_ADDRESS, false);
+                var parcelAddresses = addressService.getAddresses(publicUserId, AddressTypeName.PARCEL_LOCKER, true);
+                var storeAddresses = addressService.getAddresses(publicUserId, AddressTypeName.STORE_ADDRESS, true);
+                model.addAttribute("userAddresses", userAddresses);
+                model.addAttribute("parcelAddresses", parcelAddresses);
+                model.addAttribute("storeAddresses", storeAddresses);
+                model.addAttribute("deliveryMethods", DeliveryMethodName.values());
+                model.addAttribute("paymentMethods", PaymentMethodName.values());
+                return "edit-cart";
+            }
+            try {
+                orderService.createOrder(publicUserId, orderDto);
+            } catch (OutOfStockException e) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                                                     String.format(
+                                                             "Недостаточно товара: %s. Вы добавили %d шт., в наличии осталось %d шт.",
+                                                             e.getProductName(), e.getRequestedQuantity(),
+                                                             e.getAvailableQuantity()));
+                return "redirect:/api/users/cart/edit";
+            } catch (BadRequestException e) {
+                if (e.getMessage()
+                        .equals("Address with id - " + orderDto.publicAddressId()
+                                        + " is not the address of the user with id - "
+                                        + publicUserId)) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                                                         "Выбранный адрес не является адресом покупателя");
+                    return "redirect:/api/users/cart/edit";
+                } else if (e.getMessage().equals("The selected address does not match the selected delivery method - "
+                                                         + orderDto.deliveryMethodName().name())) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                                                         "Выбранный адрес не соответствует выбранному способу доставки");
+                    return "redirect:/api/users/cart/edit";
+                }
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "ЗАКАЗ УСПЕШНО ОФОРМЛЕН");
+        }
+        return "redirect:/api/users/orders";
+    }
+
+    @GetMapping("/orders")
+    public String getOrders(@RequestParam(defaultValue = "0") Integer page,
                             @RequestParam(defaultValue = "5") Integer limit,
                             Model model) {
-        log.debug("Received GET request to get user orders with userId - {}", publicUserId);
-        var orders = orderService.getUserOrders(publicUserId, page, limit);
+        if (sessionUserDto.getPublicUserId() != null) {
+            log.debug("Received GET request to get user orders with userId - {}", sessionUserDto.getPublicUserId());
 
-        model.addAttribute("paymentMethods", PaymentMethodName.values());
-        model.addAttribute("orders", orders);
+            var publicUserId = sessionUserDto.getPublicUserId();
+            var orders = orderService.getUserOrders(publicUserId, page, limit);
+            model.addAttribute("paymentMethods", PaymentMethodName.values());
+            model.addAttribute("orders", orders);
+        }
         return "orders";
     }
 

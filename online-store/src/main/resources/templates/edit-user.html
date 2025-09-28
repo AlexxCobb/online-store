@@ -21,7 +21,7 @@
         <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
     </div>
     <table>
-        <form th:action="@{'/api/users/' + ${publicUserId} + '/profile'}" method="post" th:object="${userUpdateDto}">
+        <form th:action="@{'/api/users/profile'}" method="post" th:object="${userUpdateDto}">
             <input type="hidden" name="_method" value="patch"/>
             <div class="mb-3">
                 <label for="name" class="form-label">Введите имя</label>
@@ -49,7 +49,7 @@
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Сохранить</button>
-                <a th:href="@{'/api/users/' + ${publicUserId}}" class="btn btn-secondary">Отмена</a>
+                <a th:href="@{/api/users}" class="btn btn-secondary">Отмена</a>
             </div>
         </form>
     </table>

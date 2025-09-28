@@ -28,16 +28,16 @@
                 <td th:text="${user.email}"></td>
                 <td>
                     <div class="d-flex gap-2 align-items-center">
-                        <a th:href="@{'/api/users/' + ${publicUserId} + '/edit'}"
+                        <a th:href="@{/api/users/edit}"
                            class="btn btn-sm btn-primary">
                             <i class="bi bi-pencil"></i> Редактировать
                         </a>
-                        <form th:action="@{'/api/users/' + ${publicUserId}}"
+                        <form th:action="@{/api/users}"
                               method="post" class="m-0">
                             <input type="hidden" name="_method" value="delete"/>
                             <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
                         </form>
-                        <a th:href="@{'/api/users/' + ${publicUserId} + '/password'}"
+                        <a th:href="@{/api/users/password}"
                            class="btn btn-sm btn-primary">
                             <i class="bi bi-pencil"></i> Изменить пароль
                         </a>
