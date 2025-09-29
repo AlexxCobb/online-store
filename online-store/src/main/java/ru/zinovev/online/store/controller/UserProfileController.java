@@ -16,6 +16,7 @@ import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
 import ru.zinovev.online.store.controller.dto.UserDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
 import ru.zinovev.online.store.exception.model.InvalidPasswordException;
+import ru.zinovev.online.store.exception.model.UserNotAuthenticatedException;
 import ru.zinovev.online.store.service.UserService;
 
 @Controller
@@ -29,26 +30,24 @@ public class UserProfileController {
 
     @GetMapping()
     public String getUserDetails(Model model) {
-        if (sessionUserDto.getPublicUserId() != null) {
-            log.debug("Received GET request to get user with id = {}", sessionUserDto.getPublicUserId());
+        var publicUserId = getPublicUserIdOrThrowException(sessionUserDto);
+        log.debug("Received GET request to get user with id = {}", publicUserId);
 
-            var publicUserId = sessionUserDto.getPublicUserId();
-            var user = userService.findUserDetails(publicUserId);
-            model.addAttribute("user", user);
-        }
+        var user = userService.findUserDetails(publicUserId);
+        model.addAttribute("user", user);
+
         return "user-info";
     }
 
     @GetMapping("/edit")
     public String editUserDetails(@ModelAttribute UserUpdateDto userUpdateDto,
                                   Model model) {
-        if (sessionUserDto.getPublicUserId() != null) {
-            log.debug("Received GET request to edit user with id = {}", sessionUserDto.getPublicUserId());
+        var publicUserId = getPublicUserIdOrThrowException(sessionUserDto);
+        log.debug("Received GET request to edit user with id = {}", publicUserId);
 
-            var publicUserId = sessionUserDto.getPublicUserId();
-            var user = userService.findUserDetails(publicUserId);
-            model.addAttribute("user", user);
-        }
+        var user = userService.findUserDetails(publicUserId);
+        model.addAttribute("user", user);
+
         return "edit-user";
     }
 
@@ -60,57 +59,52 @@ public class UserProfileController {
                                       "Пользователь с таким email - " + userUpdateDto.email()
                                               + " уже существует.");
         }
+        var publicUserId = getPublicUserIdOrThrowException(sessionUserDto);
         if (bindingResult.hasErrors()) {
-            var publicUserId = sessionUserDto.getPublicUserId();
             var user = userService.findUserDetails(publicUserId);
             model.addAttribute("user", user);
             return "edit-user";
         }
-        if (sessionUserDto.getPublicUserId() != null) {
-            log.debug("Received PATCH request to update user with id = {}", sessionUserDto.getPublicUserId());
-            var publicUserId = sessionUserDto.getPublicUserId();
-            redirectAttributes.addFlashAttribute("successMessage", "ДАННЫЕ ПОЛЬЗОВАТЕЛЯ УСПЕШНО ОБНОВЛЕНЫ");
-            userService.updateUser(publicUserId, userUpdateDto);
-        }
+        log.debug("Received PATCH request to update user with id = {}", publicUserId);
+
+        userService.updateUser(publicUserId, userUpdateDto);
+        redirectAttributes.addFlashAttribute("successMessage", "ДАННЫЕ ПОЛЬЗОВАТЕЛЯ УСПЕШНО ОБНОВЛЕНЫ");
         return "redirect:/api/users";
     }
 
     @GetMapping("/password")
     public String editUserPassword(
             @ModelAttribute ChangePasswordDto changePasswordDto, Model model) {
-        if (sessionUserDto.getPublicUserId() != null) {
-            log.debug("Received GET request to change password user with id = {}", sessionUserDto.getPublicUserId());
+        var publicUserId = getPublicUserIdOrThrowException(sessionUserDto);
+        log.debug("Received GET request to change password user with id = {}", publicUserId);
 
-            var publicUserId = sessionUserDto.getPublicUserId();
-            var user = userService.findUserDetails(publicUserId);
-            model.addAttribute("user", user);
-        }
+        var user = userService.findUserDetails(publicUserId);
+        model.addAttribute("user", user);
+
         return "edit-password";
     }
 
     @PatchMapping("/password")
     public String changePassword(@Valid ChangePasswordDto changePasswordDto,
                                  BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-        if (sessionUserDto.getPublicUserId() != null) {
-            log.debug("Received PATCH request to update user password with id = {}", sessionUserDto.getPublicUserId());
-            var publicUserId = sessionUserDto.getPublicUserId();
+        var publicUserId = getPublicUserIdOrThrowException(sessionUserDto);
+        log.debug("Received PATCH request to update user password with id = {}", sessionUserDto.getPublicUserId());
 
-            if (bindingResult.hasErrors()) {
-                return "edit-password";
-            }
-            try {
-                userService.changePassword(publicUserId, changePasswordDto);
-                redirectAttributes.addFlashAttribute("successMessage", "ПАРОЛЬ УСПЕШНО ОБНОВЛЕН");
-            } catch (InvalidPasswordException e) {
-                if (e.getMessage().equals("Current password is incorrect")) {
-                    redirectAttributes.addFlashAttribute("errorMessage",
-                                                         "Вы ввели неверный текущий пароль");
-                    return "redirect:/api/users/password";
-                } else if (e.getMessage().equals("New password cannot match current password")) {
-                    redirectAttributes.addFlashAttribute("errorMessage",
-                                                         "Старый и новый пароль должный отличаться!");
-                    return "redirect:/api/users/password";
-                }
+        if (bindingResult.hasErrors()) {
+            return "edit-password";
+        }
+        try {
+            userService.changePassword(publicUserId, changePasswordDto);
+            redirectAttributes.addFlashAttribute("successMessage", "ПАРОЛЬ УСПЕШНО ОБНОВЛЕН");
+        } catch (InvalidPasswordException e) {
+            if (e.getMessage().equals("Current password is incorrect")) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                                                     "Вы ввели неверный текущий пароль");
+                return "redirect:/api/users/password";
+            } else if (e.getMessage().equals("New password cannot match current password")) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                                                     "Старый и новый пароль должный отличаться!");
+                return "redirect:/api/users/password";
             }
         }
         return "redirect:/api/users";
@@ -118,12 +112,16 @@ public class UserProfileController {
 
     @DeleteMapping()
     public String deleteUser(RedirectAttributes redirectAttributes) {
-        if (sessionUserDto.getPublicUserId() != null) {
-            log.debug("Received DELETE request to delete user with id = {}", sessionUserDto.getPublicUserId());
-            var publicUserId = sessionUserDto.getPublicUserId();
-            userService.deleteUser(publicUserId);
-            redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ УСПЕШНО ОБНОВЛЕН");
-        }
+        var publicUserId = getPublicUserIdOrThrowException(sessionUserDto);
+        log.debug("Received DELETE request to delete user with id = {}", publicUserId);
+
+        userService.deleteUser(publicUserId);
+        redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ УСПЕШНО ОБНОВЛЕН");
         return "redirect:/api/users/home";
+    }
+
+    private String getPublicUserIdOrThrowException(UserDto userDto) {
+        return userDto.getPublicUserId()
+                .orElseThrow(() -> new UserNotAuthenticatedException("Что-то пошло не так. Попробуйте еще раз!"));
     }
 }

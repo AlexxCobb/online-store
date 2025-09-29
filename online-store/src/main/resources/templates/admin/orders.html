@@ -38,7 +38,7 @@
             <td th:text="${order.orderStatusName.displayValue}"></td>
             <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></td>
             <td>
-                <a th:href="@{'/api/admins/' + ${publicUserId} + '/orders/' + ${order.publicOrderId} + '/edit'}"
+                <a th:href="@{'/api/admins/orders/' + ${order.publicOrderId} + '/edit'}"
                    class="btn btn-sm btn-primary">
                     <i class="bi bi-pencil"></i> Редактировать
                 </a>
@@ -47,7 +47,7 @@
     </table>
     <div th:if="${orders.totalPages > 0}" class="pagination">
         <a th:if="${orders.hasPrevious()}"
-           th:href="@{/api/admins/{publicUserId}/orders(publicUserId=${publicUserId}, page=${orders.number - 1}, limit=${orders.size})}"
+           th:href="@{/api/admins/orders(page=${orders.number - 1}, limit=${orders.size})}"
            class="page-link previous">Предыдущая</a>
 
         <span class="page-number">
@@ -55,7 +55,7 @@
             </span>
 
         <a th:if="${orders.hasNext()}"
-           th:href="@{/api/admins/{publicUserId}/orders(publicUserId=${publicUserId}, page=${orders.number + 1}, limit=${orders.size})}"
+           th:href="@{/api/admins/orders(page=${orders.number + 1}, limit=${orders.size})}"
            class="page-link next">Следующая</a>
     </div>
 </div>

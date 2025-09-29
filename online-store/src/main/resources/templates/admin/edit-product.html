@@ -16,9 +16,7 @@
     <div class="mt-4">
         <h5>Информация о товаре:</h5>
         <p><strong>Бренд товара:</strong>
-            <span th:text="${#lists.isEmpty(product.parameters.?[key == 'brand'])
-                        ? ''
-                        : product.parameters.?[key == 'brand'][0].value}">
+            <span th:text="${product.parameters.?[key == 'brand'][0]?.value}">
 
             </span></p>
         <p><strong>Название товара:</strong> <span th:text="${product.name} ?: 'Не указан'"></span></p>
@@ -31,7 +29,7 @@
         <p><strong>Количество товара:</strong> <span th:text="${product.stockQuantity} + ' шт.'"></span></p>
     </div>
     <table>
-        <form th:action="@{'/api/admins/' + ${publicUserId} + '/products/' + ${product.publicProductId}}"
+        <form th:action="@{'/api/admins/products/' + ${product.publicProductId}}"
               method="post" th:object="${productUpdateDto}">
             <input type="hidden" name="_method" value="patch"/>
 
@@ -72,7 +70,7 @@
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                <a th:href="@{'/api/admins/' + ${publicUserId} + '/products'}"
+                <a th:href="@{'/api/admins/products'}"
                    class="btn btn-secondary">Отмена</a>
             </div>
         </form>

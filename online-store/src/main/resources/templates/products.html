@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/header :: common-header('Products')}">
 </head>
 <body>
@@ -132,7 +132,7 @@
                                 <span th:text="${product.stockQuantity} + ' шт.'"></span>
                             </p>
 
-                            <div th:if="${product.stockQuantity > 0}">
+                            <div th:if="${product.stockQuantity > 0}" sec:authorize="!hasRole('ROLE_ADMIN')">
                                 <form th:action="@{/api/users/cart}" method="post" class="add-to-cart-form">
                                     <input type="hidden" name="publicProductId" th:value="${product.publicProductId}">
                                     <div class="input-group mb-2">

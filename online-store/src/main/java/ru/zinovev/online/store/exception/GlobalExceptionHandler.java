@@ -9,12 +9,13 @@ import org.springframework.web.servlet.ModelAndView;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.InvalidPasswordException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
+import ru.zinovev.online.store.exception.model.UserNotAuthenticatedException;
 
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler({Exception.class, UserNotAuthenticatedException.class})
     public ModelAndView handleInternalServerError(HttpServletRequest request, Exception ex, Model model) {
         var referer = request.getHeader("Referer");
         ModelAndView modelAndView = new ModelAndView();

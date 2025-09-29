@@ -6,10 +6,21 @@
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
 <div class="welcome-container">
-    <h2>Товары</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Товары</h2>
+        <a th:href="@{/api/admins/products/add}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i> Добавить товар
+        </a>
+    </div>
+
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
+
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
     <table>
         <tr>
             <th></th>
@@ -42,11 +53,11 @@
             <td th:text="${product.stockQuantity}">10</td>
             <td>
                 <div class="d-flex gap-2 align-items-center">
-                    <a th:href="@{'/api/admins/' + ${publicUserId} + '/products/' + ${product.publicProductId}}"
+                    <a th:href="@{'/api/admins/products/' + ${product.publicProductId}}"
                        class="btn btn-sm btn-primary">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
-                    <form th:action="@{'/api/admins/' + ${publicUserId} + '/products/' + ${product.publicProductId}}"
+                    <form th:action="@{'/api/admins/products/' + ${product.publicProductId}}"
                           method="post">
                         <input type="hidden" name="_method" value="delete"/>
                         <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
@@ -57,7 +68,7 @@
     </table>
     <div th:if="${products.totalPages > 0}" class="pagination">
         <a th:if="${products.hasPrevious()}"
-           th:href="@{/api/admins/{publicUserId}/products(publicUserId=${publicUserId}, page=${products.number - 1}, limit=${products.size})}"
+           th:href="@{/api/admins/products(page=${products.number - 1}, limit=${products.size})}"
            class="page-link previous">Предыдущая</a>
 
         <span class="page-number">
@@ -65,118 +76,9 @@
             </span>
 
         <a th:if="${products.hasNext()}"
-           th:href="@{/api/admins/{publicUserId}/products(publicUserId=${publicUserId}, page=${products.number + 1}, limit=${products.size})}"
+           th:href="@{/api/admins/products(page=${products.number + 1}, limit=${products.size})}"
            class="page-link next">Следующая</a>
     </div>
-
-
-    <table>
-        <form th:action="@{'/api/admins/' + ${publicUserId} + '/products'}"
-              method="post" th:object="${productDto}">
-            <h3>Добавить новый товар</h3>
-
-            <div class="mb-3">
-                <label class="form-label" for="name">Название товара</label>
-                <input type="text" class="form-control" th:field="*{name}"/>
-                <span class="text-danger"
-                      th:if="${#fields.hasErrors('name')}"
-                      th:errors="*{name}"></span>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="price">Стоимость товара, руб</label>
-                <input type="number" step="0.01" class="form-control" th:field="*{price}"/>
-                <span class="text-danger"
-                      th:if="${#fields.hasErrors('price')}"
-                      th:errors="*{price}"></span>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Категория:</label>
-                <select name="categoryPublicId" class="form-select">
-                    <option value="">-- Выберите категорию --</option>
-                    <option th:each="category : ${categories}"
-                            th:value="${category.publicCategoryId}"
-                            th:text="${category.name}">
-                    </option>
-                </select>
-                <span class="text-danger"
-                      th:if="${#fields.hasErrors('categoryPublicId')}"
-                      th:errors="*{categoryPublicId}"></span>
-            </div>
-
-            <div class="mb-3">
-                <h5>Параметры товара</h5>
-
-                <div class="mb-2">
-                    <label for="brand" class="form-label">Бренд</label>
-                    <input type="text" class="form-control"
-                           th:field="*{parameters[0].value}"
-                           id="brand"/>
-                    <input type="hidden" th:field="*{parameters[0].key}" value="brand"/>
-                </div>
-
-                <div class="mb-2">
-                    <label for="color" class="form-label">Цвет</label>
-                    <input type="text" class="form-control"
-                           th:field="*{parameters[1].value}"
-                           id="color"/>
-                    <input type="hidden" th:field="*{parameters[1].key}" value="color"/>
-                </div>
-
-                <div class="mb-2">
-                    <label for="ram" class="form-label">Оперативная память, Gb</label>
-                    <input type="text" class="form-control"
-                           th:field="*{parameters[2].value}"
-                           id="ram"/>
-                    <input type="hidden" th:field="*{parameters[2].key}" value="ram"/>
-                </div>
-
-                <div class="mb-2">
-                    <label for="memory" class="form-label">Память, Gb</label>
-                    <input type="text" class="form-control"
-                           th:field="*{parameters[3].value}"
-                           id="memory"/>
-                    <input type="hidden" th:field="*{parameters[3].key}" value="memory"/>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="weight">Вес товара, гр</label>
-                <input type="number" step="0.01" class="form-control" th:field="*{weight}"/>
-                <span class="text-danger"
-                      th:if="${#fields.hasErrors('weight')}"
-                      th:errors="*{weight}"></span>
-            </div>
-            <div class="mb-3">
-                <label for="volume">Объем товара, см3</label>
-                <input type="number" step="0.01" class="form-control" th:field="*{volume}"/>
-                <span class="text-danger"
-                      th:if="${#fields.hasErrors('volume')}"
-                      th:errors="*{volume}"></span>
-            </div>
-            <div class="mb-3">
-                <label for="stockQuantity">Количество, шт</label>
-                <input type="number" class="form-control" th:field="*{stockQuantity}"/>
-                <span class="text-danger"
-                      th:if="${#fields.hasErrors('stockQuantity')}"
-                      th:errors="*{stockQuantity}"></span>
-            </div>
-            <div class="mb-3">
-                <label for="imagePath">Расположение изображения товара</label>
-                <input type="text" class="form-control" th:field="*{imagePath}"/>
-                <small class="form-text text-muted">
-                    Положите изображение в папку static/images/products/ и укажите путь относительно static
-                </small>
-                <span class="text-danger"
-                      th:if="${#fields.hasErrors('imagePath')}"
-                      th:errors="*{imagePath}"></span>
-            </div>
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Добавить товар</button>
-            </div>
-        </form>
-    </table>
 </div>
 <style>
     .product-thumbnail {

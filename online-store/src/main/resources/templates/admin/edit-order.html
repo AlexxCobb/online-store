@@ -22,7 +22,7 @@
     <p><strong>Способ доставки:</strong> <span th:text="${order.deliveryMethodName.displayValue}"></span></p>
     <p><strong>Дата создания:</strong> <span th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}"></span></p>
   </div>
-  <form th:action="@{'/api/admins/' + ${publicUserId} + '/orders/' + ${order.publicOrderId}}"
+  <form th:action="@{'/api/admins/orders/' + ${order.publicOrderId}}"
         method="post">
     <input type="hidden" name="_method" value="patch" />
 
@@ -51,7 +51,7 @@
 
     <div class="d-flex gap-2">
       <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-      <a th:href="@{'/api/admins/' + ${publicUserId} + '/orders'}"
+      <a th:href="@{'/api/admins/orders'}"
          class="btn btn-secondary">Отмена</a>
     </div>
   </form>

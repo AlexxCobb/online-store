@@ -30,7 +30,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-
         if (authentication != null && authentication.isAuthenticated()
                 && authentication.getPrincipal() instanceof UserDetails userDetails) {
 
@@ -53,7 +52,6 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             if (cookieCartId != null && !cookieCartId.isEmpty()) {
                 cartService.updateCartWithRegisteredUser(user.publicUserId(), cookieCartId);
             }
-
 
             String redirectUrl = "/api/users/home";
 

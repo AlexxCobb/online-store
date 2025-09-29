@@ -50,7 +50,7 @@ public class OrderService {
     public void changeOrderStatus(@NonNull String publicUserId, @NonNull String publicOrderId,
                                   @NonNull OrderStatusName orderStatusName,
                                   PaymentStatusName paymentStatusName) {
-        userService.findUserDetails(publicUserId);
+        userService.findUserDetails(publicUserId); // нужна ли?
         orderDaoService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
     }
 

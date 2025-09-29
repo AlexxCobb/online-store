@@ -78,7 +78,7 @@
 
                 <li sec:authorize="isAuthenticated() and hasRole('ROLE_ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/api/admins/home}">
-                        <i class="bi bi-person-plus me-1"></i> Меню администратора
+                        <i class="bi bi-shield-lock me-1"></i> Меню администратора
                     </a>
                 </li>
 
