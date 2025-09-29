@@ -15,7 +15,7 @@
 
     <h2 class="mb-4">Войдите в приложение</h2>
 
-    <form th:action="@{/api/auth/sign-in}" method="post" th:object="${userLoginDto}">
+    <form th:action="@{/perform_login}" method="post" th:object="${userLoginDto}">
         <div class="mb-3">
             <label for="email" class="form-label">Введите электронную почту</label>
             <input type="email" class="form-control" id="email" th:field="*{email}"/>

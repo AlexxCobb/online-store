@@ -25,7 +25,7 @@
   </table>
   <div th:if="${topUsers.totalPages > 0}" class="pagination">
     <a th:if="${topUsers.hasPrevious()}"
-       th:href="@{/api/admins/{publicUserId}/statistics/top-users(publicUserId=${publicUserId}, page=${topUsers.number - 1}, limit=${topUsers.size})}"
+       th:href="@{/api/admins/statistics/top-users(page=${topUsers.number - 1}, limit=${topUsers.size})}"
        class="page-link previous">Предыдущая</a>
 
     <span class="page-number">
@@ -33,7 +33,7 @@
             </span>
 
     <a th:if="${topUsers.hasNext()}"
-       th:href="@{/api/admins/{publicUserId}/statistics/top-users(publicUserId=${publicUserId}, page=${topUsers.number + 1}, limit=${topUsers.size})}"
+       th:href="@{/api/admins/statistics/top-users(page=${topUsers.number + 1}, limit=${topUsers.size})}"
        class="page-link next">Следующая</a>
   </div>
 </div>

@@ -14,7 +14,6 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
 import ru.zinovev.online.store.model.UserRegistrationDetails;
 
-import java.security.Principal;
 import java.time.LocalDate;
 
 @Service
@@ -35,18 +34,10 @@ public class UserService {
         userDaoService.initAdmin(adminEmail, passwordEncoder.encode(adminPassword), adminBirthday, adminRole);
     }
 
-    public UserDetails updateUser(@NonNull String publicUserId, @NonNull UserUpdateDto userUpdateDto) {
+    public void updateUser(@NonNull String publicUserId, @NonNull UserUpdateDto userUpdateDto) {
         var userDetails = findUserDetails(publicUserId);
-        return userDaoService.updateUser(userDetails, userUpdateDto);
+        userDaoService.updateUser(userDetails, userUpdateDto);
     }
-
-    public String findPublicUserId(Principal principal) {
-        var email = principal.getName();
-        var user = userDaoService.findByEmailIgnoreCase(email).orElseGet(null);
-               // .orElseThrow(() -> new NotFoundException("User with email - " + email + " not found"));
-        return user.publicUserId();
-    }
-
 
     public void deleteUser(@NonNull String publicUserId) {
         userDaoService.deleteUser(findUserDetails(publicUserId));

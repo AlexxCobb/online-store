@@ -73,10 +73,9 @@
     </table>
     <div class="d-flex gap-2">
         <div sec:authorize="isAuthenticated()">
-            <a th:href="@{'/api/users/' + ${cart.publicUserId} + '/cart'}"
+            <a th:href="@{'/api/users/cart/edit'}"
                class="btn btn-primary">Оформить заказ</a>
         </div>
-
         <div class="d-flex gap-2" sec:authorize="!isAuthenticated()">
             <p class="text-muted">Для оформления заказа необходимо
                 <a th:href="@{/api/auth/sign-in}"

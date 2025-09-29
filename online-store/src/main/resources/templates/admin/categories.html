@@ -25,11 +25,11 @@
             <td th:text="${category.name}">1</td>
             <td>
                 <div class="d-flex gap-2 align-items-center">
-                    <a th:href="@{'/api/admins/' + ${publicUserId} + '/categories/' + ${category.publicCategoryId}}"
+                    <a th:href="@{'/api/admins/categories/' + ${category.publicCategoryId}}"
                        class="btn btn-sm btn-primary">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
-                    <form th:action="@{'/api/admins/' + ${publicUserId} + '/categories/' + ${category.publicCategoryId}}"
+                    <form th:action="@{'/api/admins/categories/' + ${category.publicCategoryId}}"
                           method="post">
                         <input type="hidden" name="_method" value="delete"/>
                         <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
@@ -40,7 +40,7 @@
     </table>
 
     <table>
-        <form th:action="@{'/api/admins/' + ${publicUserId} + '/categories'}"
+        <form th:action="@{'/api/admins/categories'}"
               method="post" th:object="${categoryDto}">
             <h3>Добавить новую категорию</h3>
 

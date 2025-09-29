@@ -19,7 +19,7 @@
         <span th:text="${successMessage}"></span>
     </div>
     <table>
-        <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+        <form th:action="@{'/api/admins/addresses/' + ${address.publicAddressId}}"
               method="post" th:object="${addressUpdateDto}">
             <input type="hidden" name="_method" value="patch"/>
 
@@ -49,7 +49,7 @@
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                <a th:href="@{'/api/admins/' + ${publicUserId} + '/addresses'}"
+                <a th:href="@{'/api/admins/addresses'}"
                    class="btn btn-secondary">Отмена</a>
             </div>
         </form>

@@ -77,7 +77,7 @@
 
 <div class="welcome-container" th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
     <table>
-        <form th:action="@{'/api/users/' + ${publicUserId} + '/orders'}"
+        <form th:action="@{'/api/users/orders'}"
               method="post">
 
             <div class="mb-3">

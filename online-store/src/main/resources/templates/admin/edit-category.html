@@ -14,7 +14,7 @@
         <span th:text="${errorMessage}"></span>
     </div>
     <table>
-        <form th:action="@{'/api/admins/' + ${publicUserId} + '/categories/' + ${category.publicCategoryId}}"
+        <form th:action="@{'/api/admins/categories/' + ${category.publicCategoryId}}"
               method="post" th:object="${categoryDto}">
             <input type="hidden" name="_method" value="patch" />
 
@@ -33,7 +33,7 @@
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                <a th:href="@{'/api/admins/' + ${publicUserId} + '/categories'}"
+                <a th:href="@{'/api/admins/categories'}"
                    class="btn btn-secondary">Отмена</a>
             </div>
         </form>

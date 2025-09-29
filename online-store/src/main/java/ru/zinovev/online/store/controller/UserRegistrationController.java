@@ -38,20 +38,17 @@ public class UserRegistrationController {
             bindingResult.rejectValue("confirmPassword", "error.userRegistrationDto", "Пароли не совпадают");
         }
         if (userService.checkExistByEmail(userRegistrationDto.email())) {
-            bindingResult.rejectValue("confirmPassword", "error.userRegistrationDto",
+            bindingResult.rejectValue("email", "error.userRegistrationDto",
                                       "Пользователь с таким email - " + userRegistrationDto.email()
                                               + " уже существует.");
         }
         if (bindingResult.hasErrors()) {
             return "add-user";
         }
-
         var user = userService.createUser(userMapper.toUserRegistrationDetails(userRegistrationDto));
         cartService.updateCartWithRegisteredUser(user.publicUserId(), publicCartId);
         redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ " + user.name() + " " + user.lastname()
                 + " УСПЕШНО ЗАРЕГИСТРИРОВАН");
-        redirectAttributes.addFlashAttribute("publicUserId", user.publicUserId());
-
         return "redirect:/api/auth/sign-in";
     }
 

@@ -40,7 +40,7 @@ public class AddressService {
         var userDetails = userService.findUserDetails(publicUserId);
         var address = getAddressByPublicId(publicAddressId);
         if (!userDetails.publicUserId().equals(address.userDetails().publicUserId()) ||
-                !address.addressTypeName().equals(AddressTypeName.USER_ADDRESS.name())) {
+                !address.addressTypeName().equals(AddressTypeName.USER_ADDRESS)) {
             throw new BadRequestException(
                     "User with id - " + publicUserId + " cannot edit address with id - " + publicAddressId);
         }
@@ -80,7 +80,7 @@ public class AddressService {
         if (!isSystem && address.userDetails() != null) {
             var userDetails = userService.findUserDetails(publicUserId);
             if (!userDetails.publicUserId().equals(address.userDetails().publicUserId()) ||
-                    !address.addressTypeName().equals(AddressTypeName.USER_ADDRESS.name()) || address.isSystem()
+                    !address.addressTypeName().equals(AddressTypeName.USER_ADDRESS) || address.isSystem()
                     .equals(true)) {
                 throw new BadRequestException(
                         "User with id - " + publicUserId + " cannot delete address with id - " + publicAddressId);

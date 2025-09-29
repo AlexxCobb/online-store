@@ -40,11 +40,11 @@
             <td th:text="${address.houseNumber}"></td>
             <td>
                 <div class="d-flex gap-2 align-items-center">
-                    <a th:href="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+                    <a th:href="@{'/api/admins/addresses/' + ${address.publicAddressId}}"
                        class="btn btn-sm btn-primary">
                         <i class="bi bi-pencil"></i> Редактировать
                     </a>
-                    <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses/' + ${address.publicAddressId}}"
+                    <form th:action="@{'/api/admins/addresses/' + ${address.publicAddressId}}"
                           method="post" class="m-0">
                         <input type="hidden" name="_method" value="delete"/>
                         <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
@@ -55,7 +55,7 @@
     </table>
 
     <table>
-        <form th:action="@{'/api/admins/' + ${publicUserId} + '/addresses'}"
+        <form th:action="@{'/api/admins/addresses'}"
               method="post" th:object="${addressDto}">
             <h3>Добавить новый адрес</h3>
 

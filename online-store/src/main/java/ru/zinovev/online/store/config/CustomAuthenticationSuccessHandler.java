@@ -7,8 +7,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import ru.zinovev.online.store.controller.dto.UserDto;
 import ru.zinovev.online.store.service.CartService;
 import ru.zinovev.online.store.service.UserService;
 
@@ -22,34 +24,45 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     private final UserService userService;
     private final CartService cartService;
+    private final UserDto sessionUserDto;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        var email = authentication.getName();
-        var user = userService.findUserDetailsByEmail(email);
 
-        var cookieCartId = "";
-        if (request.getCookies() != null) {
-            cookieCartId = Arrays.stream(request.getCookies())
-                    .filter(cookie -> cookie.getName().equals("CART_ID"))
-                    .findFirst()
-                    .map(Cookie::getValue)
-                    .orElse(null);
-        }
-        if (cookieCartId != null && !cookieCartId.isEmpty()) {
-            cartService.updateCartWithRegisteredUser(user.publicUserId(), cookieCartId);
-        }
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof UserDetails userDetails) {
 
-        String redirectUrl = "/api/users/home";
+            var email = authentication.getName();
+            var user = userService.findUserDetailsByEmail(email);
 
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        for (GrantedAuthority authority : authorities) {
-            if (authority.getAuthority().equals("ROLE_ADMIN")) {
-                redirectUrl = "/api/admins/home";
-                break;
+            sessionUserDto.setPublicUserId(user.publicUserId());
+            sessionUserDto.setEmail(user.email());
+            sessionUserDto.setName(user.name());
+            sessionUserDto.setIsAuthenticated(true);
+
+            var cookieCartId = "";
+            if (request.getCookies() != null) {
+                cookieCartId = Arrays.stream(request.getCookies())
+                        .filter(cookie -> cookie.getName().equals("CART_ID"))
+                        .findFirst()
+                        .map(Cookie::getValue)
+                        .orElse(null);
             }
+            if (cookieCartId != null && !cookieCartId.isEmpty()) {
+                cartService.updateCartWithRegisteredUser(user.publicUserId(), cookieCartId);
+            }
+
+            String redirectUrl = "/api/users/home";
+
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            for (GrantedAuthority authority : authorities) {
+                if (authority.getAuthority().equals("ROLE_ADMIN")) {
+                    redirectUrl = "/api/admins/home";
+                    break;
+                }
+            }
+            response.sendRedirect(redirectUrl);
         }
-        response.sendRedirect(redirectUrl);
     }
 }

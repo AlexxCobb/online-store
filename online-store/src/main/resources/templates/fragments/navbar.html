@@ -17,7 +17,6 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link"
-                       th:classappend="${currentPath.startsWith('/api/users/home')} ? 'active'"
                        th:href="@{/api/users/home}">
                         <i class="bi bi-house-door me-1"></i> Главная
                     </a>
@@ -26,7 +25,6 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle"
                        data-bs-toggle="dropdown"
-                       th:classappend="${currentPath.startsWith('/api/users/categories')} ? 'active'"
                        href="#"
                        id="categoriesDropdown"
                        role="button"
@@ -47,21 +45,9 @@
                     </ul>
                 </li>
 
-                <li class="nav-item" th:unless="${#strings.startsWith(currentPath, '/api/admins')}">
+                <li class="nav-item" sec:authorize="!hasRole('ROLE_ADMIN')">
                     <a class="nav-link"
-                       th:classappend="${currentPath.startsWith('/api/users/{publicUserId}/cart')} ? 'active'"
-                       th:href="@{'/api/users/' + ${publicUserId} + '/cart'}"
-                       th:if="${publicUserId != null}">
-                        <i class="bi bi-cart me-1"></i> Корзина
-                        <span th:if="${cart != null and cart.cartItems.size() > 0}"
-                              class="badge bg-danger rounded-pill ms-1"
-                              th:text="${cart.totalQuantity}">
-                        </span>
-                    </a>
-                    <a class="nav-link"
-                       th:classappend="${currentPath.startsWith('/api/users/cart')} ? 'active'"
-                       th:href="@{/api/users/cart}"
-                       th:if="${publicUserId == null}">
+                        th:href="@{/api/users/cart}">
                         <i class="bi bi-cart me-1"></i> Корзина
                         <span th:if="${cart != null and cart.cartItems.size() > 0}"
                               class="badge bg-danger rounded-pill ms-1"
@@ -70,10 +56,9 @@
                     </a>
                 </li>
 
-                <li class="nav-item" th:if="${publicUserId != null}">
+                <li class="nav-item" sec:authorize="isAuthenticated() and !hasRole('ROLE_ADMIN')">
                     <a class="nav-link"
-                       th:classappend="${currentPath.startsWith('/api/users/{publicUserId}/orders')} ? 'active'"
-                       th:href="@{'/api/users/' + ${publicUserId} + '/orders'}">
+                       th:href="@{'/api/users/orders'}">
                         <i class="bi bi-bag me-1"></i> Заказы
                     </a>
                 </li>
@@ -85,13 +70,19 @@
                         <i class="bi bi-person me-1"></i> Войти
                     </a>
                 </li>
-                <li sec:authorize="!isAuthenticated()" class="nav-item">
+                <li sec:authorize="!isAuthenticated() and !hasRole('ROLE_ADMIN')" class="nav-item">
                     <a class="nav-link" th:href="@{/api/auth}">
                         <i class="bi bi-person-plus me-1"></i> Регистрация
                     </a>
                 </li>
 
-                <li sec:authorize="isAuthenticated()" class="nav-item dropdown">
+                <li sec:authorize="isAuthenticated() and hasRole('ROLE_ADMIN')" class="nav-item">
+                    <a class="nav-link" th:href="@{/api/admins/home}">
+                        <i class="bi bi-shield-lock me-1"></i> Меню администратора
+                    </a>
+                </li>
+
+                <li sec:authorize="isAuthenticated() and !hasRole('ROLE_ADMIN')" class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle me-1"></i> Мой аккаунт
@@ -99,12 +90,12 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                         <li>
-                            <a class="dropdown-item" th:href="@{'/api/users/' + ${publicUserId} + '/addresses'}">
+                            <a class="dropdown-item" th:href="@{'/api/users/addresses'}">
                                 <i class="bi bi-geo-alt me-2"></i> Мои адреса
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" th:href="@{'/api/users/' + ${publicUserId} + '/orders'}">
+                            <a class="dropdown-item" th:href="@{/api/users/orders}">
                                 <i class="bi bi-bag me-2"></i> Мои заказы
                             </a>
                         </li>
@@ -112,7 +103,7 @@
                             <hr class="dropdown-divider">
                         </li>
                         <li>
-                            <a class="dropdown-item" th:href="@{'/api/users/' + ${publicUserId}}">
+                            <a class="dropdown-item" th:href="@{/api/users}">
                                 <i class="bi bi-pencil me-2"></i> Редактировать профиль
                             </a>
                         </li>

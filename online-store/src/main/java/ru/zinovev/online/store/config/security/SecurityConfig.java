@@ -33,11 +33,10 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/api/auth/sign-in")
-                        .loginProcessingUrl("/api/auth/sign-in")
+                        .loginProcessingUrl("/perform_login")
                         .successHandler(customAuthenticationSuccessHandler)
                         .failureUrl("/api/auth/sign-in?error=true")
                         .usernameParameter("email")
-                        .passwordParameter("password")
                         .permitAll()
                 )
                 .logout(logout -> logout
