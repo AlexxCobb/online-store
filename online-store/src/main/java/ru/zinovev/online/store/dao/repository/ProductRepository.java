@@ -46,4 +46,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "   FROM Product p2 WHERE p2.category.id IN :categoryIds AND p2.stockQuantity > 0 " +
             "   GROUP BY p2.category.id)")
     List<ProductView> getOneProductFromEachCategory(Collection<Long> categoryIds, Pageable pageable);
+
+    Optional<Product> findByFingerprint(String fingerprint);
 }

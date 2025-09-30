@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,8 +19,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder(toBuilder = true)
@@ -62,6 +69,9 @@ public class Product {
     @Column(name = "image_path")
     private String imagePath;
 
+    @Column(name = "product_fingerprint")
+    private String fingerprint;
+
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : super.hashCode();
@@ -74,5 +84,33 @@ public class Product {
         if (!(obj instanceof Product product))
             return false;
         return id != null && id.equals(product.id);
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void calculateProductFingerprint() {
+
+        var parametersMap =
+                parameters.stream().collect(Collectors.toMap(ProductParameter::getKey, ProductParameter::getValue));
+
+        final var NULL_PLACEHOLDER = "NULL";
+
+        var brand = parametersMap.getOrDefault("brand", NULL_PLACEHOLDER);
+        var color = parametersMap.getOrDefault("color", NULL_PLACEHOLDER);
+        var ram = parametersMap.getOrDefault("ram", NULL_PLACEHOLDER);
+        var memory = parametersMap.getOrDefault("memory", NULL_PLACEHOLDER);
+
+        var canonicalString =
+                String.join("|", name.toUpperCase(), brand.toUpperCase(), color.toUpperCase(), ram.toUpperCase(),
+                            memory.toUpperCase());
+
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            var encodedHash = digest.digest(
+                    canonicalString.getBytes(StandardCharsets.UTF_8));
+            this.fingerprint = HexFormat.of().formatHex(encodedHash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
     }
 }

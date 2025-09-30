@@ -27,7 +27,7 @@ public class CategoryDaoService {
     public CategoryDetails createCategory(CategoryDetails categoryDetails) {
         var newCategory = Category.builder()
                 .publicCategoryId(UUID.randomUUID().toString())
-                .name(categoryDetails.name())
+                .name(categoryDetails.name().trim())
                 .build();
         return categoryMapper.toCategoryDetails(categoryRepository.save(newCategory));
     }
@@ -58,7 +58,7 @@ public class CategoryDaoService {
     }
 
     public Optional<CategoryDetails> findByNameIgnoreCase(CategoryDetails categoryDetails) {
-        return categoryRepository.findByNameIgnoreCase(categoryDetails.name()).map(categoryMapper::toCategoryDetails);
+        return categoryRepository.findByNameIgnoreCase(categoryDetails.name().trim()).map(categoryMapper::toCategoryDetails);
     }
 
     public Optional<CategoryDetails> findByPublicId(String publicCategoryId) {

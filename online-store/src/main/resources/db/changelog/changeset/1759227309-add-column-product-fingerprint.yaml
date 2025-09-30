@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1759227309-add-column-product-fingerprint
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1759227309-add-column-product-fingerprint.sql
