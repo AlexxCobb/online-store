@@ -45,3 +45,5 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1758113835-add-constraints.yaml
   - include:
       file: classpath:db/changelog/changeset/1758546216-add-constraint-cart-item-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1759227309-add-column-product-fingerprint.yaml

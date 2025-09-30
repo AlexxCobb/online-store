@@ -31,7 +31,9 @@ import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
+import ru.zinovev.online.store.exception.model.AlreadyExistException;
 import ru.zinovev.online.store.exception.model.BadRequestException;
+import ru.zinovev.online.store.exception.model.DuplicateProductException;
 import ru.zinovev.online.store.exception.model.UserNotAuthenticatedException;
 import ru.zinovev.online.store.service.AddressService;
 import ru.zinovev.online.store.service.CategoryService;
@@ -95,7 +97,7 @@ public class AdminController {
         return "redirect:/api/admins/addresses";
     }
 
-    @GetMapping("/addresses/edit")
+    @GetMapping("/addresses/{publicAddressId}")
     public String getEditSystemAddress(@ModelAttribute AddressUpdateDto addressUpdateDto,
                                        @PathVariable String publicAddressId, Model model) {
         var publicUserId = getPublicAdminIdOrThrowException(sessionUserDto);
@@ -124,7 +126,7 @@ public class AdminController {
         }
         addressService.updateSystemAddress(publicUserId, publicAddressId,
                                            addressMapper.toAddressUpdateDetails(addressUpdateDto));
-        redirectAttributes.addFlashAttribute("successMessage", "УСПЕШНО ОБНОВЛЕНО");
+        redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО ОБНОВЛЕН");
         return "redirect:/api/admins/addresses";
     }
 
@@ -135,8 +137,8 @@ public class AdminController {
         log.debug("Received DELETE request to delete system address with id = {}, from admin with id - {}",
                   publicAddressId, publicUserId);
         addressService.deleteAddress(publicUserId, publicAddressId, true);
-        redirectAttributes.addFlashAttribute("successMessage", "УСПЕШНО УДАЛЕНО");
-        return "redirect:/api/admins/" + publicUserId + "/addresses";
+        redirectAttributes.addFlashAttribute("successMessage", "АДРЕС УСПЕШНО УДАЛЕН");
+        return "redirect:/api/admins/addresses";
     }
 
     @GetMapping("/categories")
@@ -236,15 +238,32 @@ public class AdminController {
     }
 
     @GetMapping("/products/{publicProductId}")
-    public String editProduct(@ModelAttribute ProductUpdateDto productUpdateDto,
-                              @PathVariable String publicProductId, Model model) {
+    public String editProduct(@PathVariable String publicProductId, Model model) {
         log.debug(
                 "Received GET request to edit product with id - {}",
                 publicProductId);
-
         var product = productService.getByPublicId(publicProductId);
         var categories = categoryService.getCategories();
 
+        var productUpdateDto = new ProductUpdateDto(
+                product.name(),
+                product.price(),
+                product.categoryPublicId(),
+                product.stockQuantity()
+        );
+        if (model.containsAttribute("conflictMessage")) {
+            model.addAttribute("hasConflict", true);
+            model.addAttribute("conflictMessage", model.asMap().get("conflictMessage"));
+
+            var conflictUpdateDto = new ProductUpdateDto(
+                    product.name(),
+                    (BigDecimal) model.asMap().get("newPrice"),
+                    product.categoryPublicId(),
+                    (Integer) model.asMap().get("newQuantity")
+            );
+            model.addAttribute("conflictUpdateDto", conflictUpdateDto);
+        }
+        model.addAttribute("productUpdateDto", productUpdateDto);
         model.addAttribute("categories", categories);
         model.addAttribute("product", product);
         return "admin/edit-product";
@@ -267,7 +286,22 @@ public class AdminController {
             return "admin/add-product";
         }
         var publicUserId = getPublicAdminIdOrThrowException(sessionUserDto);
-        productService.createProduct(publicUserId, productMapper.toProductDetails(productDto));
+        try {
+            productService.createProduct(publicUserId, productMapper.toProductDetails(productDto));
+        } catch (DuplicateProductException e) {
+            redirectAttributes.addFlashAttribute("conflictMessage",
+                                                 String.format(
+                                                         "Товар уже существует, название - %s, изменения найдены в стоимости - %s руб., и количестве - %d шт.",
+                                                         e.getName(), e.getPrice(),
+                                                         e.getStockQuantity()));
+            redirectAttributes.addFlashAttribute("newPrice", e.getPrice());
+            redirectAttributes.addFlashAttribute("newQuantity", e.getStockQuantity());
+            redirectAttributes.addFlashAttribute("hasConflict", true);
+            return "redirect:/api/admins/products/" + e.getPublicProductId();
+        } catch (AlreadyExistException e) {
+            model.addAttribute("errorMessage", "Продукт уже существует с такими же параметрами");
+            return "admin/add-product";
+        }
         redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УСПЕШНО ДОБАВЛЕН");
 
         return "redirect:/api/admins/products";

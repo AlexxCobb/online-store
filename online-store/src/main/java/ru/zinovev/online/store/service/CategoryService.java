@@ -30,7 +30,7 @@ public class CategoryService {
                                           @NonNull CategoryDetails categoryDetails) {
         userService.findUserDetails(publicUserId);
         var categoryDetailsExist = getCategoryByPublicId(publicCategoryId);
-        if (!categoryDetailsExist.name().equalsIgnoreCase(categoryDetails.name())) {
+        if (!categoryDetailsExist.name().trim().equalsIgnoreCase(categoryDetails.name().trim())) {
             return categoryDaoService.updateCategory(categoryDetailsExist, categoryDetails);
         } else {
             throw new BadRequestException("Category with name - " + categoryDetails.name() + " already exist");

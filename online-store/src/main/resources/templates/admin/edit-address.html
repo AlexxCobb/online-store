@@ -25,7 +25,7 @@
 
             <div class="mb-3">
                 <label for="zipCode">Почтовый индекс</label>
-                <input type="text" class="form-control" th:field="*{zipCode}"/>
+                <input type="number" class="form-control" th:field="*{zipCode}"/>
                 <span class="text-danger"
                       th:if="${#fields.hasErrors('zipCode')}"
                       th:errors="*{zipCode}"></span>
@@ -41,7 +41,7 @@
 
             <div class="mb-3">
                 <label for="houseNumber">Номер дома</label>
-                <input type="text" class="form-control" th:field="*{houseNumber}"/>
+                <input type="number" class="form-control" th:field="*{houseNumber}"/>
                 <span class="text-danger"
                       th:if="${#fields.hasErrors('houseNumber')}"
                       th:errors="*{houseNumber}"></span>

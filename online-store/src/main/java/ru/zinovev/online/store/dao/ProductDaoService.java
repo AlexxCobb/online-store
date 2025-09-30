@@ -16,6 +16,8 @@ import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.dao.repository.ProductSpecifications;
+import ru.zinovev.online.store.exception.model.AlreadyExistException;
+import ru.zinovev.online.store.exception.model.DuplicateProductException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.ProductDetails;
@@ -67,6 +69,22 @@ public class ProductDaoService {
                     .map(productMapper::toProductParameter)
                     .map(productParameter -> productParameter.toBuilder().product(product).build())
                     .forEach(product.getParameters()::add);
+        }
+
+        product.calculateProductFingerprint();
+        var existedProduct = productRepository.findByFingerprint(product.getFingerprint());
+        if (existedProduct.isPresent()) {
+            var price = existedProduct.get().getPrice();
+            var quantity = existedProduct.get().getStockQuantity();
+
+            if (!price.equals(productDetails.price()) || !quantity.equals(productDetails.stockQuantity())) {
+                throw new DuplicateProductException("Product already exist", existedProduct.get().getPublicProductId(),
+                                                    existedProduct.get().getName(),
+                                                    productDetails.stockQuantity(),
+                                                    productDetails.price());
+            } else {
+                throw new AlreadyExistException("Product already exist with the same parameters");
+            }
         }
         return productMapper.toProductDetails(productRepository.save(product));
     }

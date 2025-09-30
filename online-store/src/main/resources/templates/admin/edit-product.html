@@ -7,13 +7,63 @@
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
 <div class="welcome-container">
+
+    <div th:if="${hasConflict}" class="alert alert-danger">
+        <h4 th:text="${conflictMessage}"> </h4>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Название товара</th>
+                <th>Текущая цена</th>
+                <th>Текущее количество</th>
+                <th>Предложенная цена</th>
+                <th>Предложенное количество</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td th:text="${product.name}"></td>
+                <td th:text="${product.price}"></td>
+                <td th:text="${product.stockQuantity}"></td>
+
+                <td th:text="${conflictUpdateDto.price}"></td>
+                <td th:text="${conflictUpdateDto.stockQuantity}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <p>
+        <form th:action="@{/api/admins/products/{id}(id=${product.publicProductId})}"
+              th:object="${conflictUpdateDto}" method="post">
+            <input type="hidden" name="_method" value="PATCH" />
+
+            <input type="hidden" th:field="*{price}" />
+            <input type="hidden" th:field="*{stockQuantity}" />
+
+            <input type="hidden" th:field="*{name}" />
+            <input type="hidden" th:field="*{categoryPublicId}" />
+
+            <button type="submit" class="btn btn-success">
+                Обновить цену и количество существующего товара
+            </button>
+        </form>
+
+        <a th:href="@{/api/admins/products/add}" class="btn btn-secondary">
+            Отменить и вернуться к форме создания
+        </a>
+        </p>
+    </div>
+
     <h1>Редактирование товара <span th:text="${product.parameters.?[key == 'brand'][0]?.value}">
     </span></h1>
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
+    <div th:if="${errorMessage}" class="alert alert-danger">
+        <span th:text="${errorMessage}"></span>
+    </div>
 
-    <div class="mt-4">
+    <div  th:unless="${hasConflict}" class="mt-4">
         <h5>Информация о товаре:</h5>
         <p><strong>Бренд товара:</strong>
             <span th:text="${product.parameters.?[key == 'brand'][0]?.value}">
