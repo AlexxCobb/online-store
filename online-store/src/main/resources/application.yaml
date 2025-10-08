@@ -28,7 +28,14 @@ spring:
     level:
       org.springframework.security: DEBUG
       online-store: DEBUG
+      org.springframework.amqp: DEBUG
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 admin:
   email: admin@sys.com
   password: Admin90210
   birthday: 01.01.2000
+queue.name: MainQueue

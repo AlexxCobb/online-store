@@ -62,7 +62,7 @@ public class UserController {
 
     @GetMapping("/home")
     public String homePage(Model model) {
-        var popularProducts = statisticService.findSixPopularProducts();
+        var popularProducts = statisticService.findSixPopularProducts(); // убрать отсюда
         if (popularProducts.isEmpty()) {
             popularProducts =
                     productService.getOneProductFromEachCategory();

@@ -4,6 +4,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import ru.zinovev.online.store.controller.dto.ProductForStandDto;
+import ru.zinovev.online.store.controller.dto.enums.ProductType;
 import ru.zinovev.online.store.dao.ProductDaoService;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.ProductDetails;
@@ -12,8 +14,14 @@ import ru.zinovev.online.store.model.ProductUpdateDetails;
 import ru.zinovev.online.store.model.TopProductDetails;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -75,4 +83,29 @@ public class ProductService {
     public BigDecimal getMaxPrice() {
         return productDaoService.getMaxPrice();
     }
+
+    public Set<ProductForStandDto> getProductsForStand() {
+        var topProducts = productDaoService.getTopProducts();
+        var discountProducts = productDaoService.getDiscountProducts();
+        var newProducts = productDaoService.getNewProducts();
+        return new HashSet<>(Stream.of(topProducts, discountProducts, newProducts)
+                                     .flatMap(Collection::stream)
+                                     .collect(Collectors.toMap(ProductForStandDto::publicProductId, Function.identity(),
+                                                               typeMerger))
+                                     .values());
+    }
+
+    private Integer getPriority(ProductType type) {
+        return switch (type) {
+            case DISCOUNT -> 3;
+            case TOP -> 2;
+            case NEW -> 1;
+        };
+    }
+
+    private final BinaryOperator<ProductForStandDto> typeMerger = (existingDto, newDto) -> {
+        var existingPriority = getPriority(existingDto.type());
+        var newPriority = getPriority(newDto.type());
+        return (existingPriority > newPriority) ? existingDto : newDto;
+    };
 }

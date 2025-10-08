@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.zinovev.online.store.controller.dto.ProductForStandDto;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
@@ -16,6 +17,7 @@ import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.dao.repository.ProductSpecifications;
+import ru.zinovev.online.store.dao.repository.ProductStatisticRepository;
 import ru.zinovev.online.store.exception.model.AlreadyExistException;
 import ru.zinovev.online.store.exception.model.DuplicateProductException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
@@ -24,8 +26,10 @@ import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductParamDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
 import ru.zinovev.online.store.model.TopProductDetails;
+import ru.zinovev.online.store.service.ProductEventPublisher;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +48,8 @@ public class ProductDaoService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final ProductEventPublisher productEventPublisher;
+    private final ProductStatisticRepository statisticRepository;
 
     @Transactional
     public ProductDetails createProduct(ProductDetails productDetails) {
@@ -103,13 +109,15 @@ public class ProductDaoService {
         }
 
         var updatedProductFromDetails = productMapper.updateProductFromDetails(updateDetails, existedProduct);
-        var updatedProduct = updatedProductFromDetails.toBuilder().category(category).build();
-        return productMapper.toProductDetails(productRepository.save(updatedProduct));
+        var updatedProductWithCategory = updatedProductFromDetails.toBuilder().category(category).build();
+        var product = productRepository.save(updatedProductWithCategory);
+        productEventPublisher.publishProductUpdateEvent(productMapper.toProductForStandDto(product));
+        return productMapper.toProductDetails(product);
     }
 
     public List<TopProductDetails> getOneProductFromEachCategory() {
         var categories = categoryRepository.findAll().stream().map(Category::getId).toList();
-        return productRepository.getOneProductFromEachCategory(categories, PageRequest.of(0, 10))
+        return productRepository.getOneProductFromEachCategory(categories)
                 .stream()
                 .map(productMapper::toTopProductDetails)
                 .collect(Collectors.toList());
@@ -125,6 +133,7 @@ public class ProductDaoService {
                 .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId +
                                                                  " , not found"));
         productRepository.delete(product);
+        productEventPublisher.publishProductDeleteEvent(productMapper.toProductForStandDto(product));
     }
 
     public Page<ProductDetails> findProducts(List<String> categoryPublicIds, BigDecimal minPrice,
@@ -218,5 +227,31 @@ public class ProductDaoService {
                     .build();
         }).toList();
         productRepository.saveAll(productsList);
+    }
+
+    public List<ProductForStandDto> getTopProducts() {
+        var topSix = PageRequest.of(0, 6);
+        return statisticRepository.findTopProductViews(topSix)
+                .getContent()
+                .stream()
+                .map(productMapper::toTopProductDto)
+                .toList(); // использование статистики здесь?
+    }
+
+    public List<ProductForStandDto> getDiscountProducts() {
+        var discountSix = PageRequest.of(0, 6);
+        return productRepository.findDiscountProducts(discountSix)
+                .stream()
+                .map(productMapper::toDiscountProductDto)
+                .toList();
+    }
+
+    public List<ProductForStandDto> getNewProducts() {
+        var newSix = PageRequest.of(0, 6);
+        var lastMonth = OffsetDateTime.now().minusMonths(1);
+        return productRepository.findNewProducts(lastMonth, newSix)
+                .stream()
+                .map(productMapper::toNewProductDto)
+                .toList();
     }
 }

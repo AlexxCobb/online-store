@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: add_discount_fields_to_product
+      author: a.zinovev
+      changes:
+        - addColumn:
+            tableName: product
+            columns:
+              - column:
+                  name: is_discount
+                  type: BOOLEAN
+              - column:
+                  name: discount_price
+                  type: NUMERIC(10, 2)

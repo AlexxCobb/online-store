@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1759921985-add-column-created_at
+      author: a.zinovev
+      changes:
+        - addColumn:
+            tableName: product
+            columns:
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+  - changeSet:
+      id: 1759921985-populate-created_at
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1759921985-populate-created_at.sql

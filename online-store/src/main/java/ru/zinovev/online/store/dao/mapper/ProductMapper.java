@@ -7,6 +7,7 @@ import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.zinovev.online.store.controller.dto.ParametersDto;
 import ru.zinovev.online.store.controller.dto.ProductDto;
+import ru.zinovev.online.store.controller.dto.ProductForStandDto;
 import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.entity.Product;
@@ -57,6 +58,19 @@ public interface ProductMapper {
     @Mapping(target = "publicCategoryId", expression = "java(checkValue(productUpdateDto.categoryPublicId()))")
     ProductUpdateDetails toProductUpdateDetails(ProductUpdateDto productUpdateDto);
 
+    @Mapping(target = "type", expression = "java(ProductType.TOP)")
+    ProductForStandDto toTopProductDto(ProductView productView);
+
+    @Mapping(target = "type", expression = "java(ProductType.DISCOUNT)")
+    ProductForStandDto toDiscountProductDto(ProductView productView);
+
+    @Mapping(target = "type", expression = "java(ProductType.NEW)")
+    ProductForStandDto toNewProductDto(ProductView productView);
+
+    @Mapping(target = "brand", expression = "java(getParameter(\"brand\",product.getParameters()))")
+    @Mapping(target = "color", expression = "java(getParameter(\"color\",product.getParameters()))")
+    ProductForStandDto toProductForStandDto(Product product);
+
     default Product updateProductFromDetails(ProductUpdateDetails productUpdateDetails,
                                              Product product) {
         return product.toBuilder()
@@ -82,5 +96,16 @@ public interface ProductMapper {
             return null;
         }
         return value;
+    }
+
+    default String getParameter(String key, Set<ProductParameter> parameters) {
+        if (parameters == null) {
+            return "";
+        }
+        return parameters.stream()
+                .filter(productParameter -> productParameter.getKey().equals(key))
+                .map(ProductParameter::getValue)
+                .findFirst()
+                .orElse("");
     }
 }
