@@ -17,11 +17,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.Set;
@@ -77,6 +79,10 @@ public class Product {
 
     @Column(name = "discount_price")
     private BigDecimal discountPrice;
+
+    @Column(name = "created_at")
+    @CreationTimestamp
+    private OffsetDateTime createdAt;
 
     @Override
     public int hashCode() {

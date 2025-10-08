@@ -1,0 +1,9 @@
+databaseChangeLog:
+- changeSet:
+    id: 1759921985-set-created-at-not-null
+    author: a.zinovev
+    changes:
+      - addNotNullConstraint:
+          tableName: product
+          columnName: created_at
+          columnDataType: TIMESTAMPTZ

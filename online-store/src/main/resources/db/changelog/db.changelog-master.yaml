@@ -49,3 +49,7 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1759227309-add-column-product-fingerprint.yaml
   - include:
       file: classpath:db/changelog/changeset/1759911483-add-columns-discount_price-and-is_discount.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1759921985-add-column-created_at.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1759921985-set-created_at-not-null.yaml
