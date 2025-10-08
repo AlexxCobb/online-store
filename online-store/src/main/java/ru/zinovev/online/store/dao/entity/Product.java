@@ -72,6 +72,12 @@ public class Product {
     @Column(name = "product_fingerprint")
     private String fingerprint;
 
+    @Column(name = "is_discount")
+    private Boolean isDiscount;
+
+    @Column(name = "discount_price")
+    private BigDecimal discountPrice;
+
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : super.hashCode();
