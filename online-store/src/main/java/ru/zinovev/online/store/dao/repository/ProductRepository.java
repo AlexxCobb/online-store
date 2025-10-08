@@ -9,6 +9,7 @@ import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductView;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -37,15 +38,41 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     @Query("SELECT p.publicProductId as publicProductId, p.name as name, " +
             "p.price as price, " +
-            "(SELECT pp.value FROM ProductParameter pp WHERE pp.product = p AND pp.key = 'brand') as brand, " +
-            "(SELECT pp.value FROM ProductParameter pp WHERE pp.product = p AND pp.key = 'color') as color, " +
+            "pp_brand.value as brand, " +
+            "pp_color.value as color, " +
             "p.imagePath as imagePath, p.stockQuantity as stockQuantity " +
             "FROM Product p " +
-            "WHERE p.publicProductId IN " +
-            "   (SELECT MIN(p2.publicProductId) " +
+            "LEFT JOIN p.parameters pp_brand ON pp_brand.key = 'brand' " +
+            "LEFT JOIN p.parameters pp_color ON pp_color.key = 'color' " +
+            "WHERE p.id IN " +
+            "   (SELECT MIN(p2.id) " +
             "   FROM Product p2 WHERE p2.category.id IN :categoryIds AND p2.stockQuantity > 0 " +
             "   GROUP BY p2.category.id)")
-    List<ProductView> getOneProductFromEachCategory(Collection<Long> categoryIds, Pageable pageable);
+    List<ProductView> getOneProductFromEachCategory(Collection<Long> categoryIds);
 
     Optional<Product> findByFingerprint(String fingerprint);
+
+    @Query("SELECT p.publicProductId as publicProductId, p.name as name, " +
+            "p.price as price, p.discountPrice as discountPrice, " +
+            "pp_brand.value as brand, " +
+            "pp_color.value as color, " +
+            "p.imagePath as imagePath, p.stockQuantity as stockQuantity " +
+            "FROM Product p " +
+            "LEFT JOIN p.parameters pp_brand ON pp_brand.key = 'brand' " +
+            "LEFT JOIN p.parameters pp_color ON pp_color.key = 'color' " +
+            "WHERE p.isDiscount = TRUE " +
+            "ORDER BY p.discountPrice ASC")
+    List<ProductView> findDiscountProducts(Pageable pageable);
+
+    @Query("SELECT p.publicProductId as publicProductId, p.name as name, " +
+            "p.price as price, " +
+            "pp_brand.value as brand, " +
+            "pp_color.value as color, " +
+            "p.imagePath as imagePath, p.stockQuantity as stockQuantity " +
+            "FROM Product p " +
+            "LEFT JOIN p.parameters pp_brand ON pp_brand.key = 'brand' " +
+            "LEFT JOIN p.parameters pp_color ON pp_color.key = 'color' " +
+            "WHERE p.createdAt >= :cutoffDate " +
+            "ORDER BY p.createdAt DESC")
+    List<ProductView> findNewProducts(OffsetDateTime cutoffDate, Pageable pageable);
 }

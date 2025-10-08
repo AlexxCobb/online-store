@@ -58,7 +58,14 @@ public interface ProductMapper {
     @Mapping(target = "publicCategoryId", expression = "java(checkValue(productUpdateDto.categoryPublicId()))")
     ProductUpdateDetails toProductUpdateDetails(ProductUpdateDto productUpdateDto);
 
-    ProductForStandDto toProductForStandDto(ProductView productView);
+    @Mapping(target = "type", expression = "java(ProductType.TOP)")
+    ProductForStandDto toTopProductDto(ProductView productView);
+
+    @Mapping(target = "type", expression = "java(ProductType.DISCOUNT)")
+    ProductForStandDto toDiscountProductDto(ProductView productView);
+
+    @Mapping(target = "type", expression = "java(ProductType.NEW)")
+    ProductForStandDto toNewProductDto(ProductView productView);
 
     @Mapping(target = "brand", expression = "java(getParameter(\"brand\",product.getParameters()))")
     @Mapping(target = "color", expression = "java(getParameter(\"color\",product.getParameters()))")

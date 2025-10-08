@@ -12,12 +12,15 @@ public interface ProductStatisticRepository extends JpaRepository<ProductStatist
 
     @Query("SELECT p.publicProductId as publicProductId, p.name as name, " +
             "p.price as price, SUM(ps.purchaseCount) as purchaseCount, " +
-            "(SELECT pp.value FROM ProductParameter pp WHERE pp.product = p AND pp.key = 'brand') as brand, " +
-            "(SELECT pp.value FROM ProductParameter pp WHERE pp.product = p AND pp.key = 'color') as color, " +
+            "pp_brand.value as brand, " +
+            "pp_color.value as color, " +
             "p.imagePath as imagePath, p.stockQuantity as stockQuantity " +
             "FROM ProductStatistic ps " +
             "JOIN ps.product p " +
-            "GROUP BY p.id, p.publicProductId, p.name, p.price " +
+            "LEFT JOIN p.parameters pp_brand ON pp_brand.key = 'brand' " +
+            "LEFT JOIN p.parameters pp_color ON pp_color.key = 'color' " +
+            "GROUP BY p.publicProductId, p.name, p.price, " +
+            "pp_brand.value, pp_color.value, p.imagePath, p.stockQuantity " +
             "ORDER BY SUM(ps.purchaseCount) DESC")
     Page<ProductView> findTopProductViews(Pageable pageable);
 

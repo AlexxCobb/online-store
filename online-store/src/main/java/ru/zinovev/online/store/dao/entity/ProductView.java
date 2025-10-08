@@ -11,4 +11,5 @@ public interface ProductView {
     String getColor();
     String getImagePath();
     Integer getStockQuantity();
+    BigDecimal getDiscountPrice();
 }

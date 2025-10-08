@@ -29,6 +29,7 @@ import ru.zinovev.online.store.model.TopProductDetails;
 import ru.zinovev.online.store.service.ProductEventPublisher;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -116,7 +117,7 @@ public class ProductDaoService {
 
     public List<TopProductDetails> getOneProductFromEachCategory() {
         var categories = categoryRepository.findAll().stream().map(Category::getId).toList();
-        return productRepository.getOneProductFromEachCategory(categories, PageRequest.of(0, 10))
+        return productRepository.getOneProductFromEachCategory(categories)
                 .stream()
                 .map(productMapper::toTopProductDetails)
                 .collect(Collectors.toList());
@@ -229,18 +230,28 @@ public class ProductDaoService {
     }
 
     public List<ProductForStandDto> getTopProducts() {
-        return statisticRepository.findTopProductViews(PageRequest.of(0, 6))
+        var topSix = PageRequest.of(0, 6);
+        return statisticRepository.findTopProductViews(topSix)
                 .getContent()
                 .stream()
-                .map(productMapper::toProductForStandDto)
+                .map(productMapper::toTopProductDto)
                 .toList(); // использование статистики здесь?
     }
 
     public List<ProductForStandDto> getDiscountProducts() {
-        return null;
+        var discountSix = PageRequest.of(0, 6);
+        return productRepository.findDiscountProducts(discountSix)
+                .stream()
+                .map(productMapper::toDiscountProductDto)
+                .toList();
     }
 
     public List<ProductForStandDto> getNewProducts() {
-        return null;
+        var newSix = PageRequest.of(0, 6);
+        var lastMonth = OffsetDateTime.now().minusMonths(1);
+        return productRepository.findNewProducts(lastMonth, newSix)
+                .stream()
+                .map(productMapper::toNewProductDto)
+                .toList();
     }
 }
