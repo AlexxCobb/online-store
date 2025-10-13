@@ -249,7 +249,9 @@ public class AdminController {
                 product.name(),
                 product.price(),
                 product.categoryPublicId(),
-                product.stockQuantity()
+                product.stockQuantity(),
+                product.isDiscount(),
+                product.discountPrice()
         );
         if (model.containsAttribute("conflictMessage")) {
             model.addAttribute("hasConflict", true);
@@ -259,7 +261,9 @@ public class AdminController {
                     product.name(),
                     (BigDecimal) model.asMap().get("newPrice"),
                     product.categoryPublicId(),
-                    (Integer) model.asMap().get("newQuantity")
+                    (Integer) model.asMap().get("newQuantity"),
+                    product.isDiscount(),
+                    (BigDecimal) model.asMap().get("discountPrice")
             );
             model.addAttribute("conflictUpdateDto", conflictUpdateDto);
         }

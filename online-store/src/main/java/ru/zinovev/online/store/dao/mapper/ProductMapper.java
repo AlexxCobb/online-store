@@ -79,6 +79,8 @@ public interface ProductMapper {
                 .price(productUpdateDetails.price() != null ? productUpdateDetails.price() : product.getPrice())
                 .stockQuantity(productUpdateDetails.stockQuantity() != null ? productUpdateDetails.stockQuantity()
                                        : product.getStockQuantity())
+                .isDiscount(productUpdateDetails.isDiscount())
+                .discountPrice(productUpdateDetails.isDiscount() ? productUpdateDetails.discountPrice() : null)
                 .build();
     }
 

@@ -29,7 +29,11 @@ public record ProductDto(
         @NotNull(message = "Укажите количество товара")
         @PositiveOrZero(message = "Количество товара положительное число или 0")
         Integer stockQuantity,
-        String imagePath
+        String imagePath,
+        @NotNull(message = "Укажите действует акция на товар, или нет")
+        Boolean isDiscount,
+        @Positive(message = "Цена товара только положительная")
+        BigDecimal discountPrice
 ) {
         public ProductDto {
                 if (parameters == null) {
