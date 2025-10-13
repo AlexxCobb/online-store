@@ -13,6 +13,7 @@ public record ProductForStandDto(
         String color,
         String imagePath,
         Integer stockQuantity,
+        BigDecimal discountPrice,
         ProductType type
 ) {
 }

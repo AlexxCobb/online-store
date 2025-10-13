@@ -67,6 +67,8 @@ public class ProductDaoService {
                 .volume(productDetails.volume())
                 .parameters(new HashSet<>())
                 .stockQuantity(productDetails.stockQuantity())
+                .isDiscount(productDetails.isDiscount())
+                .discountPrice(productDetails.isDiscount() ? productDetails.discountPrice() : null)
                 .build();
 
         if (productDetails.parameters() != null) {

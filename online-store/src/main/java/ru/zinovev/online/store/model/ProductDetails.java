@@ -12,6 +12,8 @@ public record ProductDetails(
         BigDecimal weight,
         BigDecimal volume,
         Integer stockQuantity,
-        String imagePath
+        String imagePath,
+        Boolean isDiscount,
+        BigDecimal discountPrice
 ) {
 }

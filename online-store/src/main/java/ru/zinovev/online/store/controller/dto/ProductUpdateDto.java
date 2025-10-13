@@ -13,6 +13,9 @@ public record ProductUpdateDto(
         BigDecimal price,
         String categoryPublicId,
         @PositiveOrZero(message = "Количество товара положительное число или 0")
-        Integer stockQuantity
+        Integer stockQuantity,
+        Boolean isDiscount,
+        @Positive(message = "Цена товара только положительная")
+        BigDecimal discountPrice
 ) {
 }

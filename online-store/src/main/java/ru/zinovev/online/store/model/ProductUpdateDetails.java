@@ -6,6 +6,8 @@ public record ProductUpdateDetails(
         String name,
         BigDecimal price,
         String publicCategoryId,
-        Integer stockQuantity
+        Integer stockQuantity,
+        Boolean isDiscount,
+        BigDecimal discountPrice
 ) {
 }
