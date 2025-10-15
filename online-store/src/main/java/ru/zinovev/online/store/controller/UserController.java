@@ -43,6 +43,7 @@ import ru.zinovev.online.store.service.StatisticService;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -59,18 +60,6 @@ public class UserController {
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
     private final UserDto sessionUserDto;
-
-    @GetMapping("/home")
-    public String homePage(Model model) {
-        var popularProducts = statisticService.findSixPopularProducts(); // убрать отсюда
-        if (popularProducts.isEmpty()) {
-            popularProducts =
-                    productService.getOneProductFromEachCategory();
-        }
-        model.addAttribute("popularProducts", popularProducts);
-        model.addAttribute("sessionUserDto", sessionUserDto);
-        return "home";
-    }
 
     @PostMapping("/addresses")
     public String addAddress(@Valid AddressDto addressDto,
@@ -161,7 +150,7 @@ public class UserController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "5") Integer limit,
+            @RequestParam(defaultValue = "6") Integer limit,
             @Valid @ModelAttribute ProductParamDto productParamDto,// добавить параметры в Dto
             Model model) {
         log.debug("Received GET request to search products with parameters");
@@ -175,6 +164,10 @@ public class UserController {
         var memoryValues = productService.getUniqueParametersByKey("memory");
         var priceMin = productService.getMinPrice();
         var priceMax = productService.getMaxPrice();
+        var topProducts = statisticService.findSixPopularProducts();
+        var categories = categoryService.getCategories();
+        var categoryMap =
+                categories.stream().collect(Collectors.toMap(CategoryDetails::publicCategoryId, CategoryDetails::name));
 
         model.addAttribute("brandValues", brandValues);
         model.addAttribute("colorValues", colorValues);
@@ -185,6 +178,8 @@ public class UserController {
         model.addAttribute("priceMin", priceMin);
         model.addAttribute("priceMax", priceMax);
         model.addAttribute("products", products);
+        model.addAttribute("topProducts", topProducts);
+        model.addAttribute("categoryMap", categoryMap);
         model.addAttribute("sessionUserDto", sessionUserDto);
         return "products";
     }
