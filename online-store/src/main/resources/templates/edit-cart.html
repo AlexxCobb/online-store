@@ -1,168 +1,404 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: common-header('Edit-Cart')}">
+<html lang="ru" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Корзина | Оформление заказа</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link type="text/css" rel="stylesheet" th:href="@{/css/slick.css}">
+    <link type="text/css" rel="stylesheet" th:href="@{/css/slick-theme.css}">
+    <link type="text/css" rel="stylesheet" th:href="@{/css/nouislider.min.css}">
+    <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
+    <link type="text/css" rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        .product-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .order-col.totals {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ccc;
+        }
+        .primary-btn.order-submit {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 12px;
+            font-size: 16px;
+            margin-top: 30px;
+            border-radius: 4px;
+            background-color: #D10024;
+            color: #FFF;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .primary-btn.order-submit:hover {
+            background-color: #A3001C;
+        }
+        .empty-cart-message {
+            padding: 50px 0;
+            text-align: center;
+            font-size: 18px;
+            color: #777;
+        }
+        .card-header.bg-primary { background-color: #007bff !important; }
+        .card-header.bg-success { background-color: #28a745 !important; }
+        .card-header.bg-info { background-color: #17a2b8 !important; }
+    </style>
 </head>
 <body>
-<div th:replace="~{fragments/navbar :: main-navbar}"></div>
-
-<div class="welcome-container">
-    <h2>Товары в корзине</h2>
-    <div th:if="${cart == null or cart.cartItems == null or cart.cartItems.empty}">
-        <p class="text-muted">Корзина пуста</p>
-    </div>
-    <div th:if="${successMessage}" class="alert alert-success">
-        <span th:text="${successMessage}"></span>
-    </div>
-    <div th:if="${errorMessage}" class="alert alert-danger">
-        <span th:text="${errorMessage}"></span>
-    </div>
-
-    <div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
-        <div class="d-flex justify-content-end mb-3">
-            <form th:action="@{/api/users/cart}" method="post">
-                <input type="hidden" name="_method" value="delete"/>
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                    <i class="bi bi-trash me-1"></i> Очистить корзину
-                </button>
-            </form>
+<header>
+    <div id="top-header">
+        <div class="container">
+            <ul class="header-links pull-right">
+                <li sec:authorize="!isAuthenticated()" class="nav-item">
+                    <a class="nav-link text-gray-300 hover:text-electro-red transition font-medium"
+                       th:href="@{/api/auth/sign-in}">
+                        <i class="fa fa-user mr-1"></i> Войти
+                    </a>
+                </li>
+                <li sec:authorize="!isAuthenticated() and !hasRole('ROLE_ADMIN')" class="nav-item">
+                    <a class="nav-link text-gray-300 hover:text-electro-red transition font-medium"
+                       th:href="@{/api/auth}">
+                        <i class="fa fa-user-plus mr-1"></i> Регистрация
+                    </a>
+                </li>
+            </ul>
         </div>
-        <table>
-            <tr>
-                <th></th>
-                <th>Бренд</th>
-                <th>Название модели</th>
-                <th>Цвет</th>
-                <th>Количество, шт</th>
-                <th>Стоимость, ₽</th>
-                <th>Действия</th>
-            </tr>
-            <tr th:each="cartItem : ${cart.cartItems}">
-                <td>
-                    <img th:src="@{${cartItem.imagePath != null ? cartItem.imagePath : '/images/WI-BI.png'}}"
-                         class="product-thumbnail"/>
-                </td>
-                <td th:text="${cartItem.brand}"></td>
-                <td th:text="${cartItem.name}"></td>
-                <td th:text="${cartItem.color}"></td>
-                <td th:text="${cartItem.quantity}"></td>
-                <td th:text="${cartItem.price}"></td>
-                <td>
-                    <form th:action="@{'/api/users/cart/' + ${cartItem.publicProductId}}" method="post">
-                        <input type="hidden" name="_method" value="patch"/>
-                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-x-circle"></i> Удалить
-                        </button>
+    </div>
+
+    <div id="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="header-logo-text" style="display: flex; align-items: center; padding: 5px 0;">
+                        <a class="logo">
+                            <img src="/images/favicon.ico" alt="Логотип"
+                                 style="height: 100px; margin-right: 60px; border-radius: 10px;">
+                        </a>
+                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <span class="shop-name"
+                              style="color: yellowgreen; font-size: 30px; font-weight: 700; line-height: 1.2;">
+                            Want It - Buy It
+                        </span>
+                            <span class="shop-slogan" style="color: white; font-size: 16px; font-weight: 500;">
+                            (Онлайн магазин электроники)
+                        </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 clearfix">
+                    <div class="header-ctn">
+                        <ul class="flex-1 flex space-x-6 items-center">
+                            <li class="nav-item" sec:authorize="!hasRole('ROLE_ADMIN')">
+                                <a class="nav-link text-white text-lg hover:text-electro-red transition font-medium"
+                                   th:href="@{/api/users/cart}">
+                                    <i class="fa fa-shopping-cart mr-1"></i> Корзина
+                                    <span th:if="${cart != null and cart.cartItems.size() > 0}"
+                                          class="cart-badge"
+                                          th:text="${cart.totalQuantity}">0</span>
+                                </a>
+                            </li>
+
+                            <li class="nav-item" sec:authorize="isAuthenticated() and !hasRole('ROLE_ADMIN')">
+                                <a class="nav-link text-white text-lg hover:text-electro-red transition font-medium"
+                                   th:href="@{'/api/users/orders'}">
+                                    <i class="fa fa-bag-shopping mr-1"></i> Заказы
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<nav id="navigation">
+    <div class="container">
+        <div id="responsive-nav">
+            <ul class="main-nav nav navbar-nav">
+                <li class="active"><a th:href="@{/api/users/products}">Главная</a></li>
+                <li sec:authorize="isAuthenticated() and hasRole('ROLE_ADMIN')" class="nav-item">
+                    <a class="nav-link text-gray-300 hover:text-electro-red transition font-medium"
+                       th:href="@{/api/admins/home}">
+                        <i class="fa fa-shield-alt mr-1"></i> Меню администратора
+                    </a>
+                </li>
+                <li sec:authorize="isAuthenticated() and !hasRole('ROLE_ADMIN')"
+                    class="nav-item dropdown relative group">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i> Мой аккаунт
+                        <span sec:authentication="name"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item" th:href="@{'/api/users/addresses'}">
+                                <i class="bi bi-geo-alt me-2"></i> Мои адреса
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/api/users/orders}">
+                                <i class="bi bi-bag me-2"></i> Мои заказы
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/api/users}">
+                                <i class="bi bi-pencil me-2"></i> Редактировать профиль
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item" th:href="@{/logout}">
+                                <i class="bi bi-box-arrow-right me-2"></i> Выйти
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div id="breadcrumb" class="section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Корзина и Оформление заказа</h3>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="section">
+    <div class="container">
+        <div class="row">
+
+            <!-- СЕКЦИЯ ДЛЯ ВЫБОРА АДРЕСА, ДОСТАВКИ И ОПЛАТЫ (col-md-7) -->
+            <div class="col-md-7">
+                <div class="section-title">
+                    <h3 class="title">Адрес доставки, Доставка и Оплата</h3>
+                </div>
+
+                <!-- БЛОК С ЛОГИКОЙ ПОЛЬЗОВАТЕЛЯ -->
+                <div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
+                    <form th:action="@{'/api/users/orders'}" method="post" id="checkout-form">
+
+                        <!-- Выбор способа оплаты -->
+                        <div class="col-md-7">
+                            <label class="form-label">Выберите способ оплаты:</label>
+                            <div class="input-group">
+                                <select name="paymentMethodName" class="form-select">
+                                    <option th:each="paymentMethod : ${paymentMethods}"
+                                            th:value="${paymentMethod}"
+                                            th:text="${paymentMethod.displayValue}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Выбор способа доставки -->
+                        <div class="mb-3">
+                            <label class="form-label">Выберите способ доставки:</label>
+                            <select name="deliveryMethodName" class="form-select">
+                                <option th:each="deliveryMethod : ${deliveryMethods}"
+                                        th:value="${deliveryMethod}"
+                                        th:text="${deliveryMethod.displayValue}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Выбор адреса доставки -->
+                        <div class="mb-3">
+                            <label class="form-label">Выберите адрес доставки:</label>
+
+                            <div class="card mb-3" th:if="${not userAddresses.empty}">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">🏠 Мои адреса</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div th:each="address : ${userAddresses}" class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="publicAddressId"
+                                               th:id="${'address_' + address.publicAddressId}"
+                                               th:value="${address.publicAddressId}"
+                                               required="required"> <!-- Сделано обязательным -->
+                                        <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                            <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber + (address.flatNumber != null ? ', кв. ' + address.flatNumber : '')}"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-3" th:if="${not parcelAddresses.empty}">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">📦 Пункты выдачи</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div th:each="address : ${parcelAddresses}" class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="publicAddressId"
+                                               th:id="${'address_' + address.publicAddressId}"
+                                               th:value="${address.publicAddressId}"
+                                               required="required"> <!-- Сделано обязательным -->
+                                        <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                            <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-3" th:if="${not storeAddresses.empty}">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">🏬 Магазины</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div th:each="address : ${storeAddresses}" class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="publicAddressId"
+                                               th:id="${'address_' + address.publicAddressId}"
+                                               th:value="${address.publicAddressId}"
+                                               required="required"> <!-- Сделано обязательным -->
+                                        <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                            <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки 'Сохранить изменения' и 'Отмена' удалены. Финальная кнопка - в col-md-5 -->
                     </form>
-                </td>
-            </tr>
-        </table>
+                </div>
+                <!-- КОНЕЦ БЛОКА С ЛОГИКОЙ ПОЛЬЗОВАТЕЛЯ -->
+
+            </div>
+            <!-- КОНЕЦ СЕКЦИИ col-md-7 -->
+
+            <!-- ДЕТАЛИ ЗАКАЗА (col-md-5) -->
+            <div class="col-md-5 order-details">
+                <div class="section-title text-center">
+                    <h3 class="title">Ваша корзина</h3>
+                </div>
+
+                <div th:if="${successMessage}" class="alert alert-success text-center">
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger text-center">
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <div th:if="${cart == null or cart.cartItems == null or cart.cartItems.empty}" class="empty-cart-message">
+                    <p><i class="fa fa-shopping-cart fa-3x mb-3"></i></p>
+                    <p class="text-muted">Корзина пуста. <a th:href="@{/api/users/products}">Перейти в магазин</a></p>
+                </div>
+
+                <div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <form th:action="@{/api/users/cart}" method="post">
+                            <input type="hidden" name="_method" value="delete"/>
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fa fa-trash me-1"></i> Очистить корзину
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="order-summary">
+                        <div class="order-col">
+                            <div><strong>ТОВАР</strong></div>
+                            <div><strong>СУММА</strong></div>
+                        </div>
+
+                        <div class="order-products">
+                            <div class="order-col" th:each="cartItem : ${cart.cartItems}">
+                                <div class="d-flex align-items-center">
+                                    <img th:src="@{${cartItem.imagePath != null ? cartItem.imagePath : '/images/WI-BI.png'}}"
+                                         class="product-thumbnail me-2"/>
+                                    <span th:text="${cartItem.quantity} + 'x ' + ${cartItem.brand} + ' ' + ${cartItem.name}">1x Product Name</span>
+                                </div>
+
+                                <div th:text="${#numbers.formatDecimal(cartItem.price, 0, 'COMMA', 2, 'POINT') + ' руб.'}">980.00 руб.</div>
+
+                                <div class="order-actions text-end" style="width: 100%;">
+                                    <form th:action="@{'/api/users/cart/' + ${cartItem.publicProductId}}" method="post">
+                                        <input type="hidden" name="_method" value="patch"/>
+                                        <button type="submit" class="btn btn-sm" style="color: #D10024; padding: 0;">
+                                            <i class="fa fa-times-circle"></i> Удалить
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="order-col totals">
+                            <div>Общее количество, шт</div>
+                            <div th:text="${cart.totalQuantity}"></div>
+                        </div>
+
+                        <div class="order-col">
+                            <div>Доставка</div>
+                            <div><strong>БЕСПЛАТНО</strong></div>
+                        </div>
+
+                        <div class="order-col">
+                            <div><strong>ИТОГО К ОПЛАТЕ</strong></div>
+                            <div>
+                                <strong class="order-total" th:text="${#numbers.formatDecimal(cart.totalPrice, 0, 'COMMA', 2, 'POINT') + ' руб.'}">
+                                    $2940.00
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ЗОНА ФИНАЛЬНОГО ОФОРМЛЕНИЯ ЗАКАЗА -->
+                    <div class="order-submission-area mt-4">
+                        <div sec:authorize="isAuthenticated()">
+                            <!-- Кнопка теперь отправляет форму из col-md-7 (id="checkout-form") -->
+                            <button type="submit" form="checkout-form"
+                                    class="primary-btn order-submit">Подтвердить заказ</button>
+                        </div>
+
+                        <div sec:authorize="!isAuthenticated()" class="text-center mt-3">
+                            <p class="text-muted">Для оформления заказа необходимо:</p>
+                            <a th:href="@{/api/auth/sign-in}" class="btn btn-primary btn-sm me-2">Войти</a>
+                            <a th:href="@{/api/auth}" class="btn btn-secondary btn-sm">Зарегистрироваться</a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
-<div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
-    <div class="welcome-container p">
-        <table>
-            <tr>
-                <th>Общее количество, шт</th>
-                <th>Общая стоимость, руб</th>
-            </tr>
-            <tr>
-                <td th:text="${cart.totalQuantity}"></td>
-                <td th:text="${cart.totalPrice}"></td>
-            </tr>
-        </table>
+<footer id="footer">
+    <div id="bottom-footer" class="section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    &copy; 2025 Онлайн магазин "Хочешь - Купи"
+                </div>
+            </div>
+        </div>
     </div>
-</div>
-
-
-<div class="welcome-container" th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
-    <table>
-        <form th:action="@{'/api/users/orders'}"
-              method="post">
-
-            <div class="mb-3">
-                <label class="form-label ">Выберите способ оплаты:</label>
-                <div class="input-group">
-                    <select name="paymentMethodName" class="form-select">
-                        <option th:each="paymentMethod : ${paymentMethods}"
-                                th:value="${paymentMethod}"
-                                th:text="${paymentMethod.displayValue}">
-                        </option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Выберите способ доставки:</label>
-                <select name="deliveryMethodName" class="form-select">
-                    <option th:each="deliveryMethod : ${deliveryMethods}"
-                            th:value="${deliveryMethod}"
-                            th:text="${deliveryMethod.displayValue}">
-                    </option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Выберите адрес доставки:</label>
-
-                <div class="card mb-3" th:if="${not userAddresses.empty}">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">🏠 Мои адреса</h5>
-                    </div>
-                    <div class="card-body">
-                        <div th:each="address : ${userAddresses}" class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="publicAddressId"
-                                   th:id="${'address_' + address.publicAddressId}"
-                                   th:value="${address.publicAddressId}">
-                            <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
-                                <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber + (address.flatNumber != null ? ', кв. ' + address.flatNumber : '')}"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card mb-3" th:if="${not parcelAddresses.empty}">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">📦 Пункты выдачи</h5>
-                    </div>
-                    <div class="card-body">
-                        <div th:each="address : ${parcelAddresses}" class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="publicAddressId"
-                                   th:id="${'address_' + address.publicAddressId}"
-                                   th:value="${address.publicAddressId}">
-                            <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
-                                <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card mb-3" th:if="${not storeAddresses.empty}">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">🏬 Магазины</h5>
-                    </div>
-                    <div class="card-body">
-                        <div th:each="address : ${storeAddresses}" class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="publicAddressId"
-                                   th:id="${'address_' + address.publicAddressId}"
-                                   th:value="${address.publicAddressId}">
-                            <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
-                                <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-                <a th:href="@{'/api/users/cart'}"
-                   class="btn btn-secondary">Отмена</a>
-            </div>
-        </form>
-    </table>
-</div>
-
-<footer th:replace="~{fragments/footer :: copy}"></footer>
+</footer>
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/main.js}"></script>
 </body>
 </html>
+
+
