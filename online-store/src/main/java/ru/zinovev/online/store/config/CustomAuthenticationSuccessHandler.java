@@ -53,7 +53,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 cartService.updateCartWithRegisteredUser(user.publicUserId(), cookieCartId);
             }
 
-            String redirectUrl = "/api/users/home";
+            String redirectUrl = "/api/users/products";
 
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {

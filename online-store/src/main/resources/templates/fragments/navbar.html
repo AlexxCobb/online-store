@@ -17,7 +17,7 @@
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link"
-                       th:href="@{/api/users/home}">
+                       th:href="@{/api/users/products}">
                         <i class="bi bi-house-door me-1"></i> Главная
                     </a>
                 </li>
@@ -47,7 +47,7 @@
 
                 <li class="nav-item" sec:authorize="!hasRole('ROLE_ADMIN')">
                     <a class="nav-link"
-                        th:href="@{/api/users/cart}">
+                       th:href="@{/api/users/cart}">
                         <i class="bi bi-cart me-1"></i> Корзина
                         <span th:if="${cart != null and cart.cartItems.size() > 0}"
                               class="badge bg-danger rounded-pill ms-1"

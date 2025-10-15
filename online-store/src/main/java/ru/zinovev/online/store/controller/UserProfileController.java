@@ -116,8 +116,8 @@ public class UserProfileController {
         log.debug("Received DELETE request to delete user with id = {}", publicUserId);
 
         userService.deleteUser(publicUserId);
-        redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ УСПЕШНО ОБНОВЛЕН");
-        return "redirect:/api/users/home";
+        redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ УСПЕШНО УДАЛЕН");
+        return "redirect:/api/users/products";
     }
 
     private String getPublicUserIdOrThrowException(UserDto userDto) {

@@ -25,8 +25,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/users/home", "/api/users/products",
-                                         "/api/users/cart/**","/api/stand/products", "/css/**", "/images/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/users/products",
+                                         "/api/users/cart/**","/api/stand/products", "/css/**", "/images/**", "/js/**", "/fonts/**").permitAll()
                         .requestMatchers("/api/users/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/admins/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
