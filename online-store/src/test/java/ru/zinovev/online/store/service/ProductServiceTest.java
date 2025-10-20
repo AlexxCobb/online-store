@@ -6,20 +6,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.zinovev.online.store.controller.dto.ProductDto;
-import ru.zinovev.online.store.controller.dto.ProductUpdateDto;
 import ru.zinovev.online.store.dao.ProductDaoService;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.exception.model.NotFoundException;
-import ru.zinovev.online.store.model.CategoryDetails;
 import ru.zinovev.online.store.model.ProductDetails;
+import ru.zinovev.online.store.model.ProductUpdateDetails;
+import ru.zinovev.online.store.model.UserDetails;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,73 +32,82 @@ class ProductServiceTest {
     private ProductDaoService productDaoService;
     @Mock
     private CategoryService categoryService;
+    @Mock
+    private UserService userService;
     @InjectMocks
     private ProductService productService;
 
+    private UserDetails mockUserDetails;
     private Category mockCategory;
     private Product mockProduct;
-    private ProductDto mockProductDto;
     private ProductDetails mockProductDetails;
-    private ProductUpdateDto mockUpdateDto;
     private Product mockUpdatedProduct;
     private ProductDetails mockUpdatedProductDetails;
+    private ProductDetails mockSavedProductDetails;
+    private ProductUpdateDetails mockProductUpdateDetailsRequest;
 
     @BeforeEach
     void setUp() {
+        mockUserDetails = new UserDetails("PublicUserId", "ya@ya.ru", "name",
+                                          "lastname");
         mockCategory = Category.builder()
                 .id(1L)
                 .name("Phones")
                 .publicCategoryId("phonesId")
                 .build();
-        mockProductDto =
-                new ProductDto("Mobile phone", BigDecimal.valueOf(1234.00), "phonesId", null, BigDecimal.valueOf(200),
-                               BigDecimal.valueOf(0.0036), 10);
         mockProduct = Product.builder()
                 .publicProductId(UUID.randomUUID().toString())
-                .name(mockProductDto.name())
+                .name("name")
                 .category(mockCategory)
-                .price(mockProductDto.price())
-                .weight(mockProductDto.weight())
-                .volume(mockProductDto.volume())
-                .stockQuantity(mockProductDto.stockQuantity())
+                .price(BigDecimal.valueOf(100))
+                .weight(BigDecimal.valueOf(200))
+                .volume(BigDecimal.valueOf(0.2))
+                .stockQuantity(10)
                 .build();
         mockProductDetails =
                 new ProductDetails(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
-                                   new CategoryDetails(mockCategory.getPublicCategoryId(), mockCategory.getName()),
-                                   new HashMap<>(), mockProduct.getWeight(), mockProduct.getVolume(),
-                                   mockProductDto.stockQuantity());
-        mockUpdateDto =
-                new ProductUpdateDto(Optional.empty(), Optional.of(BigDecimal.valueOf(1000.00)),
-                                     Optional.of(mockCategory.getPublicCategoryId()),
-                                     Map.of("color", "black"), Optional.empty());
+                                   mockCategory.getPublicCategoryId(),
+                                   new HashSet<>(), mockProduct.getWeight(), mockProduct.getVolume(),
+                                   mockProduct.getStockQuantity(), mockProduct.getImagePath(),
+                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice());
+        mockSavedProductDetails =
+                new ProductDetails(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
+                                   mockCategory.getPublicCategoryId(),
+                                   new HashSet<>(), mockProduct.getWeight(), mockProduct.getVolume(),
+                                   mockProduct.getStockQuantity(), mockProduct.getImagePath(),
+                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice());
+        mockProductUpdateDetailsRequest =
+                new ProductUpdateDetails(null, BigDecimal.valueOf(1000.00), null,
+                                         null, null, null);
         mockUpdatedProduct = Product.builder()
                 .publicProductId(mockProduct.getPublicProductId())
-                .name(mockProductDto.name())
+                .name(mockProductDetails.name())
                 .category(mockCategory)
-                .price(mockUpdateDto.price().get())
-                .weight(mockProductDto.weight())
-                .volume(mockProductDto.volume())
-                .parameters(mockUpdateDto.parameters())
-                .stockQuantity(mockProductDto.stockQuantity())
+                .price(mockProductDetails.price())
+                .weight(mockProductDetails.weight())
+                .volume(mockProductDetails.volume())
+                .parameters(new HashSet<>())
+                .stockQuantity(mockProductDetails.stockQuantity())
                 .build();
         mockUpdatedProductDetails =
                 new ProductDetails(mockUpdatedProduct.getPublicProductId(), mockUpdatedProduct.getName(),
-                                   mockUpdatedProduct.getPrice(),
-                                   new CategoryDetails(mockCategory.getPublicCategoryId(),
-                                                       mockUpdatedProduct.getName()),
-                                   mockUpdatedProduct.getParameters(), mockUpdatedProduct.getWeight(),
+                                   mockProductUpdateDetailsRequest.price(),
+                                   mockCategory.getPublicCategoryId(),
+                                   new HashSet<>(), mockUpdatedProduct.getWeight(),
                                    mockUpdatedProduct.getVolume(),
-                                   mockUpdatedProduct.getStockQuantity());
+                                   mockUpdatedProduct.getStockQuantity(), mockUpdatedProduct.getImagePath(),
+                                   mockUpdatedProduct.getIsDiscount(), mockUpdatedProduct.getDiscountPrice());
     }
 
     @Test
     void shouldCreateNewProduct() {
-        when(productDaoService.createProduct(mockProductDto)).thenReturn(mockProductDetails);
+        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
+        when(productDaoService.createProduct(mockProductDetails)).thenReturn(mockSavedProductDetails);
 
-        var result = productService.createProduct(mockProductDto);
+        var result = productService.createProduct(mockUserDetails.publicUserId(), mockProductDetails);
         assertNotNull(result);
-        assertEquals(mockProductDetails, result);
-        assertEquals(mockProductDto.name(), result.name());
+        assertEquals(mockSavedProductDetails, result);
+        assertEquals(mockSavedProductDetails.name(), result.name());
     }
 
     @Test
@@ -110,15 +115,16 @@ class ProductServiceTest {
         var publicId = mockProduct.getPublicProductId();
         var categoryId = mockCategory.getPublicCategoryId();
 
+        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
         when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.of(mockProductDetails));
-        when(productDaoService.updateProduct(mockUpdateDto, publicId)).thenReturn(
+        when(productDaoService.updateProduct(mockProductUpdateDetailsRequest, publicId)).thenReturn(
                 mockUpdatedProductDetails);
 
-        var result = productService.updateProduct(mockUpdateDto, publicId);
+        var result =
+                productService.updateProduct(mockUserDetails.publicUserId(), mockProductUpdateDetailsRequest, publicId);
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
-        verify(categoryService, times(1)).getCategoryByPublicId(categoryId);
     }
 
     @Test
@@ -126,13 +132,15 @@ class ProductServiceTest {
         var publicId = mockProduct.getPublicProductId();
         var categoryId = mockCategory.getPublicCategoryId();
         var updateProductDtoWithoutCategory =
-                new ProductUpdateDto(Optional.of("name"), Optional.empty(), Optional.empty(), null, Optional.empty());
+                new ProductUpdateDetails("name", null, null, null, null, null);
 
+        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
         when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.of(mockProductDetails));
         when(productDaoService.updateProduct(updateProductDtoWithoutCategory, publicId)).thenReturn(
                 mockUpdatedProductDetails);
 
-        var result = productService.updateProduct(updateProductDtoWithoutCategory, publicId);
+        var result =
+                productService.updateProduct(mockUserDetails.publicUserId(), updateProductDtoWithoutCategory, publicId);
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
@@ -143,19 +151,9 @@ class ProductServiceTest {
     void shouldDeleteProduct() {
         var publicId = mockProduct.getPublicProductId();
 
-        when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.of(mockProductDetails));
+        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
 
-        productService.deleteProduct(publicId);
-        verify(productDaoService, times(1)).deleteProduct(publicId);
-    }
-
-    @Test
-    void shouldFoundProductByPublicId() {
-        var publicId = mockProduct.getPublicProductId();
-
-        when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.of(mockProductDetails));
-
-        productService.deleteProduct(publicId);
+        productService.deleteProduct(mockUserDetails.publicUserId(), publicId);
         verify(productDaoService, times(1)).deleteProduct(publicId);
     }
 
@@ -166,28 +164,5 @@ class ProductServiceTest {
         when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> productService.getByPublicId(publicId));
-    }
-
-    @Test
-    void shouldReturnListOfProductsByCategoryId() {
-        var categoryId = mockCategory.getPublicCategoryId();
-        when(categoryService.getCategoryByPublicId(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
-        when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(
-                List.of(mockProductDetails, mockUpdatedProductDetails));
-
-        var result = productService.searchProductsWithParameters(categoryId);
-
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals(mockProductDetails.name(), result.get(0).name());
-    }
-
-    @Test
-    void shouldThrowExceptionWhenReturnEmptyList() {
-        var categoryId = mockCategory.getPublicCategoryId();
-        when(categoryService.getCategoryByPublicId(categoryId)).thenReturn(new CategoryDetails(categoryId, "phones"));
-        when(productDaoService.findProductsByCategoryId(categoryId)).thenReturn(Collections.emptyList());
-
-        assertThrows(NotFoundException.class, () -> productService.searchProductsWithParameters(categoryId));
     }
 }

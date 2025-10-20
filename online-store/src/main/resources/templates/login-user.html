@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Products Template</title>
+    <title>Вход | Want It - Buy It</title>
 
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
 
@@ -17,9 +17,53 @@
     <link type="text/css" rel="stylesheet" th:href="@{/css/nouislider.min.css}">
 
     <link rel="stylesheet" th:href="@{/css/font-awesome.min.css}">
-
     <link type="text/css" rel="stylesheet" th:href="@{/css/style.css}">
 
+    <style>
+        .text-electro-red {
+            color: #D10024 !important;
+        }
+        .primary-btn.order-submit {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 4px;
+            background-color: #D10024;
+            color: #FFF;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .primary-btn.order-submit:hover {
+            background-color: #A3001C;
+        }
+        .card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+        .alert {
+            margin-bottom: 20px;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content-area {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+    </style>
 
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -100,87 +144,76 @@
         <div id="responsive-nav">
             <ul class="main-nav nav navbar-nav">
                 <li class="active"><a th:href="@{/api/users/products}">Главная</a></li>
-                <li sec:authorize="isAuthenticated() and hasRole('ROLE_ADMIN')" class="nav-item">
-                    <a class="nav-link text-gray-300 hover:text-electro-red transition font-medium"
-                       th:href="@{/api/admins/home}">
-                        <i class="fa fa-shield-alt mr-1"></i> Меню администратора
-                    </a>
-                </li>
-                <li sec:authorize="isAuthenticated() and !hasRole('ROLE_ADMIN')"
-                    class="nav-item dropdown relative group">
-                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle me-1"></i> Мой аккаунт
-                        <span sec:authentication="name"></span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li>
-                            <a class="dropdown-item" th:href="@{'/api/users/addresses'}">
-                                <i class="bi bi-geo-alt me-2"></i> Мои адреса
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" th:href="@{/api/users/orders}">
-                                <i class="bi bi-bag me-2"></i> Мои заказы
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <a class="dropdown-item" th:href="@{/api/users}">
-                                <i class="bi bi-pencil me-2"></i> Редактировать профиль
-                            </a>
-                        </li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li>
-                            <a class="dropdown-item" th:href="@{/logout}">
-                                <i class="bi bi-box-arrow-right me-2"></i> Выйти
-                            </a>
-                        </li>
-                    </ul>
-                </li>
             </ul>
         </div>
     </div>
 </nav>
 
-<div class="container mt-4">
-    <div th:if="${successMessage}" class="alert alert-success">
-        <span th:text="${successMessage}"></span>
+<!-- ОСНОВНАЯ СЕКЦИЯ С ФОРМОЙ. Используем .main-content-area для центрирования и растяжения. -->
+<div class="main-content-area">
+    <div class="container">
+
+        <!-- Сообщения об успехе/ошибке -->
+        <div th:if="${successMessage}" class="alert alert-success">
+            <span th:text="${successMessage}"></span>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger">
+            <span th:text="${errorMessage}"></span>
+        </div>
+
+        <!-- Обёртка для центрирования и ограничения ширины -->
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+
+                <!-- Карточка с формой: белый фон, закругленные углы, тень -->
+                <div class="card p-4 shadow-lg" style="border-radius: 12px; border: none;">
+
+                    <h3 class="card-title text-center mb-4" style="color: #1E1F29; font-weight: 700;">Вход в аккаунт</h3>
+
+                    <form th:action="@{/perform_login}" method="post" th:object="${userLoginDto}">
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Электронная почта</label>
+                            <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="your@email.com" required/>
+                            <span class="text-danger small mt-1 d-block"
+                                  th:if="${#fields.hasErrors('email')}"
+                                  th:errors="*{email}"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Пароль</label>
+                            <input type="password" class="form-control" id="password" th:field="*{password}" required/>
+                            <span class="text-danger small mt-1 d-block"
+                                  th:if="${#fields.hasErrors('password')}"
+                                  th:errors="*{password}"></span>
+                        </div>
+
+                        <!-- Кнопка Войти, используем наш фирменный стиль -->
+                        <button type="submit" class="primary-btn order-submit">
+                            Войти
+                        </button>
+
+                        <!-- Ссылка на регистрацию -->
+                        <div class="text-center mt-3">
+                            <p class="small text-muted mb-0">
+                                Нет аккаунта? <a th:href="@{/api/auth}" class="text-electro-red">Зарегистрироваться</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <div th:if="${errorMessage}" class="alert alert-danger">
-        <span th:text="${errorMessage}"></span>
-    </div>
-
-    <h2 class="mb-4">Войдите в приложение</h2>
-
-    <form th:action="@{/perform_login}" method="post" th:object="${userLoginDto}">
-        <div class="mb-3">
-            <label for="email" class="form-label">Введите электронную почту</label>
-            <input type="email" class="form-control" id="email" th:field="*{email}"/>
-            <span class="text-danger bg-white px-2 py-1 rounded d-inline-block mt-1"
-                  th:if="${#fields.hasErrors('email')}"
-                  th:errors="*{email}"></span>
-        </div>
-
-        <div class="mb-3">
-            <label for="password" class="form-label">Введите пароль</label>
-            <input type="password" class="form-control" id="password" th:field="*{password}"/>
-            <span class="text-danger bg-white px-2 py-1 rounded d-inline-block mt-1"
-                  th:if="${#fields.hasErrors('password')}"
-                  th:errors="*{password}"></span>
-        </div>
-
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Войти</button>
-        </div>
-    </form>
-
 </div>
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>
+
+<!-- jQuery Plugins -->
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/bootstrap.min.js}"></script>
+<script th:src="@{/js/slick.min.js}"></script>
+<script th:src="@{/js/nouislider.min.js}"></script>
+<script th:src="@{/js/jquery.zoom.min.js}"></script>
+<script th:src="@{/js/main.js}"></script>
 </body>
 </html>

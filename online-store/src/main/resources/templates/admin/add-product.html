@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: common-header('Add product')}">
+<head th:replace="~{admin/fragments/header :: common-header('Add product')}">
 </head>
 <body>
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
 
-<div class="welcome-container">
+<div class="admin-container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Добавить новый товар</h2>
         <a th:href="@{/api/admins/products}" class="btn btn-outline-secondary">

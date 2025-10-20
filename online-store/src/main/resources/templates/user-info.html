@@ -23,7 +23,6 @@
 
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-</head>
 <body>
 
 <header>
@@ -146,7 +145,7 @@
     </div>
 </nav>
 
-<div class="container mt-4 bg-white rounded shadow-sm p-4">
+<div class="welcome-container mt-4 bg-white rounded shadow-sm p-4">
     <div th:if="${successMessage}" class="alert alert-success">
         <span th:text="${successMessage}"></span>
     </div>
@@ -156,7 +155,7 @@
 
     <div>
         <h2>Данные о пользователе</h2>
-        <table>
+        <div class="table-responsive"> <table>
             <tr>
                 <th>Имя</th>
                 <th>Фамилия</th>
@@ -168,7 +167,7 @@
                 <td th:text="${user.lastname}"></td>
                 <td th:text="${user.email}"></td>
                 <td>
-                    <div class="d-flex gap-2 align-items-center">
+                    <div class="d-flex gap-2 align-items-center justify-content-center">
                         <a th:href="@{/api/users/edit}"
                            class="btn btn-sm btn-primary">
                             <i class="bi bi-pencil"></i> Редактировать
@@ -180,12 +179,13 @@
                         </form>
                         <a th:href="@{/api/users/password}"
                            class="btn btn-sm btn-primary">
-                            <i class="bi bi-pencil"></i> Изменить пароль
+                            <i class="bi bi-key"></i> Изменить пароль
                         </a>
                     </div>
                 </td>
             </tr>
         </table>
+        </div>
     </div>
 </div>
 

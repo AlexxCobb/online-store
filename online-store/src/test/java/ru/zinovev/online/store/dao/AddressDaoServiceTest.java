@@ -56,6 +56,7 @@ class AddressDaoServiceTest {
     private AddressDetails mockAddressDetails;
     private AddressUpdateDetails mockAddressUpdateDetails;
     private AddressDetails mockUserAddressDetails;
+    private AddressDetails mockUserUpdatedAddressDetails;
     private AddressDetails mockSystemDetails;
 
     @BeforeEach
@@ -66,7 +67,7 @@ class AddressDaoServiceTest {
                 .email("ya@ya.ru")
                 .name("name")
                 .lastname("lastname")
-                .passwordHash("passwordEncoder.encode(userRegistrationDto.password())")
+                .passwordHash("password")
                 .build();
         mockUserDetails = new UserDetails(mockUser.getPublicUserId(), mockUser.getEmail(), mockUser.getName(),
                                           mockUser.getLastname());
@@ -78,7 +79,8 @@ class AddressDaoServiceTest {
                 .id(2)
                 .name(AddressTypeName.STORE_ADDRESS)
                 .build();
-        mockAddressDetails = new AddressDetails("publicId", "Russia", "SPb", 190000, "Nevsky", 1, null);
+        mockAddressDetails =
+                new AddressDetails("publicId", null, "Russia", "SPb", 190000, "Nevsky", 1, null, null, null);
         mockAddressUpdateDetails =
                 new AddressUpdateDetails(null, "Nekrasov", null, null);
         mockUserAddress = DeliveryAddress.builder()
@@ -107,15 +109,22 @@ class AddressDaoServiceTest {
                 .build();
 
         mockUserAddressDetails =
-                new AddressDetails(mockUserAddress.getPublicDeliveryAddressId(), mockUserAddress.getCountry(),
+                new AddressDetails(mockUserAddress.getPublicDeliveryAddressId(), mockUserDetails,
+                                   mockUserAddress.getCountry(),
                                    mockUserAddress.getTown(), mockUserAddress.getZipCode(),
                                    mockUserAddress.getStreet(), mockUserAddress.getHouseNumber(),
-                                   mockUserAddress.getFlatNumber());
+                                   mockUserAddress.getFlatNumber(), mockUserType.getName(), false);
         mockSystemDetails =
-                new AddressDetails(mockSystemAddress.getPublicDeliveryAddressId(), mockSystemAddress.getCountry(),
+                new AddressDetails(mockSystemAddress.getPublicDeliveryAddressId(), null, mockSystemAddress.getCountry(),
                                    mockSystemAddress.getTown(), mockSystemAddress.getZipCode(),
                                    mockSystemAddress.getStreet(), mockSystemAddress.getHouseNumber(),
-                                   mockSystemAddress.getFlatNumber());
+                                   mockSystemAddress.getFlatNumber(), mockSystemType.getName(), true);
+        mockUserUpdatedAddressDetails =
+                new AddressDetails(mockUserAddress.getPublicDeliveryAddressId(), mockUserDetails,
+                                   mockUserAddress.getCountry(),
+                                   mockUserAddress.getTown(), mockUserAddress.getZipCode(),
+                                   mockAddressUpdateDetails.street(), mockUserAddress.getHouseNumber(),
+                                   mockUserAddress.getFlatNumber(), mockUserType.getName(), false);
     }
 
 
@@ -148,28 +157,31 @@ class AddressDaoServiceTest {
 
     @Test
     void shouldUpdateAddress() {
-        var updateAddress = DeliveryAddress.builder()
+        var updateAddress = mockUserAddress.toBuilder()
                 .street("Nekrasov").build();
-        when(addressMapper.toAddressDetails(updateAddress)).thenReturn(mockUserAddressDetails);
+        when(addressRepository.findByPublicDeliveryAddressId(mockUserAddressDetails.publicAddressId())).thenReturn(
+                Optional.of(mockUserAddress));
+        when(addressMapper.updateAddressFromDetails(mockAddressUpdateDetails,mockUserAddress)).thenReturn(updateAddress);
         when(addressRepository.save(addressCaptor.capture())).thenReturn(updateAddress);
+        when(addressMapper.toAddressDetails(updateAddress)).thenReturn(mockUserUpdatedAddressDetails);
 
-        var result = addressDaoService.updateAddress(mockUserAddress, mockAddressUpdateDetails);
+        var result = addressDaoService.updateAddress(mockUserAddressDetails, mockAddressUpdateDetails);
 
         assertNotNull(result);
-        assertEquals(mockUserAddressDetails, result);
-        verify(addressMapper, times(1)).updateAddressFromAddressUpdateDetails(mockUserAddress,
-                                                                              mockAddressUpdateDetails);
+        assertEquals(mockUserUpdatedAddressDetails, result);
+        verify(addressMapper, times(1)).updateAddressFromDetails(mockAddressUpdateDetails, mockUserAddress);
     }
 
     @Test
     void shouldFindByPublicId() {
         var publicId = mockSystemAddress.getPublicDeliveryAddressId();
         when(addressRepository.findByPublicDeliveryAddressId(publicId)).thenReturn(Optional.of(mockSystemAddress));
+        when(addressMapper.toAddressDetails(mockSystemAddress)).thenReturn(mockSystemDetails);
 
         var result = addressDaoService.findByPublicId(publicId);
 
         assertTrue(result.isPresent());
-        assertEquals(mockSystemAddress, result.get());
+        assertEquals(mockSystemDetails, result.get());
     }
 
     @Test
@@ -186,7 +198,8 @@ class AddressDaoServiceTest {
     @Test
     void shouldFindSystemAddresses() {
         when(addressRepository.findByAddressTypeNameAndIsActiveAndIsSystem(mockSystemType.getName(), true,
-                                                                           true)).thenReturn(List.of(mockSystemAddress));
+                                                                           true)).thenReturn(
+                List.of(mockSystemAddress));
         when(addressMapper.toAddressDetails(mockSystemAddress)).thenReturn(mockSystemDetails);
 
         var result = addressDaoService.findSystemAddresses(mockSystemType.getName());
@@ -199,7 +212,8 @@ class AddressDaoServiceTest {
     void shouldFindAllSystemAddresses() {
         var systemAddress = DeliveryAddress.builder().build();
         var systemDetails = mockSystemDetails;
-        when(addressRepository.findByIsActiveAndIsSystem(true, true)).thenReturn(List.of(mockSystemAddress, systemAddress));
+        when(addressRepository.findByIsActiveAndIsSystem(true, true)).thenReturn(
+                List.of(mockSystemAddress, systemAddress));
         when(addressMapper.toAddressDetails(mockSystemAddress)).thenReturn(mockSystemDetails);
         when(addressMapper.toAddressDetails(systemAddress)).thenReturn(systemDetails);
 

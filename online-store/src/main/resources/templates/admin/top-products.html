@@ -1,10 +1,36 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: common-header('ТОП Товары')}">
+<head th:replace="~{admin/fragments/header :: common-header('ТОП Товары')}">
 </head>
 <body>
+
+<header>
+    <div id="header">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="header-logo-text" style="display: flex; align-items: center; padding: 5px 0;">
+                        <a class="logo">
+                            <img src="/images/favicon.ico" alt="Логотип"
+                                 style="height: 100px; margin-right: 60px; border-radius: 10px;">
+                        </a>
+                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <span class="shop-name"
+                              style="color: yellowgreen; font-size: 30px; font-weight: 700; line-height: 1.2;">
+                            Want It - Buy It
+                        </span>
+                            <span class="shop-slogan" style="color: white; font-size: 16px; font-weight: 500;">
+                            (Онлайн магазин электроники)
+                        </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
 <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
-<div class="welcome-container">
+<div class="admin-container">
     <h1>ТОП популярных товаров</h1>
     <div th:if="${topProducts == null or topProducts.empty}">
         <p>Нет популярных продуктов за выбранный период</p>
