@@ -5,9 +5,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.zinovev.online.store.controller.dto.ChangePasswordDto;
 import ru.zinovev.online.store.controller.dto.UserUpdateDto;
-import ru.zinovev.online.store.dao.entity.Role;
 import ru.zinovev.online.store.dao.entity.User;
 import ru.zinovev.online.store.dao.entity.enums.RoleName;
 import ru.zinovev.online.store.dao.mapper.UserMapper;
@@ -16,8 +14,6 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.UserDetails;
 import ru.zinovev.online.store.model.UserRegistrationDetails;
 
-import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -48,24 +44,10 @@ public class UserDaoService implements UserDetailsService {
     }
 
     @Transactional
-    public void initAdmin(String adminEmail, String adminPassword, LocalDate adminBirthday, Role adminRole) {
-        var admin = User.builder()
-                .email(adminEmail)
-                .passwordHash(adminPassword)
-                .name("Admin")
-                .lastname("System")
-                .birthday(adminBirthday)
-                .roles(Collections.singleton(adminRole))
-                .publicUserId(UUID.randomUUID().toString())
-                .build();
-        userRepository.save(admin);
-    }
-
-    @Transactional
-    public UserDetails updateUser(UserDetails userDetails, UserUpdateDto userUpdateDto) {
+    public void updateUser(UserDetails userDetails, UserUpdateDto userUpdateDto) {
         var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
         var updatedUser = userMapper.updateUserFromDto(userUpdateDto, user);
-        return userMapper.toUserDetails(userRepository.save(updatedUser));
+        userMapper.toUserDetails(userRepository.save(updatedUser));
     }
 
     @Transactional
@@ -74,12 +56,12 @@ public class UserDaoService implements UserDetailsService {
     }
 
     @Transactional
-    public UserDetails changePassword(UserDetails userDetails, String password) {
+    public void changePassword(UserDetails userDetails, String password) {
         var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
         var updateUser = user.toBuilder()
                 .passwordHash(password)
                 .build();
-        return userMapper.toUserDetails(userRepository.save(updateUser));
+        userMapper.toUserDetails(userRepository.save(updateUser));
     }
 
     public Optional<UserDetails> findByEmailIgnoreCase(String email) {

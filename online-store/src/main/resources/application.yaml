@@ -16,6 +16,9 @@ spring:
   liquibase:
     default-schema: public
     change-log: classpath:db/changelog/db.changelog-master.yaml
+    parameters:
+      admin_email: ${ADMIN_EMAIL:admin@sys.com}
+      admin_password_hash: ${ADMIN_PASSWORD_HASH:$2a$10$Fwv9u80TU/Zzm95EbSbBueMU67FJtKr0XrQfHnvbl3z8aOPsl.y0C}
   thymeleaf:
     cache: false
   template:
@@ -34,8 +37,4 @@ spring:
     port: 5672
     username: guest
     password: guest
-admin:
-  email: admin@sys.com
-  password: Admin90210
-  birthday: 01.01.2000
 queue.name: MainQueue
