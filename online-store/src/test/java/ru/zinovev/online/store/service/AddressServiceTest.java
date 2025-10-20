@@ -6,17 +6,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.zinovev.online.store.controller.dto.AddressDto;
-import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
 import ru.zinovev.online.store.dao.AddressDaoService;
 import ru.zinovev.online.store.dao.entity.AddressType;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.User;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
-import ru.zinovev.online.store.exception.model.NotValidArgumentException;
+import ru.zinovev.online.store.exception.model.ForbiddenException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
+import ru.zinovev.online.store.exception.model.NotValidArgumentException;
 import ru.zinovev.online.store.model.AddressDetails;
+import ru.zinovev.online.store.model.AddressUpdateDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
 import java.time.LocalDate;
@@ -49,8 +49,8 @@ class AddressServiceTest {
     private AddressType mockSystemType;
     private DeliveryAddress mockUserAddress;
     private DeliveryAddress mockSystemAddress;
-    private AddressDto mockAddressDto;
-    private AddressUpdateDto mockAddressUpdateDto;
+    private AddressDetails mockAddressDetails;
+    private AddressUpdateDetails mockAddressUpdateDetails;
     private AddressDetails mockUserAddressDetails;
     private AddressDetails mockSystemDetails;
 
@@ -74,52 +74,54 @@ class AddressServiceTest {
                 .id(2)
                 .name(AddressTypeName.STORE_ADDRESS)
                 .build();
-        mockAddressDto = new AddressDto("Russia", "SPb", 190000, "Nevsky", 1, null);
-        mockAddressUpdateDto =
-                new AddressUpdateDto(Optional.empty(), Optional.of("Nekrasov"), Optional.empty(), Optional.empty());
+        mockAddressDetails =
+                new AddressDetails("publicId", null, "Russia", "SPb", 190000, "Nevsky", 1, null, null, null);
+        mockAddressUpdateDetails =
+                new AddressUpdateDetails(null, "Nekrasov", null, null);
         mockUserAddress = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
                 .addressType(mockUserType)
                 .user(mockUser)
-                .country(mockAddressDto.country())
-                .town(mockAddressDto.town())
-                .zipCode(mockAddressDto.zipCode())
-                .street(mockAddressDto.street())
-                .houseNumber(mockAddressDto.houseNumber())
-                .flatNumber(mockAddressDto.flatNumber() != null ? mockAddressDto.flatNumber() : null)
+                .country(mockAddressDetails.country())
+                .town(mockAddressDetails.town())
+                .zipCode(mockAddressDetails.zipCode())
+                .street(mockAddressDetails.street())
+                .houseNumber(mockAddressDetails.houseNumber())
+                .flatNumber(mockAddressDetails.flatNumber() != null ? mockAddressDetails.flatNumber() : null)
                 .isActive(false)
                 .isSystem(false)
                 .build();
         mockSystemAddress = DeliveryAddress.builder()
                 .publicDeliveryAddressId(UUID.randomUUID().toString())
                 .addressType(mockSystemType)
-                .country(mockAddressDto.country())
-                .town(mockAddressDto.town())
-                .zipCode(mockAddressDto.zipCode())
-                .street(mockAddressDto.street())
-                .houseNumber(mockAddressDto.houseNumber())
+                .country(mockAddressDetails.country())
+                .town(mockAddressDetails.town())
+                .zipCode(mockAddressDetails.zipCode())
+                .street(mockAddressDetails.street())
+                .houseNumber(mockAddressDetails.houseNumber())
                 .isActive(true)
                 .isSystem(true)
                 .build();
 
         mockUserAddressDetails =
-                new AddressDetails(mockUserAddress.getPublicDeliveryAddressId(), mockUserAddress.getCountry(),
+                new AddressDetails(mockUserAddress.getPublicDeliveryAddressId(), mockUserDetails,
+                                   mockUserAddress.getCountry(),
                                    mockUserAddress.getTown(), mockUserAddress.getZipCode(),
                                    mockUserAddress.getStreet(), mockUserAddress.getHouseNumber(),
-                                   mockUserAddress.getFlatNumber());
+                                   mockUserAddress.getFlatNumber(), mockUserType.getName(), false);
         mockSystemDetails =
-                new AddressDetails(mockSystemAddress.getPublicDeliveryAddressId(), mockSystemAddress.getCountry(),
+                new AddressDetails(mockSystemAddress.getPublicDeliveryAddressId(), null, mockSystemAddress.getCountry(),
                                    mockSystemAddress.getTown(), mockSystemAddress.getZipCode(),
                                    mockSystemAddress.getStreet(), mockSystemAddress.getHouseNumber(),
-                                   mockSystemAddress.getFlatNumber());
+                                   mockSystemAddress.getFlatNumber(), mockSystemType.getName(), true);
     }
 
     @Test
     void shouldAddAddress() {
         when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
-        when(addressDaoService.addAddress(mockUserDetails, mockAddressDto)).thenReturn(mockUserAddressDetails);
+        when(addressDaoService.addAddress(mockUserDetails, mockAddressDetails)).thenReturn(mockUserAddressDetails);
 
-        var result = addressService.addAddress(mockUser.getPublicUserId(), mockAddressDto);
+        var result = addressService.addAddress(mockUser.getPublicUserId(), mockAddressDetails);
 
         assertNotNull(result);
         assertEquals(mockUserAddressDetails, result);
@@ -127,10 +129,11 @@ class AddressServiceTest {
 
     @Test
     void shouldAddSystemAddress() {
-        when(addressDaoService.addSystemAddress(mockAddressDto, mockSystemType.getName())).thenReturn(
+        when(addressDaoService.addSystemAddress(mockAddressDetails, mockSystemType.getName())).thenReturn(
                 mockSystemDetails);
 
-        var result = addressService.addSystemAddress(mockAddressDto, mockSystemType.getName());
+        var result = addressService.addSystemAddress(mockUser.getPublicUserId(), mockAddressDetails,
+                                                     mockSystemType.getName());
 
         assertNotNull(result);
         assertEquals(mockSystemDetails, result);
@@ -139,21 +142,23 @@ class AddressServiceTest {
 
     @Test
     void shouldThrowExceptionWhenWrongAddressTypeName() {
-        assertThrows(BadRequestException.class,
-                     () -> addressService.addSystemAddress(mockAddressDto, mockUserType.getName()));
-        verify(addressDaoService, never()).addSystemAddress(mockAddressDto, mockUserType.getName());
+        assertThrows(ForbiddenException.class,
+                     () -> addressService.addSystemAddress(mockUser.getPublicUserId(), mockAddressDetails,
+                                                           mockUserType.getName()));
+        verify(addressDaoService, never()).addSystemAddress(mockAddressDetails, mockUserType.getName());
     }
 
     @Test
     void shouldUpdateAddress() {
         when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
         when(addressDaoService.findByPublicId(mockUserAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockUserAddress));
-        when(addressDaoService.updateAddress(mockUserAddress, mockAddressUpdateDto)).thenReturn(mockUserAddressDetails);
+                Optional.of(mockUserAddressDetails));
+        when(addressDaoService.updateAddress(mockUserAddressDetails,
+                                             mockAddressUpdateDetails)).thenReturn(mockUserAddressDetails);
 
         var result =
                 addressService.updateAddress(mockUser.getPublicUserId(), mockUserAddress.getPublicDeliveryAddressId(),
-                                             mockAddressUpdateDto);
+                                             mockAddressUpdateDetails);
 
         assertNotNull(result);
         assertEquals(mockUserAddressDetails, result);
@@ -166,40 +171,29 @@ class AddressServiceTest {
                                           mockUser.getLastname());
         when(userService.findUserDetails(userDetails.publicUserId())).thenReturn(userDetails);
         when(addressDaoService.findByPublicId(mockUserAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockUserAddress));
+                Optional.of(mockUserAddressDetails));
 
         assertThrows(BadRequestException.class, () -> addressService.updateAddress(userDetails.publicUserId(),
                                                                                    mockUserAddress.getPublicDeliveryAddressId(),
-                                                                                   mockAddressUpdateDto)
+                                                                                   mockAddressUpdateDetails)
         );
-        verify(addressDaoService, never()).updateAddress(mockUserAddress, mockAddressUpdateDto);
+        verify(addressDaoService, never()).updateAddress(mockAddressDetails, mockAddressUpdateDetails);
     }
 
     @Test
     void shouldUpdateSystemAddress() {
         when(addressDaoService.findByPublicId(mockSystemAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockSystemAddress));
-        when(addressDaoService.updateAddress(mockSystemAddress, mockAddressUpdateDto)).thenReturn(mockSystemDetails);
+                Optional.of(mockSystemDetails));
+        when(addressDaoService.updateAddress(mockSystemDetails, mockAddressUpdateDetails)).thenReturn(
+                mockSystemDetails);
 
         var result =
-                addressService.updateSystemAddress(mockSystemAddress.getPublicDeliveryAddressId(), mockAddressUpdateDto,
-                                                   mockSystemType.getName());
+                addressService.updateSystemAddress(mockUser.getPublicUserId(),
+                                                   mockSystemAddress.getPublicDeliveryAddressId(),
+                                                   mockAddressUpdateDetails);
 
         assertNotNull(result);
         assertEquals(mockSystemDetails, result);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenUpdateWithWrongAddressType() {
-        when(addressDaoService.findByPublicId(mockSystemAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockSystemAddress));
-
-        assertThrows(BadRequestException.class,
-                     () -> addressService.updateSystemAddress(mockSystemAddress.getPublicDeliveryAddressId(),
-                                                              mockAddressUpdateDto,
-                                                              mockUserType.getName())
-        );
-        verify(addressDaoService, never()).updateAddress(mockSystemAddress, mockAddressUpdateDto);
     }
 
     @Test
@@ -207,7 +201,7 @@ class AddressServiceTest {
         when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
         when(addressDaoService.findUserAddresses(mockUserDetails)).thenReturn(List.of(mockUserAddressDetails));
 
-        var result = addressService.getAddresses(mockUser.getPublicUserId(), null, false);
+        var result = addressService.getAddresses(mockUser.getPublicUserId(), AddressTypeName.USER_ADDRESS, false);
 
         assertEquals(1, result.size());
         assertEquals(mockUserAddressDetails, result.get(0));
@@ -238,62 +232,60 @@ class AddressServiceTest {
     @Test
     void shouldDeleteUserAddress() {
         when(addressDaoService.findByPublicId(mockUserAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockUserAddress));
+                Optional.of(mockUserAddressDetails));
         when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
 
         addressService.deleteAddress(mockUser.getPublicUserId(), mockUserAddress.getPublicDeliveryAddressId(), false);
 
-        verify(addressDaoService, times(1)).deleteAddress(mockUserAddress);
+        verify(addressDaoService, times(1)).deleteAddress(mockUserAddressDetails);
     }
 
     @Test
     void shouldDeleteSystemAddress() {
         when(addressDaoService.findByPublicId(mockSystemAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockSystemAddress));
+                Optional.of(mockSystemDetails));
 
-        addressService.deleteAddress(null, mockSystemAddress.getPublicDeliveryAddressId(), true);
+        addressService.deleteAddress("", mockSystemAddress.getPublicDeliveryAddressId(), true);
 
-        verify(addressDaoService, times(1)).deleteAddress(mockSystemAddress);
+        verify(addressDaoService, times(1)).deleteAddress(mockSystemDetails);
     }
 
 
     @Test
     void shouldThrowExceptionWhenDeleteWithWrongData() {
         when(addressDaoService.findByPublicId(mockSystemAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockSystemAddress));
+                Optional.of(mockSystemDetails));
 
         assertThrows(NotValidArgumentException.class, () -> addressService.deleteAddress(mockUserDetails.publicUserId(),
                                                                                          mockSystemAddress.getPublicDeliveryAddressId(),
                                                                                          false)
         );
-        verify(addressDaoService, never()).deleteAddress(mockSystemAddress);
+        verify(addressDaoService, never()).deleteAddress(mockSystemDetails);
     }
 
     @Test
     void shouldThrowExceptionWhenDeleteWithWrongAddressType() {
-        var userAddress =
-                DeliveryAddress.builder()
-                        .publicDeliveryAddressId(UUID.randomUUID().toString())
-                        .addressType(mockSystemType)
-                        .user(mockUser)
-                        .isSystem(false)
-                        .build();
+        var userAddress = new AddressDetails(mockUserAddress.getPublicDeliveryAddressId(), mockUserDetails,
+                                             mockUserAddress.getCountry(),
+                                             mockUserAddress.getTown(), mockUserAddress.getZipCode(),
+                                             mockUserAddress.getStreet(), mockUserAddress.getHouseNumber(),
+                                             mockUserAddress.getFlatNumber(), mockSystemType.getName(), false);
 
-        when(addressDaoService.findByPublicId(userAddress.getPublicDeliveryAddressId())).thenReturn(
+        when(addressDaoService.findByPublicId(userAddress.publicAddressId())).thenReturn(
                 Optional.of(userAddress));
         when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
 
         assertThrows(BadRequestException.class, () -> addressService.deleteAddress(mockUserDetails.publicUserId(),
-                                                                                   userAddress.getPublicDeliveryAddressId(),
+                                                                                   userAddress.publicAddressId(),
                                                                                    false)
         );
-        verify(addressDaoService, never()).deleteAddress(mockSystemAddress);
+        verify(addressDaoService, never()).deleteAddress(userAddress);
     }
 
     @Test
     void shouldReturnTrueWhenUserAddressExist() {
         when(addressDaoService.findByPublicId(mockUserAddress.getPublicDeliveryAddressId())).thenReturn(
-                Optional.of(mockUserAddress));
+                Optional.of(mockUserAddressDetails));
         when(addressDaoService.existUserAddress(mockUserAddress.getPublicDeliveryAddressId(),
                                                 mockUser.getPublicUserId())).thenReturn(true);
 

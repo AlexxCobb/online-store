@@ -8,6 +8,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import ru.zinovev.online.store.controller.dto.ProductForStandDto;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductParameter;
@@ -17,6 +18,7 @@ import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.model.ParametersDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
+import ru.zinovev.online.store.service.ProductEventPublisher;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -41,6 +43,8 @@ class ProductDaoServiceTest {
     private ProductRepository productRepository;
     @Mock
     private ProductMapper productMapper;
+    @Mock
+    private ProductEventPublisher productEventPublisher;
     @Captor
     private ArgumentCaptor<Product> productCaptor;
     @InjectMocks
@@ -53,6 +57,7 @@ class ProductDaoServiceTest {
     private ProductUpdateDetails mockProductUpdateDetailsRequest;
     private Product mockUpdatedProduct;
     private ProductDetails mockUpdatedProductDetails;
+    private ProductForStandDto mockProductForStandDto;
 
     @BeforeEach
     void setUp() {
@@ -62,9 +67,9 @@ class ProductDaoServiceTest {
                 .publicCategoryId("phonesId")
                 .build();
         mockProductDetailsRequest =
-                new ProductDetails("Mobile phone", "phonesId", BigDecimal.valueOf(1234.00), null, new HashSet<>(),
+                new ProductDetails("publicProductId", "phonesId", BigDecimal.valueOf(1234.00), null, new HashSet<>(),
                                    BigDecimal.valueOf(200),
-                                   BigDecimal.valueOf(0.0036), 10);
+                                   BigDecimal.valueOf(0.0036), 10, null, false, null);
         mockProduct = Product.builder()
                 .publicProductId(UUID.randomUUID().toString())
                 .name(mockProductDetailsRequest.name())
@@ -78,10 +83,11 @@ class ProductDaoServiceTest {
                 new ProductDetails(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
                                    mockCategory.getPublicCategoryId(),
                                    new HashSet<>(), mockProduct.getWeight(), mockProduct.getVolume(),
-                                   mockProduct.getStockQuantity());
+                                   mockProduct.getStockQuantity(), mockProduct.getImagePath(),
+                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice());
         mockProductUpdateDetailsRequest =
                 new ProductUpdateDetails(null, BigDecimal.valueOf(1000.00), null,
-                                         null);
+                                         null, null, null);
         mockUpdatedProduct = Product.builder()
                 .publicProductId(mockProduct.getPublicProductId())
                 .name(mockProductDetailsRequest.name())
@@ -98,7 +104,11 @@ class ProductDaoServiceTest {
                                    mockCategory.getPublicCategoryId(),
                                    Set.of(new ParametersDetails("color", "black")), mockUpdatedProduct.getWeight(),
                                    mockUpdatedProduct.getVolume(),
-                                   mockUpdatedProduct.getStockQuantity());
+                                   mockUpdatedProduct.getStockQuantity(), mockUpdatedProduct.getImagePath(),
+                                   mockUpdatedProduct.getIsDiscount(), mockUpdatedProduct.getDiscountPrice());
+        mockProductForStandDto =
+                new ProductForStandDto(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
+                                       null, "brand", "color", null, mockProduct.getStockQuantity(), null, null);
     }
 
     @Test
@@ -120,16 +130,17 @@ class ProductDaoServiceTest {
         var publicId = mockProduct.getPublicProductId();
 
         when(productRepository.findByPublicProductId(publicId)).thenReturn(Optional.of(mockProduct));
-        when(productMapper.toProductDetails(eq(mockUpdatedProduct))).thenReturn(mockUpdatedProductDetails);
+        when(productMapper.updateProductFromDetails(mockProductUpdateDetailsRequest,mockProduct)).thenReturn(mockUpdatedProduct);
         when(productRepository.save(productCaptor.capture())).thenReturn(mockUpdatedProduct);
+        when(productMapper.toProductForStandDto(mockUpdatedProduct)).thenReturn(mockProductForStandDto);
+        when(productMapper.toProductDetails(mockUpdatedProduct)).thenReturn(mockUpdatedProductDetails);
 
         var result = productDaoService.updateProduct(mockProductUpdateDetailsRequest, publicId);
 
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProduct.getName(), productCaptor.getValue().getName());
-        verify(productMapper, times(1)).updateProductFromProductUpdateDetails(mockProduct,
-                                                                              mockProductUpdateDetailsRequest);
+        verify(productMapper, times(1)).updateProductFromDetails(mockProductUpdateDetailsRequest, mockProduct);
     }
 
     @Test
@@ -148,6 +159,8 @@ class ProductDaoServiceTest {
     void shouldDeleteProductByPublicId() {
         when(productRepository.findByPublicProductId(mockProduct.getPublicProductId())).thenReturn(
                 Optional.of(mockProduct));
+        when(productMapper.toProductForStandDto(mockProduct)).thenReturn(mockProductForStandDto);
+
         productDaoService.deleteProduct(mockProduct.getPublicProductId());
 
         verify(productRepository, times(1)).delete(mockProduct);
