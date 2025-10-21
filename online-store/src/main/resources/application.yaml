@@ -24,7 +24,7 @@ spring:
   template:
     cache: false
   mvc:
-    hidden method:
+    hidden-method:
       filter:
         enabled: true
   logging:
@@ -33,7 +33,6 @@ spring:
       online-store: DEBUG
       org.springframework.amqp: DEBUG
   rabbitmq:
-    host: localhost
     port: 5672
     username: guest
     password: guest

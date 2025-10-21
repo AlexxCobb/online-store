@@ -6,6 +6,7 @@ services:
       - "8080:8080"
     depends_on:
       - online_store-db
+      - rabbitmq
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://online_store-db/online_store
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -13,10 +14,15 @@ services:
       - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
       - ADMIN_PASSWORD_HASH=$2a$10$Fwv9u80TU/Zzm95EbSbBueMU67FJtKr0XrQfHnvbl3z8aOPsl.y0C
       - ADMIN_EMAIL=admin@sys.com
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - QUEUE_NAME=MainQueue
     restart: always
 
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:3-management-alpine
     container_name: rabbitmq-container
     ports:
       - "5672:5672"
