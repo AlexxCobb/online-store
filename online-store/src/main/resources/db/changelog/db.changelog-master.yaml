@@ -55,3 +55,5 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1759921985-set-created_at-not-null.yaml
   - include:
       file: classpath:db/changelog/changeset/1760976476-init-admin.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1761041334-fill-category-table.yaml
