@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1760976476-init-admin
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1760976476-init-admin.sql

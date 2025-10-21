@@ -1,0 +1,68 @@
+services:
+  online-store:
+    image: alexxcobb/online-store-image:version1
+    container_name: online-store-container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - online_store-db
+      - rabbitmq
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://online_store-db/online_store
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=qweqwe
+      - SPRING_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - ADMIN_PASSWORD_HASH=$2a$10$Fwv9u80TU/Zzm95EbSbBueMU67FJtKr0XrQfHnvbl3z8aOPsl.y0C
+      - ADMIN_EMAIL=admin@sys.com
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - QUEUE_NAME=MainQueue
+    restart: always
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-container
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    restart: always
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  online_store-db:
+    image: postgres:16.1
+    container_name: online_store-db-container
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_DB=online_store
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=qweqwe
+
+  advertising-stand:
+    image: alexxcobb/advertising-stand-image:version1
+    container_name: stand-app-container
+    ports:
+      - "8081:8081"
+    depends_on:
+      online-store:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - SERVER_PORT=8081
+      - ONLINE_STORE_BASE_URL=http://online-store:8080
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+      - QUEUE_NAME=MainQueue
+    restart: always
