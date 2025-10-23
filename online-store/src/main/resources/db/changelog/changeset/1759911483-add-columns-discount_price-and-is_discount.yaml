@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: add_discount_fields_to_product
+      id: 1759911483-add-discount-fields-to-product
       author: a.zinovev
       changes:
         - addColumn:
