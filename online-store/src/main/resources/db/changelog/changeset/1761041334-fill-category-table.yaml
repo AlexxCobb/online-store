@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1761041334-fill-category-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1761041334-fill-category-table.sql

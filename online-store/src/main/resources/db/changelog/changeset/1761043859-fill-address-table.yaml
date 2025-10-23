@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1761043859-fill-address-table
+      author: a.zinovev
+      changes:
+        - sqlFile:
+            path: classpath:db/changelog/sql/1761043859-fill-address-table.sql
