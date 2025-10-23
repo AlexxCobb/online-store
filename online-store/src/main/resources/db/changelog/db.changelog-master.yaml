@@ -59,3 +59,5 @@ databaseChangeLog:
       file: classpath:db/changelog/changeset/1761041334-fill-category-table.yaml
   - include:
       file: classpath:db/changelog/changeset/1761043859-fill-address-table.yaml
+  - include:
+      file: classpath:db/changelog/changeset/1761045782-fill-products-table.yaml

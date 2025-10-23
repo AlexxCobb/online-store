@@ -7,5 +7,4 @@ VALUES
     (gen_random_uuid(),'Игровые приставки'),
     (gen_random_uuid(),'Наушники'),
     (gen_random_uuid(),'Умные часы'),
-    (gen_random_uuid(),'Мониторы'),
     (gen_random_uuid(),'Аксессуары');
