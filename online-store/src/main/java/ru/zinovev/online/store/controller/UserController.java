@@ -283,11 +283,8 @@ public class UserController {
         try {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                                                 String.format(
-                                                         "Недостаточно товара: %s. Вы добавили %d шт., в наличии осталось %d шт.",
-                                                         e.getProductName(), e.getRequestedQuantity(),
-                                                         e.getAvailableQuantity()));
+            redirectAttributes.addFlashAttribute("stockIssues", e.getIssues());
+            redirectAttributes.addFlashAttribute("errorMessage", "Невозможно оформить заказ. Обнаружены проблемы с наличием товаров.");
             return "redirect:/api/users/cart/edit";
         } catch (BadRequestException e) {
             if (e.getMessage()

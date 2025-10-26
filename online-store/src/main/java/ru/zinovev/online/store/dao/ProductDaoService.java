@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.zinovev.online.store.controller.dto.ProductForStandDto;
-import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
@@ -18,6 +17,7 @@ import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.dao.repository.ProductSpecifications;
 import ru.zinovev.online.store.dao.repository.ProductStatisticRepository;
+import ru.zinovev.online.store.exception.dto.OutOfStockDto;
 import ru.zinovev.online.store.exception.model.AlreadyExistException;
 import ru.zinovev.online.store.exception.model.DuplicateProductException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
@@ -25,7 +25,6 @@ import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductParamDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
-import ru.zinovev.online.store.model.TopProductDetails;
 import ru.zinovev.online.store.service.ProductEventPublisher;
 
 import java.math.BigDecimal;
@@ -38,7 +37,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -115,14 +113,6 @@ public class ProductDaoService {
         var product = productRepository.save(updatedProductWithCategory);
         productEventPublisher.publishProductUpdateEvent(productMapper.toProductForStandDto(product));
         return productMapper.toProductDetails(product);
-    }
-
-    public List<TopProductDetails> getOneProductFromEachCategory() {
-        var categories = categoryRepository.findAll().stream().map(Category::getId).toList();
-        return productRepository.getOneProductFromEachCategory(categories)
-                .stream()
-                .map(productMapper::toTopProductDetails)
-                .collect(Collectors.toList());
     }
 
     public Optional<ProductDetails> findByPublicId(String publicProductId) {
@@ -202,22 +192,40 @@ public class ProductDaoService {
         return productRepository.getMaxPrice();
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
-    public List<Product> updateProductsQuantity(Map<Product, Integer> products) {
+    @Transactional
+    public void updateProductsQuantity(Map<String, Integer> productsToQuantity) {
         var productsList = new ArrayList<Product>();
-        products.forEach((product, integer) -> {
-            if (product.getStockQuantity() < integer) {
-                throw new OutOfStockException(
-                        "You cannot order the selected quantity - @d of product name - %s , the remainder in the warehouse is - %s",
-                        product.getName(), integer,
-                        product.getStockQuantity());
+        var productIds = productsToQuantity.keySet();
+        var products = productRepository.findProductsByPublicIdsForUpdate(productIds);
+        var stockIssues = new ArrayList<OutOfStockDto>();
+        for (Product product : products) {
+            if (product.getStockQuantity() < productsToQuantity.get(product.getPublicProductId())) {
+                stockIssues.add(
+                        new OutOfStockDto(product.getName(), productsToQuantity.get(product.getPublicProductId()),
+                                          product.getStockQuantity()));
+            } else {
+                var productToUpdate = product.toBuilder()
+                        .stockQuantity(
+                                product.getStockQuantity() - productsToQuantity.get(product.getPublicProductId()))
+                        .build();
+                productsList.add(productToUpdate);
             }
-            var productToUpdate = product.toBuilder()
-                    .stockQuantity(product.getStockQuantity() - integer)
-                    .build();
-            productsList.add(productToUpdate);
-        });
-        return productRepository.saveAll(productsList);
+        }
+        if (!stockIssues.isEmpty()) {
+            throw new OutOfStockException(
+                    "You cannot order the selected quantity - @d of product name - %s , the remainder in the warehouse is - %s",
+                    stockIssues);
+        }
+        productRepository.saveAll(productsList);
+    }
+
+    @Transactional
+    public void cancelReserveProducts(Map<String, Integer> productsToQuantity) {
+        var products = productRepository.findProductsByPublicIdsForUpdate(productsToQuantity.keySet());
+        var productsList = products.stream().map(product -> product.toBuilder()
+                .stockQuantity(product.getStockQuantity() + productsToQuantity.get(product.getPublicProductId()))
+                .build()).toList();
+        productRepository.saveAll(productsList);
     }
 
     @Transactional(propagation = Propagation.MANDATORY)

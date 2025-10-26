@@ -62,10 +62,7 @@ public class OrderDaoService {
         var cart = cartRepository.findByPublicCartId(cartDetails.publicCartId())
                 .orElseThrow(
                         () -> new NotFoundException("Cart with id - " + cartDetails.publicCartId() + " not found"));
-        var products = cart.getItems().stream().collect(Collectors.toMap(CartItem::getProduct, CartItem::getQuantity));
-        var productsList = productDaoService.updateProductsQuantity(products);
-        var productMap = productsList.stream()
-                .collect(Collectors.toMap(Product::getPublicProductId, Function.identity()));
+        var products = cart.getItems().stream().map(CartItem::getProduct).collect(Collectors.toMap(Product::getPublicProductId, Function.identity()));
         var payMethod = paymentMethodRepository.getByName(orderDto.paymentMethodName());
         var deliveryMethod = deliveryMethodRepository.getByName(orderDto.deliveryMethodName());
         var payStatus = paymentStatusRepository.getByName(PaymentStatusName.PENDING);
@@ -81,7 +78,7 @@ public class OrderDaoService {
                 .orderStatus(orderStatus)
                 .build();
         var items = cart.getItems().stream().map(cartItem -> {
-            var product = productMap.get(cartItem.getProduct().getPublicProductId());
+            var product = products.get(cartItem.getProduct().getPublicProductId());
             return OrderItem.builder()
                     .quantity(cartItem.getQuantity())
                     .priceAtPurchase(product.getPrice())
@@ -90,7 +87,6 @@ public class OrderDaoService {
                     .build();
         }).toList();
 
-        //   var updatedItems = items.stream().map(orderItem -> orderItem.toBuilder().order(order).build()).toList();
         order.getItems().addAll(items);
         var newOrd = orderRepository.save(order);
         cart.getItems().clear();

@@ -190,17 +190,14 @@
     <div class="container">
         <div class="row">
 
-            <!-- СЕКЦИЯ ДЛЯ ВЫБОРА АДРЕСА, ДОСТАВКИ И ОПЛАТЫ (col-md-7) -->
             <div class="col-md-7">
                 <div class="section-title">
                     <h3 class="title">Адрес доставки, Доставка и Оплата</h3>
                 </div>
 
-                <!-- БЛОК С ЛОГИКОЙ ПОЛЬЗОВАТЕЛЯ -->
                 <div th:if="${cart != null and cart.cartItems != null and not cart.cartItems.empty}">
                     <form th:action="@{'/api/users/orders'}" method="post" id="checkout-form">
 
-                        <!-- Выбор способа оплаты -->
                         <div class="col-md-7">
                             <label class="form-label">Выберите способ оплаты:</label>
                             <div class="input-group">
@@ -213,7 +210,6 @@
                             </div>
                         </div>
 
-                        <!-- Выбор способа доставки -->
                         <div class="mb-3">
                             <label class="form-label">Выберите способ доставки:</label>
                             <select name="deliveryMethodName" class="form-select">
@@ -224,7 +220,6 @@
                             </select>
                         </div>
 
-                        <!-- Выбор адреса доставки -->
                         <div class="mb-3">
                             <label class="form-label">Выберите адрес доставки:</label>
 
@@ -237,7 +232,7 @@
                                         <input class="form-check-input" type="radio" name="publicAddressId"
                                                th:id="${'address_' + address.publicAddressId}"
                                                th:value="${address.publicAddressId}"
-                                               required="required"> <!-- Сделано обязательным -->
+                                               required="required">
                                         <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
                                             <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber + (address.flatNumber != null ? ', кв. ' + address.flatNumber : '')}"></span>
                                         </label>
@@ -254,7 +249,7 @@
                                         <input class="form-check-input" type="radio" name="publicAddressId"
                                                th:id="${'address_' + address.publicAddressId}"
                                                th:value="${address.publicAddressId}"
-                                               required="required"> <!-- Сделано обязательным -->
+                                               required="required">
                                         <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
                                             <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
                                         </label>
@@ -271,7 +266,7 @@
                                         <input class="form-check-input" type="radio" name="publicAddressId"
                                                th:id="${'address_' + address.publicAddressId}"
                                                th:value="${address.publicAddressId}"
-                                               required="required"> <!-- Сделано обязательным -->
+                                               required="required">
                                         <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
                                             <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
                                         </label>
@@ -280,15 +275,11 @@
                             </div>
                         </div>
 
-                        <!-- Кнопки 'Сохранить изменения' и 'Отмена' удалены. Финальная кнопка - в col-md-5 -->
                     </form>
                 </div>
-                <!-- КОНЕЦ БЛОКА С ЛОГИКОЙ ПОЛЬЗОВАТЕЛЯ -->
 
             </div>
-            <!-- КОНЕЦ СЕКЦИИ col-md-7 -->
 
-            <!-- ДЕТАЛИ ЗАКАЗА (col-md-5) -->
             <div class="col-md-5 order-details">
                 <div class="section-title text-center">
                     <h3 class="title">Ваша корзина</h3>
@@ -297,8 +288,18 @@
                 <div th:if="${successMessage}" class="alert alert-success text-center">
                     <span th:text="${successMessage}"></span>
                 </div>
-                <div th:if="${errorMessage}" class="alert alert-danger text-center">
-                    <span th:text="${errorMessage}"></span>
+                <div th:if="${stockIssues != null}">
+                    <h2>Ошибка оформления заказа:</h2>
+                    <p th:text="${errorMessage}">Обнаружены проблемы с наличием товаров:</p>
+
+                    <ul>
+                        <li th:each="issue : ${stockIssues}">
+                            Недостаточно товара:
+                            <strong th:text="${issue.productName}"></strong>.
+                            Вы добавили <span th:text="${issue.requestedQuantity}"></span> шт.,
+                            в наличии осталось <span th:text="${issue.availableQuantity}"></span> шт.
+                        </li>
+                    </ul>
                 </div>
 
                 <div th:if="${cart == null or cart.cartItems == null or cart.cartItems.empty}" class="empty-cart-message">
@@ -364,10 +365,8 @@
                         </div>
                     </div>
 
-                    <!-- ЗОНА ФИНАЛЬНОГО ОФОРМЛЕНИЯ ЗАКАЗА -->
                     <div class="order-submission-area mt-4">
                         <div sec:authorize="isAuthenticated()">
-                            <!-- Кнопка теперь отправляет форму из col-md-7 (id="checkout-form") -->
                             <button type="submit" form="checkout-form"
                                     class="primary-btn order-submit">Подтвердить заказ</button>
                         </div>

@@ -12,8 +12,12 @@ import ru.zinovev.online.store.dao.entity.enums.OrderStatusName;
 import ru.zinovev.online.store.dao.entity.enums.PaymentStatusName;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.NotFoundException;
+import ru.zinovev.online.store.exception.model.OutOfStockException;
+import ru.zinovev.online.store.model.CartItemDetails;
 import ru.zinovev.online.store.model.OrderDetails;
 import ru.zinovev.online.store.model.OrderShortDetails;
+
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +27,21 @@ public class OrderService {
     private final UserService userService;
     private final AddressService addressService;
     private final CartService cartService;
+    private final ProductService productService;
 
-    public OrderDetails createOrder(@NonNull String publicUserId, @NonNull OrderDto orderDto) {
+    public void createOrder(@NonNull String publicUserId, @NonNull OrderDto orderDto) {
         var userDetails = userService.findUserDetails(publicUserId);
         var cartDetails = cartService.getUserCart(publicUserId);
         checkDeliveryMethodWithAddress(publicUserId, orderDto.publicAddressId(), orderDto.deliveryMethodName());
-        return orderDaoService.createOrder(userDetails, cartDetails, orderDto);
+        var productToQuantity = cartDetails.cartItems()
+                .stream()
+                .collect(Collectors.toMap(CartItemDetails::publicProductId, CartItemDetails::quantity));
+        productService.reserveProducts(productToQuantity);
+        try {
+            orderDaoService.createOrder(userDetails, cartDetails, orderDto);
+        } catch (OutOfStockException e) {
+            productService.cancelReserveProducts(productToQuantity);
+        }
     }
 
     public Page<OrderDetails> getUserOrders(String publicUserId, Integer page, Integer limit) {
