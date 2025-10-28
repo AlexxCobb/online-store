@@ -41,26 +41,35 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             sessionUserDto.setName(user.name());
             sessionUserDto.setIsAuthenticated(true);
 
-            var cookieCartId = "";
-            if (request.getCookies() != null) {
-                cookieCartId = Arrays.stream(request.getCookies())
-                        .filter(cookie -> cookie.getName().equals("CART_ID"))
-                        .findFirst()
-                        .map(Cookie::getValue)
-                        .orElse(null);
-            }
-            if (cookieCartId != null && !cookieCartId.isEmpty()) {
-                cartService.updateCartWithRegisteredUser(user.publicUserId(), cookieCartId);
-            }
-
             String redirectUrl = "/api/users/products";
+            boolean isAdmin = false;
 
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 if (authority.getAuthority().equals("ROLE_ADMIN")) {
+                    isAdmin = true;
                     redirectUrl = "/api/admins/home";
                     break;
                 }
+            }
+
+            if (!isAdmin) {
+                var cookieCartId = "";
+                if (request.getCookies() != null) {
+                    cookieCartId = Arrays.stream(request.getCookies())
+                            .filter(cookie -> cookie.getName().equals("CART_ID"))
+                            .findFirst()
+                            .map(Cookie::getValue)
+                            .orElse(null);
+                }
+                if (cookieCartId != null && !cookieCartId.isEmpty()) {
+                    cartService.updateCartWithRegisteredUser(user.publicUserId(), cookieCartId);
+                }
+            } else {
+                Cookie cartCookie = new Cookie("CART_ID", null);
+                cartCookie.setPath("/");
+                cartCookie.setMaxAge(0);
+                response.addCookie(cartCookie);
             }
             response.sendRedirect(redirectUrl);
         }

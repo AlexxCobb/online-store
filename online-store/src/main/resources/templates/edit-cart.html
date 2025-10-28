@@ -233,7 +233,8 @@
                                                th:id="${'address_' + address.publicAddressId}"
                                                th:value="${address.publicAddressId}"
                                                required="required">
-                                        <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                        <label class="form-check-label"
+                                               th:for="${'address_' + address.publicAddressId}">
                                             <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber + (address.flatNumber != null ? ', кв. ' + address.flatNumber : '')}"></span>
                                         </label>
                                     </div>
@@ -250,7 +251,8 @@
                                                th:id="${'address_' + address.publicAddressId}"
                                                th:value="${address.publicAddressId}"
                                                required="required">
-                                        <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                        <label class="form-check-label"
+                                               th:for="${'address_' + address.publicAddressId}">
                                             <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
                                         </label>
                                     </div>
@@ -267,7 +269,8 @@
                                                th:id="${'address_' + address.publicAddressId}"
                                                th:value="${address.publicAddressId}"
                                                required="required">
-                                        <label class="form-check-label" th:for="${'address_' + address.publicAddressId}">
+                                        <label class="form-check-label"
+                                               th:for="${'address_' + address.publicAddressId}">
                                             <span th:text="${address.zipCode + ', ' + address.town + ', ' + address.street + ', ' + address.houseNumber}"></span>
                                         </label>
                                     </div>
@@ -288,21 +291,40 @@
                 <div th:if="${successMessage}" class="alert alert-success text-center">
                     <span th:text="${successMessage}"></span>
                 </div>
+                <div th:if="${errorMessage}" class="alert alert-danger">
+                    <span th:text="${errorMessage}"></span>
+                </div>
                 <div th:if="${stockIssues != null}">
-                    <h2>Ошибка оформления заказа:</h2>
-                    <p th:text="${errorMessage}">Обнаружены проблемы с наличием товаров:</p>
+                    <h4 class="alert-heading">🚫 Невозможно оформить заказ</h4>
+                    <p th:text="${errorOrderMessage}">Обнаружены проблемы с наличием товаров:</p>
 
-                    <ul>
-                        <li th:each="issue : ${stockIssues}">
-                            Недостаточно товара:
-                            <strong th:text="${issue.productName}"></strong>.
-                            Вы добавили <span th:text="${issue.requestedQuantity}"></span> шт.,
-                            в наличии осталось <span th:text="${issue.availableQuantity}"></span> шт.
-                        </li>
-                    </ul>
+                    <form th:action="@{/api/users/cart/update}" method="post" th:object="${cartUpdateDto}">
+                        <input type="hidden" name="_method" value="patch"/>
+                        <ul>
+                            <li th:each="issue, issueStat : ${stockIssues}">
+                                Недостаточно товара:
+                                <strong th:text="${issue.productName}"></strong>.
+                                Вы добавили <span th:text="${issue.requestedQuantity}"></span> шт.,
+                                в наличии осталось <span th:text="${issue.availableQuantity}"></span> шт.
+
+                                <input type="hidden"
+                                       th:name="'updates[' + ${issueStat.index} + '].publicProductId'"
+                                       th:value="${issue.publicProductId}" />
+
+                                <input type="hidden"
+                                       th:name="'updates[' + ${issueStat.index} + '].availableQuantity'"
+                                       th:value="${issue.availableQuantity}" />
+                            </li>
+                        </ul>
+
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fa fa-trash me-1"></i> Обновить количество товаров
+                        </button>
+                    </form>
                 </div>
 
-                <div th:if="${cart == null or cart.cartItems == null or cart.cartItems.empty}" class="empty-cart-message">
+                <div th:if="${cart == null or cart.cartItems == null or cart.cartItems.empty}"
+                     class="empty-cart-message">
                     <p><i class="fa fa-shopping-cart fa-3x mb-3"></i></p>
                     <p class="text-muted">Корзина пуста. <a th:href="@{/api/users/products}">Перейти в магазин</a></p>
                 </div>
@@ -332,7 +354,9 @@
                                     <span th:text="${cartItem.quantity} + 'x ' + ${cartItem.brand} + ' ' + ${cartItem.name}">1x Product Name</span>
                                 </div>
 
-                                <div th:text="${#numbers.formatDecimal(cartItem.price, 0, 'COMMA', 2, 'POINT') + ' руб.'}">980.00 руб.</div>
+                                <div th:text="${#numbers.formatDecimal(cartItem.price, 0, 'COMMA', 2, 'POINT') + ' руб.'}">
+                                    980.00 руб.
+                                </div>
 
                                 <div class="order-actions text-end" style="width: 100%;">
                                     <form th:action="@{'/api/users/cart/' + ${cartItem.publicProductId}}" method="post">
@@ -358,8 +382,8 @@
                         <div class="order-col">
                             <div><strong>ИТОГО К ОПЛАТЕ</strong></div>
                             <div>
-                                <strong class="order-total" th:text="${#numbers.formatDecimal(cart.totalPrice, 0, 'COMMA', 2, 'POINT') + ' руб.'}">
-                                    $2940.00
+                                <strong class="order-total"
+                                        th:text="${#numbers.formatDecimal(cart.totalPrice, 0, 'COMMA', 2, 'POINT') + ' руб.'}">
                                 </strong>
                             </div>
                         </div>
@@ -368,7 +392,10 @@
                     <div class="order-submission-area mt-4">
                         <div sec:authorize="isAuthenticated()">
                             <button type="submit" form="checkout-form"
-                                    class="primary-btn order-submit">Подтвердить заказ</button>
+                                    class="primary-btn order-submit"
+                                    th:disabled="${stockIssues != null and not #lists.isEmpty(stockIssues)}">
+                                Подтвердить заказ
+                            </button>
                         </div>
 
                         <div sec:authorize="!isAuthenticated()" class="text-center mt-3">

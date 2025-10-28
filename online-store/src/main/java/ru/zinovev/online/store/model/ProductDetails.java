@@ -1,6 +1,7 @@
 package ru.zinovev.online.store.model;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.Set;
 
 public record ProductDetails(
@@ -14,6 +15,7 @@ public record ProductDetails(
         Integer stockQuantity,
         String imagePath,
         Boolean isDiscount,
-        BigDecimal discountPrice
+        BigDecimal discountPrice,
+        OffsetDateTime createdAt
 ) {
 }

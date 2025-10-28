@@ -20,8 +20,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
 
     Optional<Product> findByPublicProductId(String publicProductId);
 
-    List<Product> findByCategoryPublicCategoryId(String publicCategoryId);
-
     @Query("SELECT p.id FROM Product p")
     Page<Long> findProductIds(Pageable pageable);
 
@@ -29,7 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     List<Product> findProductsWithParametersInIds(List<Long> ids);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query(value = "select * from Product p WHERE p.publicProductId IN :publicIds")
+    @Query(value = "select p from Product p WHERE p.publicProductId IN :publicIds")
     List<Product> findProductsByPublicIdsForUpdate(Set<String> publicIds);
 
     @Query("SELECT DISTINCT pp.value FROM ProductParameter pp WHERE pp.key = :key ORDER BY pp.value")

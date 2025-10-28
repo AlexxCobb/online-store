@@ -201,7 +201,8 @@ public class ProductDaoService {
         for (Product product : products) {
             if (product.getStockQuantity() < productsToQuantity.get(product.getPublicProductId())) {
                 stockIssues.add(
-                        new OutOfStockDto(product.getName(), productsToQuantity.get(product.getPublicProductId()),
+                        new OutOfStockDto(product.getPublicProductId(), product.getName(),
+                                          productsToQuantity.get(product.getPublicProductId()),
                                           product.getStockQuantity()));
             } else {
                 var productToUpdate = product.toBuilder()
@@ -213,7 +214,7 @@ public class ProductDaoService {
         }
         if (!stockIssues.isEmpty()) {
             throw new OutOfStockException(
-                    "You cannot order the selected quantity - @d of product name - %s , the remainder in the warehouse is - %s",
+                    "You cannot order the selected quantity of products",
                     stockIssues);
         }
         productRepository.saveAll(productsList);

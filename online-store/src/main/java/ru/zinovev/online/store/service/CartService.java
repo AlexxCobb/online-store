@@ -3,9 +3,15 @@ package ru.zinovev.online.store.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.dao.CartDaoService;
+import ru.zinovev.online.store.exception.dto.OutOfStockDto;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.CartDetails;
+import ru.zinovev.online.store.model.CartUpdateDetails;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +37,10 @@ public class CartService {
                 existedCartItem.map(cartItemDetails -> cartItemDetails.quantity() + quantity).orElse(quantity);
 
         if (availableQuantity < newQuantity) {
-            throw new OutOfStockException("Maximum quantity in stock that can be added - ", product.name(), newQuantity,
-                                          availableQuantity);
+            throw new OutOfStockException("Maximum quantity in stock that can be added - ",
+                                          Collections.singletonList(
+                                                  new OutOfStockDto(publicProductId, product.name(), newQuantity,
+                                                                    availableQuantity)));
         }
         return cartDaoService.addProductToCart(cart, publicProductId, quantity);
     }
@@ -72,5 +80,15 @@ public class CartService {
         }
         var cart = getCart(publicCartId, publicUserId);
         cartDaoService.clearCart(cart.publicCartId());
+    }
+
+    public void updateProductQuantityInCart(String publicUserId, List<CartUpdateDetails> cartUpdateDetails) {
+        if (publicUserId != null) {
+            userService.findUserDetails(publicUserId);
+        }
+        var cart = getCart(null, publicUserId);
+        var cartDetailsMap = cartUpdateDetails.stream()
+                .collect(Collectors.toMap(CartUpdateDetails::publicProductId, CartUpdateDetails::availableQuantity));
+        cartDaoService.updateProductQuantityInCart(cart, cartDetailsMap);
     }
 }

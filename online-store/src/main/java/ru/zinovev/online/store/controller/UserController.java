@@ -6,6 +6,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.zinovev.online.store.controller.dto.AddressDto;
 import ru.zinovev.online.store.controller.dto.AddressUpdateDto;
+import ru.zinovev.online.store.controller.dto.CartUpdateListWrapper;
 import ru.zinovev.online.store.controller.dto.OrderDto;
 import ru.zinovev.online.store.controller.dto.ProductParamDto;
 import ru.zinovev.online.store.controller.dto.UserDto;
@@ -28,6 +32,7 @@ import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.entity.enums.DeliveryMethodName;
 import ru.zinovev.online.store.dao.entity.enums.PaymentMethodName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
+import ru.zinovev.online.store.dao.mapper.CartMapper;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.exception.model.BadRequestException;
 import ru.zinovev.online.store.exception.model.OutOfStockException;
@@ -42,6 +47,7 @@ import ru.zinovev.online.store.service.ProductService;
 import ru.zinovev.online.store.service.StatisticService;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +65,7 @@ public class UserController {
     private final StatisticService statisticService;
     private final AddressMapper addressMapper;
     private final ProductMapper productMapper;
+    private final CartMapper cartMapper;
     private final UserDto sessionUserDto;
 
     @PostMapping("/addresses")
@@ -168,7 +175,9 @@ public class UserController {
         var categories = categoryService.getCategories();
         var categoryMap =
                 categories.stream().collect(Collectors.toMap(CategoryDetails::publicCategoryId, CategoryDetails::name));
+        OffsetDateTime oneMonthAgo = OffsetDateTime.now().minusDays(30);
 
+        model.addAttribute("oneMonthAgoDate", oneMonthAgo);
         model.addAttribute("brandValues", brandValues);
         model.addAttribute("colorValues", colorValues);
         model.addAttribute("ramValues", ramValues);
@@ -238,13 +247,20 @@ public class UserController {
 
     @ModelAttribute("cart")
     public CartDetails getCartForNavbar(@CookieValue(value = "CART_ID", required = false) String publicCartId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.isAuthenticated() &&
+                authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            return new CartDetails("", "", null, BigDecimal.ZERO, 0);
+        }
         var publicUserId = sessionUserDto.getPublicUserId()
                 .orElse(null);
         return cartService.getCart(publicCartId, publicUserId);
     }
 
     @GetMapping("/cart/edit")
-    public String getEditCartToOrder(Model model, @ModelAttribute OrderDto orderDto) {
+    public String getEditCartToOrder(Model model, @ModelAttribute OrderDto orderDto,
+                                     @ModelAttribute CartUpdateListWrapper cartUpdateDto) {
         log.debug("Received GET request to edit cart to order from user with email- : {}", sessionUserDto.getEmail());
 
         var publicUserId = getPublicUserIdOrThrowException(sessionUserDto);
@@ -259,6 +275,21 @@ public class UserController {
         model.addAttribute("paymentMethods", PaymentMethodName.values());
 
         return "edit-cart";
+    }
+
+    @PatchMapping("/cart/update")
+    public String updateProductQuantityInCart(CartUpdateListWrapper cartUpdateDto,
+                                              RedirectAttributes redirectAttributes, Model model) {
+        log.debug("Received PATCH request to update available product quantity in cart");
+        var publicUserId = sessionUserDto.getPublicUserId()
+                .orElse(null);
+        var cartUpdateDetails =
+                cartUpdateDto.getUpdates().stream().map(cartMapper::toCartUpdateDetails).toList();
+        cartService.updateProductQuantityInCart(publicUserId, cartUpdateDetails);
+
+        redirectAttributes.addFlashAttribute("successMessage",
+                                             "Количество товаров в корзине обновлено до доступного. Попробуйте оформить заказ снова.");
+        return "redirect:/api/users/cart/edit";
     }
 
     @PostMapping("/orders")
@@ -284,7 +315,8 @@ public class UserController {
             orderService.createOrder(publicUserId, orderDto);
         } catch (OutOfStockException e) {
             redirectAttributes.addFlashAttribute("stockIssues", e.getIssues());
-            redirectAttributes.addFlashAttribute("errorMessage", "Невозможно оформить заказ. Обнаружены проблемы с наличием товаров.");
+            redirectAttributes.addFlashAttribute("errorOrderMessage",
+                                                 "Невозможно оформить заказ. Обнаружены проблемы с наличием товаров.");
             return "redirect:/api/users/cart/edit";
         } catch (BadRequestException e) {
             if (e.getMessage()
