@@ -1,17 +1,16 @@
 package ru.zinovev.online.store.exception.model;
 
 import lombok.Getter;
+import ru.zinovev.online.store.exception.dto.OutOfStockDto;
+
+import java.util.List;
 
 @Getter
 public class OutOfStockException extends RuntimeException {
-    private final String productName;
-    private final int requestedQuantity;
-    private final int availableQuantity;
+    private final List<OutOfStockDto> issues;
 
-    public OutOfStockException(String message, String productName, int requestedQuantity, int availableQuantity) {
+    public OutOfStockException(String message, List<OutOfStockDto> issues) {
         super(message);
-        this.productName = productName;
-        this.requestedQuantity = requestedQuantity;
-        this.availableQuantity = availableQuantity;
+        this.issues = issues;
     }
 }

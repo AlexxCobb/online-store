@@ -12,6 +12,8 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CartDetails;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -111,37 +113,27 @@ public class CartDaoService {
         }
     }
 
-    private Cart mergeCarts(Cart cart, Cart userCart) {
-        var tempItems = cart.getItems();
-        var userItemsMap = userCart.getItems()
-                .stream()
-                .collect(
-                        Collectors.toMap(cartItem -> cartItem.getProduct().getPublicProductId(), cartItem -> cartItem));
-        var newUserItems = new ArrayList<>(userCart.getItems());
-
-        tempItems.forEach(cartItem -> {
-            var item = userItemsMap.get(cartItem.getProduct().getPublicProductId());
-
-            if (item != null) {
-                var newQuantity = item.getQuantity() + cartItem.getQuantity();
-                var updatedItem = item.toBuilder().quantity(newQuantity).build();
-                newUserItems.remove(item);
-                newUserItems.add(updatedItem);
-            } else {
-                var newItem = cartItem.toBuilder().cart(userCart).build();
-                newUserItems.add(newItem);
-            }
-        });
-        return userCart.toBuilder().items(newUserItems).build();
-    }
-
-    public Optional<CartDetails> findCartDetails(String publicCartId) {
-        return cartRepository.findByPublicCartId(publicCartId)
-                .map(cartMapper::toCartDetails);
-    }
-
-    public Optional<CartDetails> findUserCartDetails(String publicUserId) {
-        return cartRepository.findByUserPublicUserId(publicUserId).map(cartMapper::toCartDetails);
+    @Transactional
+    public void updateProductQuantityInCart(CartDetails cartDetails, Map<String, Integer> cartUpdateDetails) {
+        var cart = cartRepository.findByPublicCartId(cartDetails.publicCartId())
+                .orElseThrow(
+                        () -> new NotFoundException("Cart with id - " + cartDetails.publicCartId() + " not found"));
+        var updatedCartItems = cart.getItems().stream().map(cartItem -> {
+                    var productId = cartItem.getProduct().getPublicProductId();
+                    if (cartUpdateDetails.containsKey(productId)) {
+                        var newQuantity = cartUpdateDetails.get(productId);
+                        if (newQuantity <= 0) {
+                            return null;
+                        }
+                        return cartItem.toBuilder().quantity(newQuantity).build();
+                    } else {
+                        return cartItem;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+        var updatedCart = cart.toBuilder().items(updatedCartItems).build();
+        cartRepository.save(updatedCart);
     }
 
     @Transactional
@@ -164,5 +156,38 @@ public class CartDaoService {
                 .orElseThrow(() -> new NotFoundException("Cart with id - " + publicCartId + " not found"));
         cart.getItems().clear();
         cartRepository.save(cart);
+    }
+
+    public Optional<CartDetails> findCartDetails(String publicCartId) {
+        return cartRepository.findByPublicCartId(publicCartId)
+                .map(cartMapper::toCartDetails);
+    }
+
+    public Optional<CartDetails> findUserCartDetails(String publicUserId) {
+        return cartRepository.findByUserPublicUserId(publicUserId).map(cartMapper::toCartDetails);
+    }
+
+    private Cart mergeCarts(Cart cart, Cart userCart) {
+        var tempItems = cart.getItems();
+        var userItemsMap = userCart.getItems()
+                .stream()
+                .collect(
+                        Collectors.toMap(cartItem -> cartItem.getProduct().getPublicProductId(), cartItem -> cartItem));
+        var newUserItems = new ArrayList<>(userCart.getItems());
+
+        tempItems.forEach(cartItem -> {
+            var item = userItemsMap.get(cartItem.getProduct().getPublicProductId());
+
+            if (item != null) {
+                var newQuantity = item.getQuantity() + cartItem.getQuantity();
+                var updatedItem = item.toBuilder().quantity(newQuantity).build();
+                newUserItems.remove(item);
+                newUserItems.add(updatedItem);
+            } else {
+                var newItem = cartItem.toBuilder().cart(userCart).build();
+                newUserItems.add(newItem);
+            }
+        });
+        return userCart.toBuilder().items(newUserItems).build();
     }
 }

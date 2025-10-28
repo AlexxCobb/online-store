@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -55,8 +56,12 @@ public class ProductService {
                                                                  " , not found"));
     }
 
-    public List<TopProductDetails> getOneProductFromEachCategory() {
-        return productDaoService.getOneProductFromEachCategory();
+    public void reserveProducts(Map<String, Integer> productToQuantity) {
+        productDaoService.updateProductsQuantity(productToQuantity);
+    }
+
+    public void cancelReserveProducts(Map<String, Integer> productToQuantity) {
+        productDaoService.cancelReserveProducts(productToQuantity);
     }
 
     public Page<ProductDetails> searchProductsWithParameters(

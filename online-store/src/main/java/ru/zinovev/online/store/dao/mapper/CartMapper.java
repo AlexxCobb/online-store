@@ -2,11 +2,13 @@ package ru.zinovev.online.store.dao.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import ru.zinovev.online.store.controller.dto.CartUpdateListWrapper;
 import ru.zinovev.online.store.dao.entity.Cart;
 import ru.zinovev.online.store.dao.entity.CartItem;
 import ru.zinovev.online.store.dao.entity.ProductParameter;
 import ru.zinovev.online.store.model.CartDetails;
 import ru.zinovev.online.store.model.CartItemDetails;
+import ru.zinovev.online.store.model.CartUpdateDetails;
 
 import java.math.BigDecimal;
 
@@ -25,6 +27,8 @@ public interface CartMapper {
     @Mapping(target = "brand", expression = "java(getBrand(cartItem))")
     @Mapping(target = "color", expression = "java(getColor(cartItem))")
     CartItemDetails toCartItemDetails(CartItem cartItem);
+
+    CartUpdateDetails toCartUpdateDetails(CartUpdateListWrapper.CartUpdateDto cartUpdateDto);
 
     default BigDecimal calculateTotalPrice(Cart cart) {
         if (cart == null || cart.getItems().isEmpty()) {
