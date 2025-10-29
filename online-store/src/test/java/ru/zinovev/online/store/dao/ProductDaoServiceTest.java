@@ -21,6 +21,7 @@ import ru.zinovev.online.store.model.ProductUpdateDetails;
 import ru.zinovev.online.store.service.ProductEventPublisher;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -69,7 +70,7 @@ class ProductDaoServiceTest {
         mockProductDetailsRequest =
                 new ProductDetails("publicProductId", "phonesId", BigDecimal.valueOf(1234.00), null, new HashSet<>(),
                                    BigDecimal.valueOf(200),
-                                   BigDecimal.valueOf(0.0036), 10, null, false, null);
+                                   BigDecimal.valueOf(0.0036), 10, null, false, null, OffsetDateTime.now());
         mockProduct = Product.builder()
                 .publicProductId(UUID.randomUUID().toString())
                 .name(mockProductDetailsRequest.name())
@@ -78,13 +79,15 @@ class ProductDaoServiceTest {
                 .weight(mockProductDetailsRequest.weight())
                 .volume(mockProductDetailsRequest.volume())
                 .stockQuantity(mockProductDetailsRequest.stockQuantity())
+                .createdAt(OffsetDateTime.now())
                 .build();
         mockProductDetails =
                 new ProductDetails(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
                                    mockCategory.getPublicCategoryId(),
                                    new HashSet<>(), mockProduct.getWeight(), mockProduct.getVolume(),
                                    mockProduct.getStockQuantity(), mockProduct.getImagePath(),
-                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice());
+                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice(),
+                                   mockProduct.getCreatedAt());
         mockProductUpdateDetailsRequest =
                 new ProductUpdateDetails(null, BigDecimal.valueOf(1000.00), null,
                                          null, null, null);
@@ -97,6 +100,7 @@ class ProductDaoServiceTest {
                 .volume(mockProductDetailsRequest.volume())
                 .parameters(Set.of(new ProductParameter(1L, mockProduct, "color", "black")))
                 .stockQuantity(mockProductDetailsRequest.stockQuantity())
+                .createdAt(mockProduct.getCreatedAt())
                 .build();
         mockUpdatedProductDetails =
                 new ProductDetails(mockUpdatedProduct.getPublicProductId(), mockUpdatedProduct.getName(),
@@ -105,7 +109,8 @@ class ProductDaoServiceTest {
                                    Set.of(new ParametersDetails("color", "black")), mockUpdatedProduct.getWeight(),
                                    mockUpdatedProduct.getVolume(),
                                    mockUpdatedProduct.getStockQuantity(), mockUpdatedProduct.getImagePath(),
-                                   mockUpdatedProduct.getIsDiscount(), mockUpdatedProduct.getDiscountPrice());
+                                   mockUpdatedProduct.getIsDiscount(), mockUpdatedProduct.getDiscountPrice(),
+                                   mockUpdatedProduct.getCreatedAt());
         mockProductForStandDto =
                 new ProductForStandDto(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
                                        null, "brand", "color", null, mockProduct.getStockQuantity(), null, null);
@@ -130,7 +135,8 @@ class ProductDaoServiceTest {
         var publicId = mockProduct.getPublicProductId();
 
         when(productRepository.findByPublicProductId(publicId)).thenReturn(Optional.of(mockProduct));
-        when(productMapper.updateProductFromDetails(mockProductUpdateDetailsRequest,mockProduct)).thenReturn(mockUpdatedProduct);
+        when(productMapper.updateProductFromDetails(mockProductUpdateDetailsRequest, mockProduct)).thenReturn(
+                mockUpdatedProduct);
         when(productRepository.save(productCaptor.capture())).thenReturn(mockUpdatedProduct);
         when(productMapper.toProductForStandDto(mockUpdatedProduct)).thenReturn(mockProductForStandDto);
         when(productMapper.toProductDetails(mockUpdatedProduct)).thenReturn(mockUpdatedProductDetails);
