@@ -15,6 +15,7 @@ import ru.zinovev.online.store.model.ProductUpdateDetails;
 import ru.zinovev.online.store.model.UserDetails;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
@@ -63,19 +64,22 @@ class ProductServiceTest {
                 .weight(BigDecimal.valueOf(200))
                 .volume(BigDecimal.valueOf(0.2))
                 .stockQuantity(10)
+                .createdAt(OffsetDateTime.now())
                 .build();
         mockProductDetails =
                 new ProductDetails(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
                                    mockCategory.getPublicCategoryId(),
                                    new HashSet<>(), mockProduct.getWeight(), mockProduct.getVolume(),
                                    mockProduct.getStockQuantity(), mockProduct.getImagePath(),
-                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice());
+                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice(),
+                                   mockProduct.getCreatedAt());
         mockSavedProductDetails =
                 new ProductDetails(mockProduct.getPublicProductId(), mockProduct.getName(), mockProduct.getPrice(),
                                    mockCategory.getPublicCategoryId(),
                                    new HashSet<>(), mockProduct.getWeight(), mockProduct.getVolume(),
                                    mockProduct.getStockQuantity(), mockProduct.getImagePath(),
-                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice());
+                                   mockProduct.getIsDiscount(), mockProduct.getDiscountPrice(),
+                                   mockProduct.getCreatedAt());
         mockProductUpdateDetailsRequest =
                 new ProductUpdateDetails(null, BigDecimal.valueOf(1000.00), null,
                                          null, null, null);
@@ -88,6 +92,7 @@ class ProductServiceTest {
                 .volume(mockProductDetails.volume())
                 .parameters(new HashSet<>())
                 .stockQuantity(mockProductDetails.stockQuantity())
+                .createdAt(mockProduct.getCreatedAt())
                 .build();
         mockUpdatedProductDetails =
                 new ProductDetails(mockUpdatedProduct.getPublicProductId(), mockUpdatedProduct.getName(),
@@ -96,7 +101,8 @@ class ProductServiceTest {
                                    new HashSet<>(), mockUpdatedProduct.getWeight(),
                                    mockUpdatedProduct.getVolume(),
                                    mockUpdatedProduct.getStockQuantity(), mockUpdatedProduct.getImagePath(),
-                                   mockUpdatedProduct.getIsDiscount(), mockUpdatedProduct.getDiscountPrice());
+                                   mockUpdatedProduct.getIsDiscount(), mockUpdatedProduct.getDiscountPrice(),
+                                   mockUpdatedProduct.getCreatedAt());
     }
 
     @Test

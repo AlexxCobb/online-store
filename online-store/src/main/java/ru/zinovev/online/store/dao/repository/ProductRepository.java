@@ -62,6 +62,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "LEFT JOIN p.parameters pp_brand ON pp_brand.key = 'brand' " +
             "LEFT JOIN p.parameters pp_color ON pp_color.key = 'color' " +
             "WHERE p.createdAt >= :cutoffDate " +
-            "ORDER BY p.createdAt DESC")
+            "ORDER BY p.price DESC")
     List<ProductView> findNewProducts(OffsetDateTime cutoffDate, Pageable pageable);
 }
