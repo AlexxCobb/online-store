@@ -1,8 +1,12 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.zinovev.online.store.config.cache.Caches;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
@@ -49,6 +53,10 @@ public class AddressDaoService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = Caches.Address.BY_SYSTEM_TYPE, key = "#addressTypeName"),
+            @CacheEvict(value = Caches.Address.ALL, allEntries = true)
+    })
     public AddressDetails addSystemAddress(AddressDetails addressDetails, AddressTypeName addressTypeName) {
         var addressType = addressTypeRepository.getByName(addressTypeName);
         var address = DeliveryAddress.builder()
@@ -66,6 +74,7 @@ public class AddressDaoService {
     }
 
     @Transactional
+    @CacheEvict(value = Caches.Address.BY_ID, key = "#addressDetails.publicAddressId()")
     public AddressDetails updateAddress(AddressDetails addressDetails,
                                         AddressUpdateDetails addressUpdateDetails) {
         var deliveryAddress = addressRepository.findByPublicDeliveryAddressId(addressDetails.publicAddressId())
@@ -76,6 +85,12 @@ public class AddressDaoService {
     }
 
     @Transactional
+
+    @Caching(evict = {
+            @CacheEvict(value = Caches.Address.BY_ID, key = "#addressDetails.publicAddressId()"),
+            @CacheEvict(value = Caches.Address.BY_SYSTEM_TYPE, key = "#addressDetails.addressTypeName()"),
+            @CacheEvict(value = Caches.Address.ALL, allEntries = true)
+    })
     public void deleteAddress(AddressDetails addressDetails) {
         var address = addressRepository.findByPublicDeliveryAddressId(addressDetails.publicAddressId())
                 .orElseThrow(() -> new NotFoundException(
@@ -83,6 +98,7 @@ public class AddressDaoService {
         addressRepository.delete(address);
     }
 
+    @Cacheable(value = Caches.Address.BY_ID, key = "#publicAddressId", unless = "!#result.isPresent()")
     public Optional<AddressDetails> findByPublicId(String publicAddressId) {
         return addressRepository.findByPublicDeliveryAddressId(publicAddressId).map(addressMapper::toAddressDetails);
     }
@@ -94,6 +110,7 @@ public class AddressDaoService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = Caches.Address.BY_SYSTEM_TYPE, key = "#addressTypeName")
     public List<AddressDetails> findSystemAddresses(AddressTypeName addressTypeName) {
         return addressRepository.findByAddressTypeNameAndIsActiveAndIsSystem(addressTypeName, true, true)
                 .stream()
@@ -101,6 +118,7 @@ public class AddressDaoService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = Caches.Address.ALL, key = "'all'")
     public List<AddressDetails> findAllSystemAddresses() {
         return addressRepository.findByIsActiveAndIsSystem(true, true)
                 .stream()

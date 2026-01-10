@@ -7,6 +7,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import ru.zinovev.online.store.config.cache.Caches;
 import ru.zinovev.online.store.controller.dto.ProductForStandDto;
 import ru.zinovev.online.store.controller.dto.enums.ProductType;
 import ru.zinovev.online.store.dao.ProductDaoService;
@@ -41,8 +42,8 @@ public class ProductService {
 
     @Caching(
             evict = {
-                    @CacheEvict(value = "productStand", key = "'stand'"),
-                    @CacheEvict(value = "productPrices", allEntries = true)
+                    @CacheEvict(value = Caches.Product.STAND, key = "'stand'"),
+                    @CacheEvict(value = Caches.Product.PRICES, allEntries = true)
             }
     )
     public ProductDetails updateProduct(@NonNull String publicUserId,
@@ -55,9 +56,9 @@ public class ProductService {
 
     @Caching(
             evict = {
-                    @CacheEvict(value = "productStand", key = "'stand'"),
-                    @CacheEvict(value = "productPrices", allEntries = true),
-                    @CacheEvict(value = "productParams", allEntries = true)
+                    @CacheEvict(value = Caches.Product.STAND, key = "'stand'"),
+                    @CacheEvict(value = Caches.Product.PRICES, allEntries = true),
+                    @CacheEvict(value = Caches.Product.PARAMS, allEntries = true)
             }
     )
     public void deleteProduct(@NonNull String publicUserId, @NonNull String publicProductId) {
@@ -92,22 +93,22 @@ public class ProductService {
         return productDaoService.findProducts(categoryPublicIds, minPrice, maxPrice, productParamDetails, page, limit);
     }
 
-    @Cacheable(value = "productParams", key = "#key")
+    @Cacheable(value = Caches.Product.PARAMS, key = "#key")
     public Set<String> getUniqueParametersByKey(String key) {
         return productDaoService.findUniqueParametersByKey(key);
     }
 
-    @Cacheable(value = "productPrices", key = "'minPrice'")
+    @Cacheable(value = Caches.Product.PRICES, key = "'minPrice'")
     public BigDecimal getMinPrice() {
         return productDaoService.getMinPrice();
     }
 
-    @Cacheable(value = "productPrices", key = "'maxPrice'")
+    @Cacheable(value = Caches.Product.PRICES, key = "'maxPrice'")
     public BigDecimal getMaxPrice() {
         return productDaoService.getMaxPrice();
     }
 
-    @Cacheable(value = "productStand", key = "'stand'")
+    @Cacheable(value = Caches.Product.STAND, key = "'stand'")
     public Set<ProductForStandDto> getProductsForStand() {
         var topProducts = productDaoService.getTopProducts();
         var discountProducts = productDaoService.getDiscountProducts();

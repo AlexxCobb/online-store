@@ -2,9 +2,6 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import ru.zinovev.online.store.dao.CategoryDaoService;
 import ru.zinovev.online.store.exception.model.BadRequestException;
@@ -20,7 +17,6 @@ public class CategoryService {
     private final CategoryDaoService categoryDaoService;
     private final UserService userService;
 
-    @CacheEvict(value = "categories", key = "'all'")
     public CategoryDetails createCategory(@NonNull String publicUserId, @NonNull CategoryDetails categoryDetails) {
         userService.findUserDetails(publicUserId);
         categoryDaoService.findByNameIgnoreCase(categoryDetails)
@@ -30,7 +26,6 @@ public class CategoryService {
         return categoryDaoService.createCategory(categoryDetails);
     }
 
-    @CacheEvict(value = "categories", key = "'all'")
     public CategoryDetails updateCategory(@NonNull String publicUserId, @NonNull String publicCategoryId,
                                           @NonNull CategoryDetails categoryDetails) {
         userService.findUserDetails(publicUserId);
@@ -42,13 +37,11 @@ public class CategoryService {
         }
     }
 
-    @CacheEvict(value = "categories", key = "'all'")
     public void deleteCategory(@NonNull String publicUserId, @NonNull String publicCategoryId) {
         userService.findUserDetails(publicUserId);
         categoryDaoService.deleteCategory(publicCategoryId);
     }
 
-    @Cacheable(value = "categories", key = "'all'")
     public List<CategoryDetails> getCategories() {
         return categoryDaoService.getCategories();
     }

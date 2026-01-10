@@ -1,9 +1,11 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.zinovev.online.store.controller.dto.CategoryDto;
+import ru.zinovev.online.store.config.cache.Caches;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
@@ -24,6 +26,7 @@ public class CategoryDaoService {
     private final CategoryMapper categoryMapper;
 
     @Transactional
+    @CacheEvict(value = Caches.Category.ALL, key = "'all'")
     public CategoryDetails createCategory(CategoryDetails categoryDetails) {
         var newCategory = Category.builder()
                 .publicCategoryId(UUID.randomUUID().toString())
@@ -33,6 +36,7 @@ public class CategoryDaoService {
     }
 
     @Transactional
+    @CacheEvict(value = Caches.Category.ALL, key = "'all'")
     public CategoryDetails updateCategory(CategoryDetails categoryDetailsExist, CategoryDetails categoryDetails) {
         var category = categoryRepository.findByPublicCategoryId(categoryDetailsExist.publicCategoryId())
                 .orElseThrow(() -> new NotFoundException(
@@ -44,12 +48,14 @@ public class CategoryDaoService {
     }
 
     @Transactional
+    @CacheEvict(value = Caches.Category.ALL, key = "'all'")
     public void deleteCategory(String publicCategoryId) {
         var category = categoryRepository.findByPublicCategoryId(publicCategoryId)
                 .orElseThrow(() -> new NotFoundException("Category with id - " + publicCategoryId + " not found"));
         categoryRepository.delete(category);
     }
 
+    @Cacheable(value = Caches.Category.ALL, key = "'all'")
     public List<CategoryDetails> getCategories() {
         return categoryRepository.findAll()
                 .stream()
@@ -58,7 +64,8 @@ public class CategoryDaoService {
     }
 
     public Optional<CategoryDetails> findByNameIgnoreCase(CategoryDetails categoryDetails) {
-        return categoryRepository.findByNameIgnoreCase(categoryDetails.name().trim()).map(categoryMapper::toCategoryDetails);
+        return categoryRepository.findByNameIgnoreCase(categoryDetails.name().trim())
+                .map(categoryMapper::toCategoryDetails);
     }
 
     public Optional<CategoryDetails> findByPublicId(String publicCategoryId) {
