@@ -36,7 +36,7 @@ public class CacheConfig implements CachingConfigurer {
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory, @Value
-            ("${app,cache.ttl}") Duration ttl) {
+            ("${app.cache.ttl}") Duration ttl) {
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(ttl)
