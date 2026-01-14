@@ -40,10 +40,11 @@ spring:
     password: guest
     queue-name: MainQueue
     exchange-name: product.events.exchange
-  redis:
-    host: ${SPRING_REDIS_HOST:localhost}
-    port: ${SPRING_REDIS_PORT:6379}
-    timeout: 5000ms
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 5000ms
   cache:
     type: ${SPRING_CACHE_TYPE:redis}
 app:
