@@ -10,9 +10,11 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
     hibernate:
-    format_sql: true
-    ddl-auto: validate
+      ddl-auto: none
   liquibase:
     default-schema: public
     change-log: classpath:db/changelog/db.changelog-master.yaml
@@ -36,4 +38,15 @@ spring:
     port: 5672
     username: guest
     password: guest
-queue.name: MainQueue
+    queue-name: MainQueue
+    exchange-name: product.events.exchange
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 5000ms
+  cache:
+    type: ${SPRING_CACHE_TYPE:redis}
+app:
+  cache:
+    ttl: 30s

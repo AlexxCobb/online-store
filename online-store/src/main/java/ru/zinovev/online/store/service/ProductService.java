@@ -2,8 +2,12 @@ package ru.zinovev.online.store.service;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import ru.zinovev.online.store.config.cache.Caches;
 import ru.zinovev.online.store.controller.dto.ProductForStandDto;
 import ru.zinovev.online.store.controller.dto.enums.ProductType;
 import ru.zinovev.online.store.dao.ProductDaoService;
@@ -11,7 +15,6 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductParamDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
-import ru.zinovev.online.store.model.TopProductDetails;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -37,6 +40,12 @@ public class ProductService {
         return productDaoService.createProduct(productDetails);
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = Caches.Product.STAND, key = "'stand'"),
+                    @CacheEvict(value = Caches.Product.PRICES, allEntries = true)
+            }
+    )
     public ProductDetails updateProduct(@NonNull String publicUserId,
                                         @NonNull ProductUpdateDetails productUpdateDetails,
                                         @NonNull String publicProductId) {
@@ -45,6 +54,13 @@ public class ProductService {
         return productDaoService.updateProduct(productUpdateDetails, publicProductId);
     }
 
+    @Caching(
+            evict = {
+                    @CacheEvict(value = Caches.Product.STAND, key = "'stand'"),
+                    @CacheEvict(value = Caches.Product.PRICES, allEntries = true),
+                    @CacheEvict(value = Caches.Product.PARAMS, allEntries = true)
+            }
+    )
     public void deleteProduct(@NonNull String publicUserId, @NonNull String publicProductId) {
         userService.findUserDetails(publicUserId);
         productDaoService.deleteProduct(publicProductId);
@@ -77,18 +93,22 @@ public class ProductService {
         return productDaoService.findProducts(categoryPublicIds, minPrice, maxPrice, productParamDetails, page, limit);
     }
 
+    @Cacheable(value = Caches.Product.PARAMS, key = "#key")
     public Set<String> getUniqueParametersByKey(String key) {
         return productDaoService.findUniqueParametersByKey(key);
     }
 
+    @Cacheable(value = Caches.Product.PRICES, key = "'minPrice'")
     public BigDecimal getMinPrice() {
         return productDaoService.getMinPrice();
     }
 
+    @Cacheable(value = Caches.Product.PRICES, key = "'maxPrice'")
     public BigDecimal getMaxPrice() {
         return productDaoService.getMaxPrice();
     }
 
+    @Cacheable(value = Caches.Product.STAND, key = "'stand'")
     public Set<ProductForStandDto> getProductsForStand() {
         var topProducts = productDaoService.getTopProducts();
         var discountProducts = productDaoService.getDiscountProducts();

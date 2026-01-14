@@ -1,5 +1,6 @@
 package ru.zinovev.online.store.config;
 
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -9,36 +10,36 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.zinovev.online.store.config.properties.RabbitMQProperties;
 
 @Setter
 @Configuration
+@EnableConfigurationProperties(RabbitMQProperties.class)
+@RequiredArgsConstructor
 public class RabbitConfig {
 
-    public static final String EXCHANGE_PRODUCT_EVENTS = "product.events.exchange";
-
-    @Value("${queue.name}")
-    private String queueName;
+    private final RabbitMQProperties rabbitMQProperties;
 
     @Bean
     public Queue productQueue() {
-        return new Queue(queueName, true);
+        return new Queue(rabbitMQProperties.queueName(), true);
     }
 
 
     @Bean
     public TopicExchange productExchange() {
-        return new TopicExchange(EXCHANGE_PRODUCT_EVENTS);
+        return new TopicExchange(rabbitMQProperties.exchangeName());
     }
 
     @Bean
     public Binding binding(Queue productQueue, TopicExchange productExchange) {
         return BindingBuilder.bind(productQueue)
                 .to(productExchange)
-                .with(queueName);
+                .with(rabbitMQProperties.queueName());
     }
 
     @Bean
