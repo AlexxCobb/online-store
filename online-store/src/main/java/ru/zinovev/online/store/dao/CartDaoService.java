@@ -11,7 +11,7 @@ import ru.zinovev.online.store.dao.repository.ProductRepository;
 import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CartDetails;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,6 +42,7 @@ public class CartDaoService {
                 .stream()
                 .filter(cartItem -> cartItem.getProduct().getPublicProductId().equals(publicProductId))
                 .findFirst();
+        var cartItems = cart.getItems();
         if (item.isPresent()) {
             var existingItem = item.get();
             var totalQuantity = item.get().getQuantity() + quantity;
@@ -49,17 +50,18 @@ public class CartDaoService {
                     .quantity(totalQuantity)
                     .cart(cart)
                     .build();
-            cart.getItems().remove(existingItem);
-            cart.getItems().add(updatedItem);
+            cartItems.remove(existingItem);
+            cartItems.add(updatedItem);
         } else {
             var cartItem = CartItem.builder()
                     .product(product)
                     .cart(cart)
                     .quantity(quantity)
                     .build();
-            cart.getItems().add(cartItem);
+            cartItems.add(cartItem);
         }
-        return cartMapper.toCartDetails(cartRepository.save(cart));
+        var cartWithUpdateItems = cart.toBuilder().items(cartItems).build();
+        return cartMapper.toCartDetails(cartRepository.save(cartWithUpdateItems));
     }
 
     @Transactional
@@ -131,7 +133,7 @@ public class CartDaoService {
                     }
                 })
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toSet());
         var updatedCart = cart.toBuilder().items(updatedCartItems).build();
         cartRepository.save(updatedCart);
     }
@@ -173,7 +175,7 @@ public class CartDaoService {
                 .stream()
                 .collect(
                         Collectors.toMap(cartItem -> cartItem.getProduct().getPublicProductId(), cartItem -> cartItem));
-        var newUserItems = new ArrayList<>(userCart.getItems());
+        var newUserItems = new HashSet<>(userCart.getItems());
 
         tempItems.forEach(cartItem -> {
             var item = userItemsMap.get(cartItem.getProduct().getPublicProductId());

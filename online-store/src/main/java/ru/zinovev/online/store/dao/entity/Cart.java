@@ -16,8 +16,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Builder(toBuilder = true)
@@ -41,7 +41,7 @@ public class Cart {
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    List<CartItem> items = new ArrayList<>();
+    Set<CartItem> items = new HashSet<>();
 
     @Override
     public int hashCode() {

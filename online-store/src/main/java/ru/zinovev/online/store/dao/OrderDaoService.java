@@ -52,9 +52,9 @@ public class OrderDaoService {
     private final OrderMapper orderMapper;
 
     @Transactional
-    public OrderDetails createOrder(UserDetails userDetails,
-                                    CartDetails cartDetails,
-                                    OrderDto orderDto) {
+    public void createOrder(UserDetails userDetails,
+                            CartDetails cartDetails,
+                            OrderDto orderDto) {
         var user = userDaoService.getByPublicId(userDetails.publicUserId());
         var address = addressRepository.findByPublicDeliveryAddressId(orderDto.publicAddressId())
                 .orElseThrow(() -> new NotFoundException(
@@ -62,7 +62,10 @@ public class OrderDaoService {
         var cart = cartRepository.findByPublicCartId(cartDetails.publicCartId())
                 .orElseThrow(
                         () -> new NotFoundException("Cart with id - " + cartDetails.publicCartId() + " not found"));
-        var products = cart.getItems().stream().map(CartItem::getProduct).collect(Collectors.toMap(Product::getPublicProductId, Function.identity()));
+        var products = cart.getItems()
+                .stream()
+                .map(CartItem::getProduct)
+                .collect(Collectors.toMap(Product::getPublicProductId, Function.identity()));
         var payMethod = paymentMethodRepository.getByName(orderDto.paymentMethodName());
         var deliveryMethod = deliveryMethodRepository.getByName(orderDto.deliveryMethodName());
         var payStatus = paymentStatusRepository.getByName(PaymentStatusName.PENDING);
@@ -88,34 +91,33 @@ public class OrderDaoService {
         }).toList();
 
         order.getItems().addAll(items);
-        var newOrd = orderRepository.save(order);
+        orderRepository.save(order);
         cart.getItems().clear();
         cartRepository.save(cart);
-
-        return orderMapper.toOrderDetails(newOrd);
     }
 
     public Page<OrderDetails> getUserOrders(String publicUserId, Integer page, Integer limit) {
         var pageable = PageRequest.of(page, limit);
-
-        var orders = orderRepository.findByUserPublicUserIdOrderByCreatedAtDesc(publicUserId, pageable);
+        var orderIds = orderRepository.findOrderIdsByPublicUserId(publicUserId, pageable);
+        var orders = orderRepository.findUserOrdersWithDetails(orderIds.getContent());
         var orderDetails = orders
                 .stream()
                 .map(orderMapper::toOrderDetails)
                 .toList();
-        return new PageImpl<>(orderDetails, pageable, orders.getTotalElements());
+        return new PageImpl<>(orderDetails, pageable, orderIds.getTotalElements());
     }
 
     public Page<OrderShortDetails> getAllOrders(Integer page, Integer limit) {
         var sort = Sort.by(Sort.Direction.DESC, "createdAt");
         var pageable = PageRequest.of(page, limit, sort);
 
-        var orders = orderRepository.findAll(pageable);
+        var orderIds = orderRepository.findAllOrderIds(pageable);
+        var orders = orderRepository.findAll(orderIds.getContent());
         var orderDetails = orders
                 .stream()
                 .map(orderMapper::toOrderShortDetails)
                 .toList();
-        return new PageImpl<>(orderDetails, pageable, orders.getTotalElements());
+        return new PageImpl<>(orderDetails, pageable, orderIds.getTotalElements());
     }
 
     public Optional<OrderShortDetails> findOrderById(String publicOrderId) {

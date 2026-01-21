@@ -98,7 +98,7 @@ public class AddressDaoService {
         addressRepository.delete(address);
     }
 
-    @Cacheable(value = Caches.Address.BY_ID, key = "#publicAddressId", unless = "!#result.isPresent()")
+    @Cacheable(value = Caches.Address.BY_ID, key = "#publicAddressId", unless = "#result == null")
     public Optional<AddressDetails> findByPublicId(String publicAddressId) {
         return addressRepository.findByPublicDeliveryAddressId(publicAddressId).map(addressMapper::toAddressDetails);
     }
