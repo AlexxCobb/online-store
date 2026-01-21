@@ -3,6 +3,7 @@ package ru.zinovev.online.store.dao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.zinovev.online.store.config.cache.Caches;
@@ -36,7 +37,10 @@ public class CategoryDaoService {
     }
 
     @Transactional
-    @CacheEvict(value = Caches.Category.ALL, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(value = Caches.Category.ALL, key = "'all'"),
+            @CacheEvict(value = Caches.Category.BY_ID, key = "#categoryDetailsExist.publicCategoryId()")
+    })
     public CategoryDetails updateCategory(CategoryDetails categoryDetailsExist, CategoryDetails categoryDetails) {
         var category = categoryRepository.findByPublicCategoryId(categoryDetailsExist.publicCategoryId())
                 .orElseThrow(() -> new NotFoundException(
@@ -48,7 +52,10 @@ public class CategoryDaoService {
     }
 
     @Transactional
-    @CacheEvict(value = Caches.Category.ALL, key = "'all'")
+    @Caching(evict = {
+            @CacheEvict(value = Caches.Category.ALL, key = "'all'"),
+            @CacheEvict(value = Caches.Category.BY_ID, key = "#publicCategoryId")
+    })
     public void deleteCategory(String publicCategoryId) {
         var category = categoryRepository.findByPublicCategoryId(publicCategoryId)
                 .orElseThrow(() -> new NotFoundException("Category with id - " + publicCategoryId + " not found"));
@@ -68,6 +75,7 @@ public class CategoryDaoService {
                 .map(categoryMapper::toCategoryDetails);
     }
 
+    @Cacheable(value = Caches.Category.BY_ID, key = "#publicCategoryId")
     public Optional<CategoryDetails> findByPublicId(String publicCategoryId) {
         return categoryRepository.findByPublicCategoryId(publicCategoryId).map(categoryMapper::toCategoryDetails);
     }

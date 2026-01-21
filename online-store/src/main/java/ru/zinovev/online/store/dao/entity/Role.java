@@ -1,5 +1,6 @@
 package ru.zinovev.online.store.dao.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -39,5 +40,6 @@ public class Role {
 
     @ManyToMany(mappedBy = "roles")
     @Builder.Default
+    @JsonIgnore
     private Set<User> users = new HashSet<>();
 }

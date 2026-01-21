@@ -18,6 +18,7 @@ public final class Caches {
         }
 
         public static final String ALL = "categories";
+        public static final String BY_ID = "category";
     }
 
     public static final class Address {

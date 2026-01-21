@@ -49,6 +49,7 @@ public class CacheConfig implements CachingConfigurer {
                 Caches.Product.STAND, config.entryTtl(Duration.ofMinutes(60)),
                 Caches.Product.PRICES, config.entryTtl(Duration.ofHours(2)),
                 Caches.Category.ALL, config.entryTtl(Duration.ofDays(1)),
+                Caches.Category.BY_ID, config.entryTtl(Duration.ofDays(1)),
                 Caches.Address.BY_ID,config.entryTtl(Duration.ofDays(1)),
                 Caches.Address.BY_SYSTEM_TYPE,config.entryTtl(Duration.ofDays(1)),
                 Caches.Address.ALL,config.entryTtl(Duration.ofDays(1)),
