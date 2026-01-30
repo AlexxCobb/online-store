@@ -13,9 +13,8 @@
 ```bash
 git clone https://github.com/AlexxCobb/online-store.git
 ```
-1.1 **Скопируйте команды ниже. Нужно именно два раза зайти в директорию online-store. У Вас получится.**
+1.1 **Зайдите в директорию /online-store.**
 ```bash
-cd online-store
 cd online-store
 ```
 
