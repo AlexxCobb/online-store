@@ -422,15 +422,17 @@
                                      alt="Product image">
 
                                 <div class="product-label">
-                                    <th:block th:if="${product.discountPrice != null and product.discountPrice < product.price}">
+                                    <th:block
+                                            th:if="${product.discountPrice != null and product.discountPrice < product.price}">
                                         <span class="sale"
-                                            th:with="discountPercent=
+                                              th:with="discountPercent=
                                                 ${#numbers.formatInteger((product.price - product.discountPrice) / product.price * 100, 0)}">
                                                 -<span th:text="${discountPercent}">30</span>%
                                         </span>
                                     </th:block>
 
-                                    <th:block th:if="${product.createdAt != null and product.createdAt.isAfter(oneMonthAgoDate)}">
+                                    <th:block
+                                            th:if="${product.createdAt != null and product.createdAt.isAfter(oneMonthAgoDate)}">
                                         <span class="new">NEW</span>
                                     </th:block>
                                 </div>
@@ -500,14 +502,24 @@
 
                 <div class="store-filter clearfix">
     <span class="store-qty" th:if="${products.totalElements > 0}">
-        Показано <span th:text="${products.numberOfElements}"></span> из <span th:text="${products.totalElements}"></span> товаров
+        Показано <span th:text="${products.numberOfElements}"></span> из <span
+            th:text="${products.totalElements}"></span> товаров
     </span>
 
                     <ul class="store-pagination" th:if="${products.totalPages > 0}">
 
                         <li th:classappend="${!products.hasPrevious() ? 'disabled' : ''}">
                             <a th:if="${products.hasPrevious()}"
-                               th:href="@{/api/users/products(page=${products.number - 1}, limit=${products.size})}"
+                               th:href="@{/api/users/products(
+                               page=${products.number - 1},
+                               limit=${products.size},
+                               minPrice=${minPrice},
+                               maxPrice=${maxPrice},
+                               publicCategoryIds=${publicCategoryIds},
+                               brand=${productParamDto.brand},
+                               color=${productParamDto.color},
+                               ram=${productParamDto.ram},
+                               memory=${productParamDto.memory})}"
                                title="Предыдущая страница">
                                 <i class="fa fa-angle-left"></i>
                             </a>
@@ -518,7 +530,16 @@
                             th:classappend="${i == products.number ? 'active' : ''}">
 
                             <a th:if="${i != products.number}"
-                               th:href="@{/api/users/products(page=${i}, limit=${products.size})}"
+                               th:href="@{/api/users/products(
+                                    page=${i},
+                                    limit=${products.size},
+                                    minPrice=${minPrice},
+                                    maxPrice=${maxPrice},
+                                    publicCategoryIds=${publicCategoryIds},
+                                    brand=${productParamDto.brand},
+                                    color=${productParamDto.color},
+                                    ram=${productParamDto.ram},
+                                    memory=${productParamDto.memory})}"
                                th:text="${i + 1}">1</a>
 
                             <span th:if="${i == products.number}" th:text="${i + 1}">1</span>
@@ -526,7 +547,16 @@
 
                         <li th:classappend="${!products.hasNext() ? 'disabled' : ''}">
                             <a th:if="${products.hasNext()}"
-                               th:href="@{/api/users/products(page=${products.number + 1}, limit=${products.size})}"
+                               th:href="@{/api/users/products(
+                                page=${products.number + 1},
+                                limit=${products.size},
+                                minPrice=${minPrice},
+                                maxPrice=${maxPrice},
+                                publicCategoryIds=${publicCategoryIds},
+                                brand=${productParamDto.brand},
+                                color=${productParamDto.color},
+                                ram=${productParamDto.ram},
+                                memory=${productParamDto.memory})}"
                                title="Следующая страница">
                                 <i class="fa fa-angle-right"></i>
                             </a>

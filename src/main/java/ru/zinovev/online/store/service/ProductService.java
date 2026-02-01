@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -84,7 +85,7 @@ public class ProductService {
             List<String> categoryPublicIds, BigDecimal minPrice,
             BigDecimal maxPrice,
             ProductParamDetails productParamDetails, Integer page, Integer limit) {
-        if (categoryPublicIds != null) {
+        if (categoryPublicIds != null && !categoryPublicIds.isEmpty()) {
             var result = categoryService.existCategories(categoryPublicIds);
             if (!result) {
                 throw new NotFoundException("Categories with ids - " + categoryPublicIds + "not found"); // доработать

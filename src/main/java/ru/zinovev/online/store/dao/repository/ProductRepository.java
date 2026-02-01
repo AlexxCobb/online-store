@@ -29,8 +29,10 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @EntityGraph(attributePaths = "category")
     List<Product> findProductsWithParametersInIds(List<Long> ids);
 
-    @EntityGraph(attributePaths = {"parameters", "category"})
     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
+
+    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.parameters LEFT JOIN FETCH p.category WHERE p.id IN :ids ORDER BY p.stockQuantity DESC")
+    List<Product> findProductWithRelationsByIds(List<Long> ids);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query(value = "select p from Product p WHERE p.publicProductId IN :publicIds")
