@@ -40,11 +40,11 @@
       <th>Имя</th>
       <th>Фамилия</th>
       <th>Email</th>
-      <th>Сумма сделанных покупок</th>
+      <th>Сумма сделанных покупок, руб.</th>
     </tr>
     <tr th:each="user : ${topUsers}">
       <td th:text="${user.name}">Joe</td>
-      <td th:text="${user.lastname}">Tribiani/td>
+      <td th:text="${user.lastname}">Tribiani</td>
       <td th:text="${user.email}">ya@ya.ru</td>
       <td th:text="${user.totalSpent}">1000</td>
     </tr>

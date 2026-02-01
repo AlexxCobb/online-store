@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -190,6 +191,8 @@ public class UserController {
         model.addAttribute("topProducts", topProducts);
         model.addAttribute("categoryMap", categoryMap);
         model.addAttribute("sessionUserDto", sessionUserDto);
+        model.addAttribute("publicCategoryIds", publicCategoryIds);
+        model.addAttribute("productParamDto", productParamDto);
         return "products";
     }
 
@@ -197,6 +200,7 @@ public class UserController {
     public String addProductsToCart(@CookieValue(value = "CART_ID", required = false) String publicCartId,
                                     @RequestParam String publicProductId,
                                     @RequestParam(defaultValue = "1") Integer quantity,
+                                    @RequestHeader(value = "Referer", required = false) String referer,
                                     HttpServletResponse response, RedirectAttributes redirectAttributes) {
         log.debug("Received POST request to add product to cart");
         try {
@@ -213,7 +217,7 @@ public class UserController {
             redirectAttributes.addFlashAttribute("productId", publicProductId);
             redirectAttributes.addFlashAttribute("requestedQuantity", quantity);
         }
-        return "redirect:/api/users/products";
+        return "redirect:" + (referer != null ? referer : "/api/users/products");
     }
 
     @PatchMapping("/cart/{publicProductId}")

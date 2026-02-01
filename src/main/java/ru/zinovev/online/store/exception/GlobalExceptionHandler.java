@@ -29,7 +29,6 @@ public class GlobalExceptionHandler {
         return modelAndView;
     }
 
-
     @ExceptionHandler
     public ModelAndView handleNotFoundException(HttpServletRequest request, NotFoundException ex, Model model) {
         var referer = request.getHeader("Referer");
@@ -68,7 +67,7 @@ public class GlobalExceptionHandler {
         }
         modelAndView.addObject("error", "Ошибка запроса");
         modelAndView.addObject("message", ex.getMessage());
-        log.warn("Bad Request with invalid data. {}", ex.getMessage(), ex);
+        log.warn("Access forbidden. {}", ex.getMessage(), ex);
         return modelAndView;
     }
 }

@@ -145,38 +145,45 @@ public class ProductDaoService {
             return new PageImpl<>(productDetails, pageable, ids.getTotalElements());
         }
 
-        List<Specification<Product>> spec = new ArrayList<>();
-        if (Objects.nonNull(ProductSpecifications.hasPriceBetween(minPrice, maxPrice))) {
-            spec.add(ProductSpecifications.hasPriceBetween(minPrice, maxPrice));
+        List<Specification<Product>> specs = new ArrayList<>();
+        if (minPrice != null || maxPrice != null) {
+            specs.add(ProductSpecifications.hasPriceBetween(minPrice, maxPrice));
         }
 
-        if (Objects.nonNull(categoryPublicIds)) {
-            spec.add(ProductSpecifications.hasCategories(categoryPublicIds));
+        if (categoryPublicIds != null && !categoryPublicIds.isEmpty()) {
+            specs.add(ProductSpecifications.hasCategories(categoryPublicIds));
         }
 
         if (Objects.nonNull(productParamDetails.brand())) {
-            spec.add(ProductSpecifications.hasBrand(productParamDetails.brand()));
+            specs.add(ProductSpecifications.hasBrand(productParamDetails.brand()));
         }
 
         if (Objects.nonNull(productParamDetails.color())) {
-            spec.add(ProductSpecifications.hasColor(productParamDetails.color()));
+            specs.add(ProductSpecifications.hasColor(productParamDetails.color()));
         }
 
         if (Objects.nonNull(productParamDetails.ram())) {
-            spec.add(ProductSpecifications.hasRam(productParamDetails.ram()));
+            specs.add(ProductSpecifications.hasRam(productParamDetails.ram()));
         }
 
         if (Objects.nonNull(productParamDetails.memory())) {
-            spec.add(ProductSpecifications.hasMemory(productParamDetails.memory()));
+            specs.add(ProductSpecifications.hasMemory(productParamDetails.memory()));
         }
 
-        Specification<Product> allConditions = spec.stream()
-                .reduce(Specification::and)
-                .get();
+        Specification<Product> allConditions = specs.isEmpty()
+                ? Specification.where(null)
+                : specs.stream()
+                        .reduce(Specification::and)
+                        .get();
+
         var sort = Sort.by(Sort.Direction.DESC, "stockQuantity");
         var pageable = PageRequest.of(page, limit, sort);
+
         var products = productRepository.findAll(allConditions, pageable);
-        var productDetails = products.stream().map(productMapper::toProductDetails).toList();
+        var productIds = products.stream().map(Product::getId).toList();
+        var fetchedProducts = productRepository.findProductWithRelationsByIds(productIds);
+
+        var productDetails = fetchedProducts.stream().map(productMapper::toProductDetails).toList();
         return new PageImpl<>(productDetails, pageable, products.getTotalElements());
     }
 

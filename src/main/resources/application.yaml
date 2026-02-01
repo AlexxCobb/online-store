@@ -47,6 +47,9 @@ spring:
       timeout: 5000ms
   cache:
     type: ${SPRING_CACHE_TYPE:redis}
+  messages:
+    basename: messages
+    encoding: UTF-8
 app:
   cache:
     ttl: 30s
