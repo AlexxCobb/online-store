@@ -1,6 +1,5 @@
 package ru.zinovev.online.store.config;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,10 +27,18 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+                                        Authentication authentication) throws IOException {
+        if (authentication != null) {
+            handleAuthenticationSuccess(request, response, authentication);
+            var redirectUrl = getRedirectUrlByRole(authentication);
+            response.sendRedirect(redirectUrl);
+        }
 
-        if (authentication != null && authentication.isAuthenticated()
-                && authentication.getPrincipal() instanceof UserDetails userDetails) {
+    }
+
+    public void handleAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                            Authentication authentication) {
+        if (authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserDetails) {
 
             var email = authentication.getName();
             var user = userService.findUserDetailsByEmail(email);
@@ -41,14 +48,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
             sessionUserDto.setName(user.name());
             sessionUserDto.setIsAuthenticated(true);
 
-            String redirectUrl = "/api/users/products";
             boolean isAdmin = false;
 
             Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 if (authority.getAuthority().equals("ROLE_ADMIN")) {
                     isAdmin = true;
-                    redirectUrl = "/api/admins/home";
                     break;
                 }
             }
@@ -71,7 +76,20 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                 cartCookie.setMaxAge(0);
                 response.addCookie(cartCookie);
             }
-            response.sendRedirect(redirectUrl);
         }
+
+    }
+
+    private String getRedirectUrlByRole(Authentication authentication) {
+        String redirectUrl = "/api/users/products";
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        for (GrantedAuthority authority : authorities) {
+            if (authority.getAuthority().equals("ROLE_ADMIN")) {
+                redirectUrl = "/api/admins/home";
+                break;
+            }
+        }
+        return redirectUrl;
     }
 }
