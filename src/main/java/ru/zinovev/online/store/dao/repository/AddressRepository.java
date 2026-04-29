@@ -29,10 +29,10 @@ public interface AddressRepository extends JpaRepository<DeliveryAddress, Long> 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update DeliveryAddress d
-            set d.zipCode = COALEASE(:zipCode, d.zipCode),
-                d.street = COALEASE(:street, d.street),
-                d.houseNumber = COALEASE(:houseNumber, d.houseNumber),
-                d.flatNumber = COALEASE(:flatNumber, d.flatNumber)
+            set d.zipCode = COALESCE(:zipCode, d.zipCode),
+                d.street = COALESCE(:street, d.street),
+                d.houseNumber = COALESCE(:houseNumber, d.houseNumber),
+                d.flatNumber = COALESCE(:flatNumber, d.flatNumber)
             where d.publicDeliveryAddressId = :publicAddressId
             """)
     int updateAddress(String publicAddressId, Integer zipCode, String street, Integer houseNumber,
