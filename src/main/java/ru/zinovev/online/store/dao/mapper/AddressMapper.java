@@ -31,20 +31,6 @@ public interface AddressMapper {
     @Mapping(target = "publicAddressId", source = "publicDeliveryAddressId")
     AddressShortDetails toAddressShortDetails(DeliveryAddress deliveryAddress);
 
-    default DeliveryAddress updateAddressFromDetails(AddressUpdateDetails addressUpdateDetails,
-                                                     DeliveryAddress deliveryAddress) {
-        return deliveryAddress.toBuilder()
-                .zipCode(addressUpdateDetails.zipCode() != null ? addressUpdateDetails.zipCode()
-                                 : deliveryAddress.getZipCode())
-                .street(addressUpdateDetails.street() != null && !addressUpdateDetails.street().isEmpty()
-                                ? addressUpdateDetails.street() : deliveryAddress.getStreet())
-                .houseNumber(addressUpdateDetails.houseNumber() != null ? addressUpdateDetails.houseNumber()
-                                     : deliveryAddress.getHouseNumber())
-                .flatNumber(addressUpdateDetails.flatNumber() != null ? addressUpdateDetails.flatNumber()
-                                    : deliveryAddress.getFlatNumber())
-                .build();
-    }
-
     default String checkValue(String value) {
         if (value == null || value.trim().isEmpty()) {
             return null;

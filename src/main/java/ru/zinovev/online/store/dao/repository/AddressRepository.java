@@ -1,6 +1,7 @@
 package ru.zinovev.online.store.dao.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import ru.zinovev.online.store.dao.entity.DeliveryAddress;
 import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
@@ -24,4 +25,16 @@ public interface AddressRepository extends JpaRepository<DeliveryAddress, Long> 
     boolean existsByPublicDeliveryAddressIdAndUserPublicUserId(String publicDeliveryAddressId, String publicUserId);
 
     boolean existsByPublicDeliveryAddressIdAndAddressTypeName(String publicDeliveryAddressId, AddressTypeName name);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update DeliveryAddress d
+            set d.zipCode = COALEASE(:zipCode, d.zipCode),
+                d.street = COALEASE(:street, d.street),
+                d.houseNumber = COALEASE(:houseNumber, d.houseNumber),
+                d.flatNumber = COALEASE(:flatNumber, d.flatNumber)
+            where d.publicDeliveryAddressId = :publicAddressId
+            """)
+    int updateAddress(String publicAddressId, Integer zipCode, String street, Integer houseNumber,
+                      Integer flatNumber);
 }

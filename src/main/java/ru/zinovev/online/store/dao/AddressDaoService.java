@@ -74,18 +74,28 @@ public class AddressDaoService {
     }
 
     @Transactional
-    @CacheEvict(value = Caches.Address.BY_ID, key = "#addressDetails.publicAddressId()")
+    @CacheEvict(value = Caches.Address.BY_ID, key = "#addressDetails.publicAddressId()", beforeInvocation = true)
     public AddressDetails updateAddress(AddressDetails addressDetails,
                                         AddressUpdateDetails addressUpdateDetails) {
-        var deliveryAddress = addressRepository.findByPublicDeliveryAddressId(addressDetails.publicAddressId())
-                .orElseThrow(() -> new NotFoundException(
-                        "Address with id - " + addressDetails.publicAddressId() + " + not found"));
-        var updatedAddress = addressMapper.updateAddressFromDetails(addressUpdateDetails, deliveryAddress);
-        return addressMapper.toAddressDetails(addressRepository.save(updatedAddress));
+        var updated = addressRepository.updateAddress(
+                addressDetails.publicAddressId(),
+                addressUpdateDetails.zipCode(),
+                addressDetails.street(),
+                addressDetails.houseNumber(),
+                addressDetails.flatNumber()
+        );
+        if (updated == 0) {
+            throw new NotFoundException(
+                    "Address with id - " + addressDetails.publicAddressId() + " + not found");
+        }
+        var updatedAddress =
+                addressRepository.findByPublicDeliveryAddressId(addressDetails.publicAddressId())
+                        .orElseThrow(() -> new NotFoundException(
+                                "Address with id - " + addressDetails.publicAddressId() + " + not found"));
+        return addressMapper.toAddressDetails(updatedAddress);
     }
 
     @Transactional
-
     @Caching(evict = {
             @CacheEvict(value = Caches.Address.BY_ID, key = "#addressDetails.publicAddressId()"),
             @CacheEvict(value = Caches.Address.BY_SYSTEM_TYPE, key = "#addressDetails.addressTypeName()"),
