@@ -149,11 +149,9 @@
     </div>
 </nav>
 
-<!-- ОСНОВНАЯ СЕКЦИЯ С ФОРМОЙ. Используем .main-content-area для центрирования и растяжения. -->
 <div class="main-content-area">
     <div class="container">
 
-        <!-- Сообщения об успехе/ошибке -->
         <div th:if="${successMessage}" class="alert alert-success">
             <span th:text="${successMessage}"></span>
         </div>
@@ -161,11 +159,9 @@
             <span th:text="${errorMessage}"></span>
         </div>
 
-        <!-- Обёртка для центрирования и ограничения ширины -->
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-4">
 
-                <!-- Карточка с формой: белый фон, закругленные углы, тень -->
                 <div class="card p-4 shadow-lg" style="border-radius: 12px; border: none;">
 
                     <h3 class="card-title text-center mb-4" style="color: #1E1F29; font-weight: 700;">Вход в аккаунт</h3>
@@ -188,12 +184,10 @@
                                   th:errors="*{password}"></span>
                         </div>
 
-                        <!-- Кнопка Войти, используем наш фирменный стиль -->
                         <button type="submit" class="primary-btn order-submit">
                             Войти
                         </button>
 
-                        <!-- Ссылка на регистрацию -->
                         <div class="text-center mt-3">
                             <p class="small text-muted mb-0">
                                 Нет аккаунта? <a th:href="@{/api/auth}" class="text-electro-red">Зарегистрироваться</a>
@@ -208,7 +202,6 @@
 
 <footer th:replace="~{fragments/footer :: copy}"></footer>
 
-<!-- jQuery Plugins -->
 <script th:src="@{/js/jquery.min.js}"></script>
 <script th:src="@{/js/bootstrap.min.js}"></script>
 <script th:src="@{/js/slick.min.js}"></script>
