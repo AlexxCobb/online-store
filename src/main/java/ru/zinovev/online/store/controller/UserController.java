@@ -6,15 +6,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,7 +89,7 @@ public class UserController {
     @PatchMapping("/addresses/{publicAddressId}")
     public String updateAddress(@PathVariable String publicAddressId,
                                 @Valid AddressUpdateDto addressUpdateDto, BindingResult bindingResult, Model model,
-                                RedirectAttributes redirectAttributes) throws Exception {
+                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             var address = addressService.getAddressByPublicId(publicAddressId);
             model.addAttribute("address", address);
@@ -353,6 +356,11 @@ public class UserController {
         model.addAttribute("orders", orders);
 
         return "orders";
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class, new StringTrimmerEditor(true));
     }
 
     private void setCartCookie(HttpServletResponse response, String publicCartId) {

@@ -44,24 +44,29 @@ public class UserDaoService implements UserDetailsService {
     }
 
     @Transactional
-    public void updateUser(UserDetails userDetails, UserUpdateDto userUpdateDto) {
-        var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
-        var updatedUser = userMapper.updateUserFromDto(userUpdateDto, user);
-        userMapper.toUserDetails(userRepository.save(updatedUser));
+    public void updateUser(String publicUserId, UserUpdateDto userUpdateDto) {
+        var updated = userRepository.updateNameAndLastnameAndEmailByPublicUserId(
+                userUpdateDto.name(),
+                userUpdateDto.lastname(),
+                userUpdateDto.email(),
+                publicUserId
+        );
+        if (updated == 0) {
+            throw new NotFoundException("User with id - " + publicUserId + " not found");
+        }
     }
 
     @Transactional
-    public void deleteUser(UserDetails userDetails) {
-        userRepository.delete(userRepository.findByPublicUserId(userDetails.publicUserId()).get());
+    public void deleteUser(String publicUserId) {
+        int deleted = userRepository.deleteByPublicUserId(publicUserId);
+        if (deleted == 0) {
+            throw new NotFoundException("User with id - " + publicUserId + " not found");
+        }
     }
 
     @Transactional
-    public void changePassword(UserDetails userDetails, String password) {
-        var user = userRepository.findByPublicUserId(userDetails.publicUserId()).get();
-        var updateUser = user.toBuilder()
-                .passwordHash(password)
-                .build();
-        userMapper.toUserDetails(userRepository.save(updateUser));
+    public void changePassword(String publicUserId, String password) {
+        userRepository.updatePasswordHashByPublicUserId(publicUserId, password);
     }
 
     public Optional<UserDetails> findByEmailIgnoreCase(String email) {
@@ -71,6 +76,10 @@ public class UserDaoService implements UserDetailsService {
     public Optional<UserDetails> findByPublicId(String publicUserId) {
         var user = userRepository.findByPublicUserId(publicUserId);
         return user.map(userMapper::toUserDetails);
+    }
+
+    public boolean existByEmailIgnoreCase(String email) {
+        return userRepository.existsByEmailIgnoreCase(email);
     }
 
     public Optional<String> findPasswordHashByPublicId(UserDetails userDetails) {

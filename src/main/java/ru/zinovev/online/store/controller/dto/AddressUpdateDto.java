@@ -1,20 +1,23 @@
 package ru.zinovev.online.store.controller.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record AddressUpdateDto(
-        @Positive(message = "Индекс состоит из шести положительных цифр")
-        @Min(value = 100000, message = "Индекс должен состоять из 6 цифр")
-        @Max(value = 999999, message = "Индекс должен состоять из 6 цифр")
-        Integer zipCode,
-        @Size(max = 200,message = "Название должно содержать до {max} символов")
+
+        @Size(max = 6, message = "Индекс должен состоять из 6 цифр")
+        @Pattern(regexp = "\\d+", message = "Индекс должен быть числом")
+        String zipCode,
+
+        @Size(max = 200)
         String street,
-        @Positive(message = "Номер дома может быть только положительным числом")
-        Integer houseNumber,
-        @Positive(message = "Номер квартиры может быть только положительным числом")
-        Integer flatNumber
+
+        @Pattern(regexp = "\\d+", message = "Номер дома должен быть числом")
+        @Size(max = 10, message = "Слишком длинный номер дома")
+        String houseNumber,
+
+        @Pattern(regexp = "\\d+", message = "Номер квартиры должен быть числом")
+        @Size(max = 10)
+        String flatNumber
 ) {
 }
