@@ -352,7 +352,7 @@ public class AdminController {
                 publicOrderId, orderStatusName, paymentStatusName);
         var publicUserId = getPublicAdminIdOrThrowException(sessionUserDto);
         try {
-            orderService.changeOrderStatus(publicUserId, publicOrderId, orderStatusName, paymentStatusName);
+            orderService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
         } catch (BadRequestException e) {
             if (e.getMessage().equals("The DELIVERED status can only be changed to CANCELLED")) {
                 model.addAttribute("errorMessage", "Статус ДОСТАВЛЕН можно поменять только на статус ОТМЕНЕН");

@@ -4,8 +4,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.zinovev.online.store.dao.entity.Order;
+import ru.zinovev.online.store.dao.entity.OrderStatus;
+import ru.zinovev.online.store.dao.entity.PaymentStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +45,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     })
     Optional<Order> findByPublicOrderId(String publicOrderId);
 
+    @EntityGraph(attributePaths = {"orderStatus", "items", "items.product"})
+    @Query("SELECT o FROM Order o WHERE o.publicOrderId = :publicUserId")
+    Optional<Order> findByPublicOrderIdForStatusChange(@Param("publicUserId") String publicUserId);
+
     @EntityGraph(attributePaths = {
             "address",
             "paymentMethod",
@@ -53,5 +61,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     })
     @Query("SELECT o FROM Order o WHERE o.id IN :orderIds ORDER BY o.createdAt DESC")
     List<Order> findAll(List<Long> orderIds);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Order o set o.paymentStatus = :paymentStatus, o.orderStatus = :orderStatus where o.publicOrderId = :publicOrderId")
+    void updatePaymentStatusAndOrderStatusByPublicOrderId(PaymentStatus paymentStatus, OrderStatus orderStatus,
+                                                          String publicOrderId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Order o set o.orderStatus = :orderStatus where o.publicOrderId = :publicOrderId")
+    void updateOrderStatusByPublicOrderId(OrderStatus orderStatus, String publicOrderId);
 }
 
