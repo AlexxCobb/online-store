@@ -1,6 +1,7 @@
 package ru.zinovev.online.store.dao;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -9,7 +10,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import ru.zinovev.online.store.controller.dto.ProductEventDto;
 import ru.zinovev.online.store.controller.dto.ProductForStandDto;
+import ru.zinovev.online.store.controller.dto.enums.EventType;
 import ru.zinovev.online.store.dao.entity.OrderItem;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
@@ -25,9 +28,9 @@ import ru.zinovev.online.store.exception.model.OutOfStockException;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductParamDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
-import ru.zinovev.online.store.service.ProductEventPublisher;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -46,7 +49,7 @@ public class ProductDaoService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final ProductEventPublisher productEventPublisher;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final ProductStatisticRepository statisticRepository;
 
     @Transactional
@@ -119,7 +122,15 @@ public class ProductDaoService {
         );
 
         var updatedProduct = productRepository.findByPublicProductId(publicProductId).get();
-        productEventPublisher.publishProductUpdateEvent(productMapper.toProductForStandDto(updatedProduct));
+        var standProduct = productMapper.toProductForStandDto(updatedProduct);
+        var eventDto = new ProductEventDto(
+                UUID.randomUUID().toString(),
+                EventType.UPDATE,
+                standProduct.publicProductId(),
+                standProduct,
+                Instant.now()
+        );
+        applicationEventPublisher.publishEvent(eventDto);
         return productMapper.toProductDetails(updatedProduct);
     }
 
@@ -133,7 +144,15 @@ public class ProductDaoService {
                 .orElseThrow(() -> new NotFoundException("Product with publicId = " + publicProductId +
                                                                  " , not found"));
         productRepository.delete(product);
-        productEventPublisher.publishProductDeleteEvent(productMapper.toProductForStandDto(product));
+        var standProduct = productMapper.toProductForStandDto(product);
+        var eventDto = new ProductEventDto(
+                UUID.randomUUID().toString(),
+                EventType.DELETE,
+                standProduct.publicProductId(),
+                standProduct,
+                Instant.now()
+        );
+        applicationEventPublisher.publishEvent(eventDto);
     }
 
     public Page<ProductDetails> findProducts(List<String> categoryPublicIds, BigDecimal minPrice,
