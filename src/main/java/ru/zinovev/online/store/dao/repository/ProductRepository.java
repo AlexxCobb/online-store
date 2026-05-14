@@ -4,11 +4,12 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductView;
 
@@ -25,8 +26,13 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("SELECT p.id FROM Product p")
     Page<Long> findProductIds(Pageable pageable);
 
-    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.parameters WHERE p.id IN :ids ORDER BY p.stockQuantity DESC")
-    @EntityGraph(attributePaths = "category")
+    @Query("""
+            SELECT p FROM Product p 
+            LEFT JOIN FETCH p.parameters
+            LEFT JOIN FETCH p.category
+            WHERE p.id IN :ids 
+            ORDER BY p.stockQuantity DESC
+            """)
     List<Product> findProductsWithParametersInIds(List<Long> ids);
 
     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
@@ -72,4 +78,46 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "WHERE p.createdAt >= :cutoffDate " +
             "ORDER BY p.price DESC")
     List<ProductView> findNewProducts(OffsetDateTime cutoffDate, Pageable pageable);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            UPDATE Product p
+            SET p.category = :category
+            WHERE p.publicProductId = :publicId
+            """)
+    void updateCategory(String publicId, Category category);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Product p 
+            set 
+                p.name = COALESCE(:name, p.name) , 
+                p.price = COALESCE(:price, p.price),
+                p.stockQuantity = COALESCE(:stockQuantity, p.stockQuantity),
+                p.isDiscount = COALESCE(:isDiscount, p.isDiscount),
+                p.discountPrice = COALESCE(:discountPrice, p.discountPrice)
+            where p.publicProductId = :publicProductId
+            """)
+    void updateProductFields(String name, BigDecimal price,
+                             Integer stockQuantity,
+                             Boolean isDiscount,
+                             BigDecimal discountPrice,
+                             String publicProductId);
+
+    @Modifying
+    @Query("""
+        update Product p
+        set p.stockQuantity = p.stockQuantity - :quantity
+        where p.publicProductId = :publicProductId
+        and p.stockQuantity >= :quantity
+        """)
+    void decreaseStockQuantity(String  publicProductId, Integer quantity);
+
+    @Modifying
+    @Query("""
+        update Product p
+        set p.stockQuantity = p.stockQuantity + :quantity
+        where p.publicProductId = :publicProductId
+        """)
+    void increaseStockQuantity(String  publicProductId, Integer quantity);
 }

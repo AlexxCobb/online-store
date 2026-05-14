@@ -60,10 +60,9 @@ public class OrderService {
                 .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
     }
 
-    public void changeOrderStatus(@NonNull String publicUserId, @NonNull String publicOrderId,
+    public void changeOrderStatus(@NonNull String publicOrderId,
                                   @NonNull OrderStatusName orderStatusName,
                                   PaymentStatusName paymentStatusName) {
-        userService.findUserDetails(publicUserId); // нужна ли?
         orderDaoService.changeOrderStatus(publicOrderId, orderStatusName, paymentStatusName);
     }
 

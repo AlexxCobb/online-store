@@ -93,7 +93,6 @@ public class OrderDaoService {
         order.getItems().addAll(items);
         orderRepository.save(order);
         cart.getItems().clear();
-        cartRepository.save(cart);
     }
 
     public Page<OrderDetails> getUserOrders(String publicUserId, Integer page, Integer limit) {
@@ -124,11 +123,10 @@ public class OrderDaoService {
         return orderRepository.findByPublicOrderId(publicOrderId).map(orderMapper::toOrderShortDetails);
     }
 
-
     @Transactional
     public void changeOrderStatus(String publicOrderId,
                                   OrderStatusName orderStatusName, PaymentStatusName paymentStatusName) {
-        var order = orderRepository.findByPublicOrderId(publicOrderId)
+        var order = orderRepository.findByPublicOrderIdForStatusChange(publicOrderId)
                 .orElseThrow(() -> new NotFoundException("Order with id - " + publicOrderId + " + not found"));
         var existedOrderStatus = order.getOrderStatus().getName();
         if (existedOrderStatus.equals(OrderStatusName.DELIVERED) && !orderStatusName.equals(
@@ -139,18 +137,19 @@ public class OrderDaoService {
             throw new BadRequestException("The CANCELLED status can not be changed");
         }
         var orderStatus = orderStatusRepository.getByName(orderStatusName);
-        var updatedOrder = order.toBuilder().orderStatus(orderStatus);
 
         if (paymentStatusName != null) {
             var payStatus = paymentStatusRepository.getByName(paymentStatusName);
-            updatedOrder.paymentStatus(payStatus);
+            orderRepository.updatePaymentStatusAndOrderStatusByPublicOrderId(payStatus, orderStatus, publicOrderId);
+        } else {
+            orderRepository.updateOrderStatusByPublicOrderId(orderStatus, publicOrderId);
         }
-        var savedOrder = orderRepository.save(updatedOrder.build());
+
         if (orderStatusName.equals(OrderStatusName.DELIVERED)) {
-            statisticDaoService.createStatistic(savedOrder);
+            statisticDaoService.createStatistic(order);
         }
         if (orderStatusName.equals(OrderStatusName.CANCELLED)) {
-            statisticDaoService.cancelStatistic(savedOrder);
+            statisticDaoService.cancelStatistic(order);
             productDaoService.returnProductsToWarehouse(order.getItems());
         }
     }

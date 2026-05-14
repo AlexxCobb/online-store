@@ -42,13 +42,15 @@ public class CategoryDaoService {
             @CacheEvict(value = Caches.Category.BY_ID, key = "#categoryDetailsExist.publicCategoryId()")
     })
     public CategoryDetails updateCategory(CategoryDetails categoryDetailsExist, CategoryDetails categoryDetails) {
-        var category = categoryRepository.findByPublicCategoryId(categoryDetailsExist.publicCategoryId())
-                .orElseThrow(() -> new NotFoundException(
-                        "Category with id - " + categoryDetails.publicCategoryId() + " not found"));
-        var updateCategory = category.toBuilder()
-                .name(categoryDetails.name())
-                .build();
-        return categoryMapper.toCategoryDetails(categoryRepository.save(updateCategory));
+        var updated =
+                categoryRepository.updateNameByPublicCategoryId(categoryDetails.name(),
+                                                                categoryDetailsExist.publicCategoryId());
+        if (updated == 0) {
+            throw new NotFoundException(
+                    "Category with id - " + categoryDetailsExist.publicCategoryId() + " not found");
+        }
+        var updatedCategory = categoryRepository.findByPublicCategoryId(categoryDetailsExist.publicCategoryId()).get();
+        return categoryMapper.toCategoryDetails(updatedCategory);
     }
 
     @Transactional

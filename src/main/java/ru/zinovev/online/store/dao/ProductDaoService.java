@@ -106,13 +106,21 @@ public class ProductDaoService {
             category = categoryRepository.findByPublicCategoryId(updateDetails.publicCategoryId())
                     .orElseThrow(() -> new NotFoundException(
                             "Category with id - " + updateDetails.publicCategoryId() + " not found"));
+            productRepository.updateCategory(publicProductId, category);
         }
 
-        var updatedProductFromDetails = productMapper.updateProductFromDetails(updateDetails, existedProduct);
-        var updatedProductWithCategory = updatedProductFromDetails.toBuilder().category(category).build();
-        var product = productRepository.save(updatedProductWithCategory);
-        productEventPublisher.publishProductUpdateEvent(productMapper.toProductForStandDto(product));
-        return productMapper.toProductDetails(product);
+        productRepository.updateProductFields(
+                updateDetails.name(),
+                updateDetails.price(),
+                updateDetails.stockQuantity(),
+                updateDetails.isDiscount(),
+                updateDetails.discountPrice(),
+                publicProductId
+        );
+
+        var updatedProduct = productRepository.findByPublicProductId(publicProductId).get();
+        productEventPublisher.publishProductUpdateEvent(productMapper.toProductForStandDto(updatedProduct));
+        return productMapper.toProductDetails(updatedProduct);
     }
 
     public Optional<ProductDetails> findByPublicId(String publicProductId) {
@@ -173,8 +181,8 @@ public class ProductDaoService {
         Specification<Product> allConditions = specs.isEmpty()
                 ? Specification.where(null)
                 : specs.stream()
-                        .reduce(Specification::and)
-                        .get();
+                  .reduce(Specification::and)
+                  .get();
 
         var sort = Sort.by(Sort.Direction.DESC, "stockQuantity");
         var pageable = PageRequest.of(page, limit, sort);
@@ -201,50 +209,33 @@ public class ProductDaoService {
 
     @Transactional
     public void updateProductsQuantity(Map<String, Integer> productsToQuantity) {
-        var productsList = new ArrayList<Product>();
         var productIds = productsToQuantity.keySet();
         var products = productRepository.findProductsByPublicIdsForUpdate(productIds);
-        var stockIssues = new ArrayList<OutOfStockDto>();
-        for (Product product : products) {
-            if (product.getStockQuantity() < productsToQuantity.get(product.getPublicProductId())) {
-                stockIssues.add(
-                        new OutOfStockDto(product.getPublicProductId(), product.getName(),
-                                          productsToQuantity.get(product.getPublicProductId()),
-                                          product.getStockQuantity()));
-            } else {
-                var productToUpdate = product.toBuilder()
-                        .stockQuantity(
-                                product.getStockQuantity() - productsToQuantity.get(product.getPublicProductId()))
-                        .build();
-                productsList.add(productToUpdate);
-            }
-        }
+        var stockIssues = products.stream()
+                .filter(product -> product.getStockQuantity() < productsToQuantity.get(product.getPublicProductId()))
+                .map(product -> new OutOfStockDto(product.getPublicProductId(), product.getName(),
+                                                  productsToQuantity.get(product.getPublicProductId()),
+                                                  product.getStockQuantity())).toList();
         if (!stockIssues.isEmpty()) {
             throw new OutOfStockException(
                     "You cannot order the selected quantity of products",
                     stockIssues);
         }
-        productRepository.saveAll(productsList);
+        productsToQuantity.forEach(productRepository::decreaseStockQuantity);
     }
 
     @Transactional
     public void cancelReserveProducts(Map<String, Integer> productsToQuantity) {
-        var products = productRepository.findProductsByPublicIdsForUpdate(productsToQuantity.keySet());
-        var productsList = products.stream().map(product -> product.toBuilder()
-                .stockQuantity(product.getStockQuantity() + productsToQuantity.get(product.getPublicProductId()))
-                .build()).toList();
-        productRepository.saveAll(productsList);
+        productsToQuantity.forEach(productRepository::increaseStockQuantity);
     }
 
     @Transactional(propagation = Propagation.MANDATORY)
     public void returnProductsToWarehouse(List<OrderItem> items) {
-        var productsList = items.stream().map(item -> {
-            var product = item.getProduct();
-            return product.toBuilder()
-                    .stockQuantity(product.getStockQuantity() + item.getQuantity())
-                    .build();
-        }).toList();
-        productRepository.saveAll(productsList);
+        items.forEach(orderItem -> {
+            var productId = orderItem.getProduct().getPublicProductId();
+            var quantity = orderItem.getQuantity();
+            productRepository.increaseStockQuantity(productId, quantity);
+        });
     }
 
     public List<ProductForStandDto> getTopProducts() {
@@ -253,7 +244,7 @@ public class ProductDaoService {
                 .getContent()
                 .stream()
                 .map(productMapper::toTopProductDto)
-                .toList(); // использование статистики здесь?
+                .toList();
     }
 
     public List<ProductForStandDto> getDiscountProducts() {

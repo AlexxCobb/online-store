@@ -25,26 +25,27 @@ public class UserService {
     }
 
     public void updateUser(@NonNull String publicUserId, @NonNull UserUpdateDto userUpdateDto) {
-        var userDetails = findUserDetails(publicUserId);
-        userDaoService.updateUser(userDetails, userUpdateDto);
+        userDaoService.updateUser(publicUserId, userUpdateDto);
     }
 
     public void deleteUser(@NonNull String publicUserId) {
-        userDaoService.deleteUser(findUserDetails(publicUserId));
+        userDaoService.deleteUser(publicUserId);
     }
 
     public void changePassword(@NonNull String publicUserId, @NonNull ChangePasswordDto changePasswordDto) {
         var userDetails = findUserDetails(publicUserId);
         var userPassword = userDaoService.findPasswordHashByPublicId(userDetails)
                 .orElseThrow(() -> new NotFoundException("Password not found"));
+
+        if (changePasswordDto.currentPassword().equals(changePasswordDto.newPassword())) {
+            throw new InvalidPasswordException("New password cannot match current password");
+        }
         if (!passwordEncoder.matches(changePasswordDto.currentPassword(), userPassword)) {
             throw new InvalidPasswordException("Current password is incorrect");
         }
-        if (passwordEncoder.matches(changePasswordDto.newPassword(), userPassword)) {
-            throw new InvalidPasswordException("New password cannot match current password");
-        }
+
         var password = passwordEncoder.encode(changePasswordDto.newPassword());
-        userDaoService.changePassword(userDetails, password);
+        userDaoService.changePassword(userDetails.publicUserId(), password);
     }
 
     public UserDetails findUserDetails(String publicUserId) {
@@ -52,9 +53,8 @@ public class UserService {
                 () -> new NotFoundException("User with id - " + publicUserId + " not found"));
     }
 
-    public Boolean checkExistByEmail(String email) {
-        var user = userDaoService.findByEmailIgnoreCase(email);
-        return user.isPresent();
+    public boolean checkExistByEmail(String email) {
+        return userDaoService.existByEmailIgnoreCase(email);
     }
 
     public UserDetails findUserDetailsByEmail(String email) {
