@@ -289,9 +289,9 @@ public class AdminController {
             model.addAttribute("categories", categories);
             return "admin/add-product";
         }
-        var publicUserId = getPublicAdminIdOrThrowException(sessionUserDto);
+        getPublicAdminIdOrThrowException(sessionUserDto);
         try {
-            productService.createProduct(publicUserId, productMapper.toProductDetails(productDto));
+            productService.createProduct(productMapper.toProductDetails(productDto));
         } catch (DuplicateProductException e) {
             redirectAttributes.addFlashAttribute("conflictMessage",
                                                  String.format(
@@ -324,8 +324,8 @@ public class AdminController {
             model.addAttribute("product", product);
             return "admin/edit-product";
         }
-        var publicUserId = getPublicAdminIdOrThrowException(sessionUserDto);
-        productService.updateProduct(publicUserId, productMapper.toProductUpdateDetails(productUpdateDto),
+        getPublicAdminIdOrThrowException(sessionUserDto);
+        productService.updateProduct(productMapper.toProductUpdateDetails(productUpdateDto),
                                      publicProductId);
         redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УСПЕШНО ОТРЕДАКТИРОВАН");
         return "redirect:/api/admins/products";
@@ -335,8 +335,8 @@ public class AdminController {
     public String deleteProduct(@PathVariable String publicProductId,
                                 RedirectAttributes redirectAttributes) {
         log.debug("Received DELETE request to delete product with id = {}", publicProductId);
-        var publicUserId = getPublicAdminIdOrThrowException(sessionUserDto);
-        productService.deleteProduct(publicUserId, publicProductId);
+
+        productService.deleteProduct(publicProductId);
         redirectAttributes.addFlashAttribute("successMessage", "ТОВАР УСПЕШНО УДАЛЕН");
 
         return "redirect:/api/admins/products";

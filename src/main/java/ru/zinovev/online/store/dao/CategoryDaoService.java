@@ -50,7 +50,7 @@ public class CategoryDaoService {
                     "Category with id - " + categoryDetailsExist.publicCategoryId() + " not found");
         }
         var updatedCategory = categoryRepository.findByPublicCategoryId(categoryDetailsExist.publicCategoryId()).get();
-        return categoryMapper.toCategoryDetails(categoryRepository.save(updatedCategory));
+        return categoryMapper.toCategoryDetails(updatedCategory);
     }
 
     @Transactional

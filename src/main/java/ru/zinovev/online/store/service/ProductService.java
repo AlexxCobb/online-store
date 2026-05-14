@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -34,10 +33,8 @@ public class ProductService {
 
     private final ProductDaoService productDaoService;
     private final CategoryService categoryService;
-    private final UserService userService;
 
-    public ProductDetails createProduct(@NonNull String publicUserId, @NonNull ProductDetails productDetails) {
-        userService.findUserDetails(publicUserId);
+    public ProductDetails createProduct(@NonNull ProductDetails productDetails) {
         return productDaoService.createProduct(productDetails);
     }
 
@@ -47,10 +44,8 @@ public class ProductService {
                     @CacheEvict(value = Caches.Product.PRICES, allEntries = true)
             }
     )
-    public ProductDetails updateProduct(@NonNull String publicUserId,
-                                        @NonNull ProductUpdateDetails productUpdateDetails,
+    public ProductDetails updateProduct(@NonNull ProductUpdateDetails productUpdateDetails,
                                         @NonNull String publicProductId) {
-        userService.findUserDetails(publicUserId);
         getByPublicId(publicProductId);
         return productDaoService.updateProduct(productUpdateDetails, publicProductId);
     }
@@ -62,8 +57,7 @@ public class ProductService {
                     @CacheEvict(value = Caches.Product.PARAMS, allEntries = true)
             }
     )
-    public void deleteProduct(@NonNull String publicUserId, @NonNull String publicProductId) {
-        userService.findUserDetails(publicUserId);
+    public void deleteProduct(@NonNull String publicProductId) {
         productDaoService.deleteProduct(publicProductId);
     }
 
@@ -88,7 +82,7 @@ public class ProductService {
         if (categoryPublicIds != null && !categoryPublicIds.isEmpty()) {
             var result = categoryService.existCategories(categoryPublicIds);
             if (!result) {
-                throw new NotFoundException("Categories with ids - " + categoryPublicIds + "not found"); // доработать
+                throw new NotFoundException("Categories with ids - " + categoryPublicIds + " not found"); // доработать
             }
         }
         return productDaoService.findProducts(categoryPublicIds, minPrice, maxPrice, productParamDetails, page, limit);

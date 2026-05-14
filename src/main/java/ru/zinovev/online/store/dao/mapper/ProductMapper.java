@@ -71,19 +71,6 @@ public interface ProductMapper {
     @Mapping(target = "color", expression = "java(getParameter(\"color\",product.getParameters()))")
     ProductForStandDto toProductForStandDto(Product product);
 
-    default Product updateProductFromDetails(ProductUpdateDetails productUpdateDetails,
-                                             Product product) {
-        return product.toBuilder()
-                .name(productUpdateDetails.name() != null && !productUpdateDetails.name().isEmpty()
-                              ? productUpdateDetails.name() : product.getName())
-                .price(productUpdateDetails.price() != null ? productUpdateDetails.price() : product.getPrice())
-                .stockQuantity(productUpdateDetails.stockQuantity() != null ? productUpdateDetails.stockQuantity()
-                                       : product.getStockQuantity())
-                .isDiscount(productUpdateDetails.isDiscount())
-                .discountPrice(productUpdateDetails.isDiscount() ? productUpdateDetails.discountPrice() : null)
-                .build();
-    }
-
     default Set<ParametersDetails> toParametersDetails(List<ParametersDto> parameters) {
         if (parameters == null) {
             return Collections.emptySet();
