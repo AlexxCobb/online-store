@@ -23,7 +23,7 @@ services:
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
       - SPRING_DATA_REDIS_HOST=redis
-      - QUEUE_NAME=MainQueue
+      - QUEUE_NAME=product.queue
     restart: always
 
   redis:
@@ -87,5 +87,5 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=guest
       - SPRING_RABBITMQ_PASSWORD=guest
-      - QUEUE_NAME=MainQueue
+      - QUEUE_NAME=product.queue
     restart: always

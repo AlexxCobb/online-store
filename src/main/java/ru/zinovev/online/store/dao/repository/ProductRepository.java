@@ -31,13 +31,13 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             LEFT JOIN FETCH p.parameters
             LEFT JOIN FETCH p.category
             WHERE p.id IN :ids 
-            ORDER BY p.stockQuantity DESC
+            ORDER BY p.stockQuantity DESC, p.id ASC
             """)
     List<Product> findProductsWithParametersInIds(List<Long> ids);
 
     Page<Product> findAll(Specification<Product> spec, Pageable pageable);
 
-    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.parameters LEFT JOIN FETCH p.category WHERE p.id IN :ids ORDER BY p.stockQuantity DESC")
+    @Query(value = "SELECT p FROM Product p LEFT JOIN FETCH p.parameters LEFT JOIN FETCH p.category WHERE p.id IN :ids ORDER BY p.stockQuantity DESC, p.id ASC")
     List<Product> findProductWithRelationsByIds(List<Long> ids);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -64,7 +64,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "LEFT JOIN p.parameters pp_brand ON pp_brand.key = 'brand' " +
             "LEFT JOIN p.parameters pp_color ON pp_color.key = 'color' " +
             "WHERE p.isDiscount = TRUE " +
-            "ORDER BY p.discountPrice ASC")
+            "ORDER BY p.discountPrice ASC, p.id ASC")
     List<ProductView> findDiscountProducts(Pageable pageable);
 
     @Query("SELECT p.publicProductId as publicProductId, p.name as name, " +
@@ -76,7 +76,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
             "LEFT JOIN p.parameters pp_brand ON pp_brand.key = 'brand' " +
             "LEFT JOIN p.parameters pp_color ON pp_color.key = 'color' " +
             "WHERE p.createdAt >= :cutoffDate " +
-            "ORDER BY p.price DESC")
+            "ORDER BY p.price DESC, p.id ASC")
     List<ProductView> findNewProducts(OffsetDateTime cutoffDate, Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

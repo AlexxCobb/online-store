@@ -161,7 +161,10 @@ public class ProductDaoService {
         if (Objects.isNull(categoryPublicIds) && Objects.isNull(minPrice) && Objects.isNull(maxPrice) && Objects.isNull(
                 productParamDetails.brand()) && Objects.isNull(productParamDetails.memory()) && Objects.isNull(
                 productParamDetails.ram()) && Objects.isNull(productParamDetails.color())) {
-            var sort = Sort.by(Sort.Direction.DESC, "stockQuantity");
+            var sort = Sort.by(
+                    Sort.Order.desc("stockQuantity"),
+                    Sort.Order.asc("id")
+            );
             var pageable = PageRequest.of(page, limit, sort);
             var ids = productRepository.findProductIds(pageable);
             var products = productRepository.findProductsWithParametersInIds(ids.getContent());
@@ -203,7 +206,10 @@ public class ProductDaoService {
                   .reduce(Specification::and)
                   .get();
 
-        var sort = Sort.by(Sort.Direction.DESC, "stockQuantity");
+        var sort = Sort.by(
+                Sort.Order.desc("stockQuantity"),
+                Sort.Order.asc("id")
+        );
         var pageable = PageRequest.of(page, limit, sort);
 
         var products = productRepository.findAll(allConditions, pageable);
@@ -276,7 +282,7 @@ public class ProductDaoService {
 
     public List<ProductForStandDto> getNewProducts() {
         var newSix = PageRequest.of(0, 6);
-        var lastMonth = OffsetDateTime.now().minusMonths(1);
+        var lastMonth = OffsetDateTime.now().minusMonths(5);
         return productRepository.findNewProducts(lastMonth, newSix)
                 .stream()
                 .map(productMapper::toNewProductDto)
