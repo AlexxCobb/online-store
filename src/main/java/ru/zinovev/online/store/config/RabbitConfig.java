@@ -1,10 +1,11 @@
 package ru.zinovev.online.store.config;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -16,7 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.zinovev.online.store.config.properties.RabbitMQProperties;
 
-@Setter
 @Configuration
 @EnableConfigurationProperties(RabbitMQProperties.class)
 @RequiredArgsConstructor
@@ -26,9 +26,11 @@ public class RabbitConfig {
 
     @Bean
     public Queue productQueue() {
-        return new Queue(rabbitMQProperties.queueName(), true);
+        return QueueBuilder.durable(rabbitMQProperties.queueName())
+                .withArgument("x-dead-letter-exchange", "product.dlx")
+                .withArgument("x-dead-letter-routing-key", "product.dead")
+                .build();
     }
-
 
     @Bean
     public TopicExchange productExchange() {
@@ -39,7 +41,24 @@ public class RabbitConfig {
     public Binding binding(Queue productQueue, TopicExchange productExchange) {
         return BindingBuilder.bind(productQueue)
                 .to(productExchange)
-                .with(rabbitMQProperties.queueName());
+                .with(rabbitMQProperties.routingKey());
+    }
+
+    @Bean
+    public DirectExchange deadLetterExchange() {
+        return new DirectExchange("product.dlx");
+    }
+
+    @Bean
+    public Queue deadLetterQueue() {
+        return QueueBuilder.durable("product.dead.queue").build();
+    }
+
+    @Bean
+    public Binding deadLetterBinding() {
+        return BindingBuilder.bind(deadLetterQueue())
+                .to(deadLetterExchange())
+                .with("product.dead");
     }
 
     @Bean

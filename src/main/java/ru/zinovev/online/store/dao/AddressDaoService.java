@@ -74,15 +74,19 @@ public class AddressDaoService {
     }
 
     @Transactional
-    @CacheEvict(value = Caches.Address.BY_ID, key = "#addressDetails.publicAddressId()", beforeInvocation = true)
+    @Caching(evict = {
+            @CacheEvict(value = Caches.Address.BY_ID, key = "#addressDetails.publicAddressId()"),
+            @CacheEvict(value = Caches.Address.ALL, allEntries = true),
+            @CacheEvict(value = Caches.Address.BY_SYSTEM_TYPE, allEntries = true)
+    })
     public AddressDetails updateAddress(AddressDetails addressDetails,
                                         AddressUpdateDetails addressUpdateDetails) {
         var updated = addressRepository.updateAddress(
                 addressDetails.publicAddressId(),
                 addressUpdateDetails.zipCode(),
-                addressDetails.street(),
-                addressDetails.houseNumber(),
-                addressDetails.flatNumber()
+                addressUpdateDetails.street(),
+                addressUpdateDetails.houseNumber(),
+                addressUpdateDetails.flatNumber()
         );
         if (updated == 0) {
             throw new NotFoundException(

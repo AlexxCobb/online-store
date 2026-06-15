@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 public record AddressUpdateDto(
 
         @Size(max = 6, message = "Индекс должен состоять из 6 цифр")
+        @Size(min = 6, message = "Индекс должен состоять из 6 цифр")
         @Pattern(regexp = "\\d+", message = "Индекс должен быть числом")
         String zipCode,
 
