@@ -15,6 +15,7 @@ import ru.zinovev.online.store.dao.entity.enums.AddressTypeName;
 import ru.zinovev.online.store.dao.mapper.AddressMapper;
 import ru.zinovev.online.store.dao.repository.AddressRepository;
 import ru.zinovev.online.store.dao.repository.AddressTypeRepository;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.AddressDetails;
 import ru.zinovev.online.store.model.AddressUpdateDetails;
 import ru.zinovev.online.store.model.UserDetails;
@@ -26,9 +27,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -157,19 +160,71 @@ class AddressDaoServiceTest {
 
     @Test
     void shouldUpdateAddress() {
-        var updateAddress = mockUserAddress.toBuilder()
-                .street("Nekrasov").build();
-        when(addressRepository.findByPublicDeliveryAddressId(mockUserAddressDetails.publicAddressId())).thenReturn(
-                Optional.of(mockUserAddress));
-        when(addressMapper.updateAddressFromDetails(mockAddressUpdateDetails,mockUserAddress)).thenReturn(updateAddress);
-        when(addressRepository.save(addressCaptor.capture())).thenReturn(updateAddress);
-        when(addressMapper.toAddressDetails(updateAddress)).thenReturn(mockUserUpdatedAddressDetails);
+        var publicId = mockUserAddress.getPublicDeliveryAddressId();
+        var updateDetails = mockAddressUpdateDetails;
+        var updatedEntity = mockUserAddress.toBuilder()
+                .street(updateDetails.street())
+                .build();
+        var expectedDetails = mockUserUpdatedAddressDetails;
 
-        var result = addressDaoService.updateAddress(mockUserAddressDetails, mockAddressUpdateDetails);
+        when(addressRepository.updateAddress(
+                publicId,
+                updateDetails.zipCode(),
+                updateDetails.street(),
+                updateDetails.houseNumber(),
+                updateDetails.flatNumber()
+        )).thenReturn(1);
+
+        when(addressRepository.findByPublicDeliveryAddressId(publicId))
+                .thenReturn(Optional.of(updatedEntity));
+        when(addressMapper.toAddressDetails(updatedEntity))
+                .thenReturn(expectedDetails);
+
+        var result = addressDaoService.updateAddress(mockUserAddressDetails, updateDetails);
 
         assertNotNull(result);
-        assertEquals(mockUserUpdatedAddressDetails, result);
-        verify(addressMapper, times(1)).updateAddressFromDetails(mockAddressUpdateDetails, mockUserAddress);
+        assertEquals(expectedDetails, result);
+        verify(addressRepository).updateAddress(
+                publicId,
+                updateDetails.zipCode(),
+                updateDetails.street(),
+                updateDetails.houseNumber(),
+                updateDetails.flatNumber()
+        );
+        verify(addressRepository).findByPublicDeliveryAddressId(publicId);
+        verify(addressMapper).toAddressDetails(updatedEntity);
+        verifyNoMoreInteractions(addressRepository, addressMapper);
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenUpdateAffectsNoRows() {
+        String publicId = mockUserAddress.getPublicDeliveryAddressId();
+        AddressUpdateDetails updateDetails = mockAddressUpdateDetails;
+
+        when(addressRepository.updateAddress(
+                publicId,
+                updateDetails.zipCode(),
+                updateDetails.street(),
+                updateDetails.houseNumber(),
+                updateDetails.flatNumber()
+        )).thenReturn(0);
+
+        var exception = assertThrows(
+                NotFoundException.class,
+                () -> addressDaoService.updateAddress(mockUserAddressDetails, updateDetails)
+        );
+
+        assertTrue(exception.getMessage().contains("Address with id - " + publicId));
+
+        verify(addressRepository).updateAddress(
+                publicId,
+                updateDetails.zipCode(),
+                updateDetails.street(),
+                updateDetails.houseNumber(),
+                updateDetails.flatNumber()
+        );
+        verify(addressRepository, never()).findByPublicDeliveryAddressId(publicId);
+        verify(addressMapper, never()).toAddressDetails(mockUserAddress);
     }
 
     @Test

@@ -107,10 +107,9 @@ class ProductServiceTest {
 
     @Test
     void shouldCreateNewProduct() {
-        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
         when(productDaoService.createProduct(mockProductDetails)).thenReturn(mockSavedProductDetails);
 
-        var result = productService.createProduct(mockUserDetails.publicUserId(), mockProductDetails);
+        var result = productService.createProduct(mockProductDetails);
         assertNotNull(result);
         assertEquals(mockSavedProductDetails, result);
         assertEquals(mockSavedProductDetails.name(), result.name());
@@ -119,15 +118,13 @@ class ProductServiceTest {
     @Test
     void shouldUpdateExistedProduct() {
         var publicId = mockProduct.getPublicProductId();
-        var categoryId = mockCategory.getPublicCategoryId();
 
-        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
         when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.of(mockProductDetails));
         when(productDaoService.updateProduct(mockProductUpdateDetailsRequest, publicId)).thenReturn(
                 mockUpdatedProductDetails);
 
         var result =
-                productService.updateProduct(mockUserDetails.publicUserId(), mockProductUpdateDetailsRequest, publicId);
+                productService.updateProduct(mockProductUpdateDetailsRequest, publicId);
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
@@ -140,13 +137,12 @@ class ProductServiceTest {
         var updateProductDtoWithoutCategory =
                 new ProductUpdateDetails("name", null, null, null, null, null);
 
-        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
         when(productDaoService.findByPublicId(publicId)).thenReturn(Optional.of(mockProductDetails));
         when(productDaoService.updateProduct(updateProductDtoWithoutCategory, publicId)).thenReturn(
                 mockUpdatedProductDetails);
 
         var result =
-                productService.updateProduct(mockUserDetails.publicUserId(), updateProductDtoWithoutCategory, publicId);
+                productService.updateProduct(updateProductDtoWithoutCategory, publicId);
         assertNotNull(result);
         assertEquals(mockUpdatedProductDetails, result);
         assertEquals(mockUpdatedProductDetails.price(), result.price());
@@ -157,9 +153,7 @@ class ProductServiceTest {
     void shouldDeleteProduct() {
         var publicId = mockProduct.getPublicProductId();
 
-        when(userService.findUserDetails(mockUserDetails.publicUserId())).thenReturn(mockUserDetails);
-
-        productService.deleteProduct(mockUserDetails.publicUserId(), publicId);
+        productService.deleteProduct(publicId);
         verify(productDaoService, times(1)).deleteProduct(publicId);
     }
 
