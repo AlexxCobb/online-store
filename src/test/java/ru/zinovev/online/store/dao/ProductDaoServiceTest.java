@@ -8,17 +8,21 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
+import ru.zinovev.online.store.controller.dto.ProductEventDto;
 import ru.zinovev.online.store.controller.dto.ProductForStandDto;
+import ru.zinovev.online.store.controller.dto.enums.EventType;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.entity.Product;
 import ru.zinovev.online.store.dao.entity.ProductParameter;
 import ru.zinovev.online.store.dao.mapper.ProductMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
 import ru.zinovev.online.store.dao.repository.ProductRepository;
+import ru.zinovev.online.store.exception.model.AlreadyExistException;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.ParametersDetails;
 import ru.zinovev.online.store.model.ProductDetails;
 import ru.zinovev.online.store.model.ProductUpdateDetails;
-import ru.zinovev.online.store.service.ProductEventPublisher;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -29,8 +33,12 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,9 +53,11 @@ class ProductDaoServiceTest {
     @Mock
     private ProductMapper productMapper;
     @Mock
-    private ProductEventPublisher productEventPublisher;
+    private ApplicationEventPublisher applicationEventPublisher;
     @Captor
     private ArgumentCaptor<Product> productCaptor;
+    @Captor
+    private ArgumentCaptor<ProductEventDto> eventCaptor;
     @InjectMocks
     private ProductDaoService productDaoService;
 
@@ -78,6 +88,10 @@ class ProductDaoServiceTest {
                 .price(mockProductDetailsRequest.price())
                 .weight(mockProductDetailsRequest.weight())
                 .volume(mockProductDetailsRequest.volume())
+                .isDiscount(false)
+                .discountPrice(null)
+                .fingerprint("abc123")
+                .parameters(new HashSet<>())
                 .stockQuantity(mockProductDetailsRequest.stockQuantity())
                 .createdAt(OffsetDateTime.now())
                 .build();
@@ -128,25 +142,109 @@ class ProductDaoServiceTest {
         assertNotNull(result);
         assertEquals(mockProductDetails, result);
         assertEquals(mockProduct.getName(), productCaptor.getValue().getName());
+        verify(productRepository).save(productCaptor.capture());
+        var savedProduct = productCaptor.getValue();
+        assertEquals(mockProductDetails.name(), savedProduct.getName());
+        assertEquals(mockCategory, savedProduct.getCategory());
+        assertNotNull(savedProduct.getFingerprint());
     }
 
     @Test
-    void shouldUpdateProductFromProductUpdateDetails() {
-        var publicId = mockProduct.getPublicProductId();
+    void shouldThrowNotFoundWhenCategoryMissingOnCreate() {
+        when(categoryRepository.findByPublicCategoryId(mockCategory.getPublicCategoryId())).thenReturn(
+                Optional.empty());
 
-        when(productRepository.findByPublicProductId(publicId)).thenReturn(Optional.of(mockProduct));
-        when(productMapper.updateProductFromDetails(mockProductUpdateDetailsRequest, mockProduct)).thenReturn(
-                mockUpdatedProduct);
-        when(productRepository.save(productCaptor.capture())).thenReturn(mockUpdatedProduct);
-        when(productMapper.toProductForStandDto(mockUpdatedProduct)).thenReturn(mockProductForStandDto);
-        when(productMapper.toProductDetails(mockUpdatedProduct)).thenReturn(mockUpdatedProductDetails);
+        assertThrows(NotFoundException.class,
+                     () -> productDaoService.createProduct(mockProductDetails));
+    }
 
-        var result = productDaoService.updateProduct(mockProductUpdateDetailsRequest, publicId);
+    @Test
+    void shouldThrowAlreadyExistExceptionWhenFingerprintExistsAndSamePriceQuantity() {
+        Product existing = mockProduct.toBuilder()
+                .price(mockProductDetailsRequest.price())
+                .stockQuantity(mockProductDetailsRequest.stockQuantity())
+                .build();
+        when(categoryRepository.findByPublicCategoryId(mockProductDetails.categoryPublicId()))
+                .thenReturn(Optional.of(mockCategory));
+        when(productRepository.findByFingerprint(anyString()))
+                .thenReturn(Optional.of(existing));
+        assertThrows(AlreadyExistException.class,
+                     () -> productDaoService.createProduct(mockProductDetails));
+    }
+
+    @Test
+    void shouldUpdateProductWithoutCategoryChange() {
+        var updateDetails = new ProductUpdateDetails(
+                "New Name", BigDecimal.valueOf(1500), null, 20, true, BigDecimal.valueOf(1200)
+        );
+        Product existingProduct = mockProduct;
+        Product updatedProduct = existingProduct.toBuilder()
+                .name(updateDetails.name())
+                .price(updateDetails.price())
+                .stockQuantity(updateDetails.stockQuantity())
+                .isDiscount(updateDetails.isDiscount())
+                .discountPrice(updateDetails.discountPrice())
+                .build();
+        ProductForStandDto productForStandDto = mockProductForStandDto;
+        ProductDetails expectedDetails = mockUpdatedProductDetails;
+
+        String productId = existingProduct.getPublicProductId();
+
+        when(productRepository.findByPublicProductId(productId))
+                .thenReturn(Optional.of(existingProduct));
+        when(productRepository.findByPublicProductId(productId))
+                .thenReturn(Optional.of(updatedProduct));
+        when(productMapper.toProductForStandDto(updatedProduct)).thenReturn(productForStandDto);
+        when(productMapper.toProductDetails(updatedProduct)).thenReturn(expectedDetails);
+
+        ProductDetails result = productDaoService.updateProduct(updateDetails, productId);
 
         assertNotNull(result);
-        assertEquals(mockUpdatedProductDetails, result);
-        assertEquals(mockUpdatedProduct.getName(), productCaptor.getValue().getName());
-        verify(productMapper, times(1)).updateProductFromDetails(mockProductUpdateDetailsRequest, mockProduct);
+        assertEquals(expectedDetails, result);
+
+        verify(productRepository, times(2)).findByPublicProductId(productId);
+        verify(productRepository).updateProductFields(
+                updateDetails.name(),
+                updateDetails.price(),
+                updateDetails.stockQuantity(),
+                updateDetails.isDiscount(),
+                updateDetails.discountPrice(),
+                productId
+        );
+        verify(categoryRepository, never()).findByPublicCategoryId(any());
+        verify(productRepository, never()).updateCategory(any(), any());
+
+        verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+        ProductEventDto publishedEvent = eventCaptor.getValue();
+        assertEquals("UPDATE", publishedEvent.eventType().name());
+        assertEquals(productId, publishedEvent.publicProductId());
+        assertEquals(productForStandDto, publishedEvent.product());
+        assertNotNull(publishedEvent.eventId());
+        assertNotNull(publishedEvent.createdAt());
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenProductMissingOnUpdate() {
+        when(productRepository.findByPublicProductId(mockProduct.getPublicProductId()))
+                .thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                     () -> productDaoService.updateProduct(mockProductUpdateDetailsRequest,
+                                                           mockProduct.getPublicProductId()));
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenNewCategoryMissing() {
+        ProductUpdateDetails updateWithNewCat = new ProductUpdateDetails(
+                null, null, "invalidCat", null, false, null
+        );
+        when(productRepository.findByPublicProductId(mockProduct.getPublicProductId()))
+                .thenReturn(Optional.of(mockProduct));
+        when(categoryRepository.findByPublicCategoryId("invalidCat"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                     () -> productDaoService.updateProduct(updateWithNewCat, mockProduct.getPublicProductId()));
     }
 
     @Test
@@ -162,6 +260,16 @@ class ProductDaoServiceTest {
     }
 
     @Test
+    void shouldReturnEmptyWhenProductNotFound() {
+        when(productRepository.findByPublicProductId(mockProduct.getPublicProductId()))
+                .thenReturn(Optional.empty());
+
+        Optional<ProductDetails> result = productDaoService.findByPublicId(mockProduct.getPublicProductId());
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
     void shouldDeleteProductByPublicId() {
         when(productRepository.findByPublicProductId(mockProduct.getPublicProductId())).thenReturn(
                 Optional.of(mockProduct));
@@ -169,6 +277,10 @@ class ProductDaoServiceTest {
 
         productDaoService.deleteProduct(mockProduct.getPublicProductId());
 
-        verify(productRepository, times(1)).delete(mockProduct);
+        verify(productRepository).delete(mockProduct);
+        verify(applicationEventPublisher).publishEvent(eventCaptor.capture());
+
+        ProductEventDto event = eventCaptor.getValue();
+        assertEquals(EventType.DELETE, event.eventType());
     }
 }

@@ -10,16 +10,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.zinovev.online.store.dao.entity.Category;
 import ru.zinovev.online.store.dao.mapper.CategoryMapper;
 import ru.zinovev.online.store.dao.repository.CategoryRepository;
+import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CategoryDetails;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,28 +63,62 @@ class CategoryDaoServiceTest {
 
     @Test
     void shouldUpdateCategory() {
-        var categoryDetails = new CategoryDetails(null, "Laptop");
-        var currentCategory = Category.builder()
+        var publicId = "publicId";
+        var newName = "Laptop";
+        var categoryDetailsExist = new CategoryDetails(publicId, "Phone");
+        var categoryDetails = new CategoryDetails(null, newName);
+
+        var existingCategory = Category.builder()
                 .id(1L)
-                .publicCategoryId("publicId")
+                .publicCategoryId(publicId)
                 .name("Phone")
                 .build();
-        var updateCategory = currentCategory.toBuilder()
-                .name(categoryDetails.name())
+
+        var updatedCategory = existingCategory.toBuilder()
+                .name(newName)
                 .build();
-        var currentCategoryDetails = new CategoryDetails("publicId", "Phone");
-        var expectedCategoryDetails = new CategoryDetails("publicId", "Laptop");
 
-        when(categoryRepository.findByPublicCategoryId(currentCategoryDetails.publicCategoryId())).thenReturn(
-                Optional.of(currentCategory));
-        when(categoryMapper.toCategoryDetails(updateCategory)).thenReturn(expectedCategoryDetails);
-        when(categoryRepository.save(categoryCaptor.capture())).thenReturn(updateCategory);
+        var expectedCategoryDetails = new CategoryDetails(publicId, newName);
 
-        var result = categoryDaoService.updateCategory(currentCategoryDetails, categoryDetails);
+        when(categoryRepository.updateNameByPublicCategoryId(newName, publicId))
+                .thenReturn(1);
+
+        when(categoryRepository.findByPublicCategoryId(publicId))
+                .thenReturn(Optional.of(updatedCategory));
+
+        when(categoryMapper.toCategoryDetails(updatedCategory))
+                .thenReturn(expectedCategoryDetails);
+
+        var result = categoryDaoService.updateCategory(categoryDetailsExist, categoryDetails);
 
         assertNotNull(result);
         assertEquals(expectedCategoryDetails, result);
-        assertEquals(updateCategory.getName(), result.name());
+        assertEquals(newName, result.name());
+
+        verify(categoryRepository).updateNameByPublicCategoryId(newName, publicId);
+        verify(categoryRepository).findByPublicCategoryId(publicId);
+        verify(categoryMapper).toCategoryDetails(updatedCategory);
+        verifyNoMoreInteractions(categoryRepository, categoryMapper);
+    }
+
+    @Test
+    void shouldThrowNotFoundWhenUpdateAffectsZeroRows() {
+        var publicId = "nonExistent";
+        var categoryDetailsExist = new CategoryDetails(publicId, "Phone");
+        var categoryDetails = new CategoryDetails(null, "Laptop");
+
+        when(categoryRepository.updateNameByPublicCategoryId(categoryDetails.name(), publicId))
+                .thenReturn(0);
+
+
+        var exception = assertThrows(
+                NotFoundException.class,
+                () -> categoryDaoService.updateCategory(categoryDetailsExist, categoryDetails)
+        );
+
+        assertTrue(exception.getMessage().contains("Category with id - " + publicId));
+        verify(categoryRepository).updateNameByPublicCategoryId(categoryDetails.name(), publicId);
+        verify(categoryRepository, never()).findByPublicCategoryId(publicId);
     }
 
     @Test
