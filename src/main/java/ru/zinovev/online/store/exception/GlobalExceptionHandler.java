@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
         log.warn("Unauthorized access: {}", ex.getMessage(), ex);
         return buildErrorView(
                 request,
-                "error/401",
+                "error/403",
                 "Требуется авторизация",
                 ex.getMessage()
         );

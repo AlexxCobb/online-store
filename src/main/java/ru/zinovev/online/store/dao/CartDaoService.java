@@ -16,6 +16,7 @@ import ru.zinovev.online.store.exception.model.NotFoundException;
 import ru.zinovev.online.store.model.CartDetails;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -91,27 +92,41 @@ public class CartDaoService {
     @Transactional
     public void updateCartWithRegisteredUser(String publicUserId, String publicCartId) {
         var user = userDaoService.getByPublicId(publicUserId);
-        var cart = cartRepository.findByPublicCartId(publicCartId);
-        var userCart = cartRepository.findByUserPublicUserId(publicUserId);
+        var cartOpt = cartRepository.findByPublicCartId(publicCartId);
+        var userCartOpt = cartRepository.findByUserPublicUserId(publicUserId);
 
-        if (cart.isEmpty() && userCart.isEmpty()) {
+        if (cartOpt.isEmpty() && userCartOpt.isEmpty()) {
             cartRepository.save(Cart.builder()
                                         .user(user)
                                         .publicCartId(UUID.randomUUID().toString())
                                         .build());
-        } else if (cart.isPresent() && userCart.isEmpty()) {
+            return;
+        } else if (cartOpt.isPresent() && userCartOpt.isEmpty()) {
             var updated = cartRepository.updateUserBy(publicCartId, user);
             if (updated == 0) {
                 throw new AlreadyExistException("Cart with id - " + publicCartId + " assigned to another user");
             }
-        } else if (cart.isPresent()) {
-            if (cart.get().getUser() != null) {
-                return;
-            }
-            mergeCarts(cart.get(), userCart.get());
-            cartItemRepository.deleteAllByCartId(cart.get().getId());
-            cartRepository.delete(cart.get());
+            return;
         }
+
+        if (cartOpt.isEmpty()) {
+            return;
+        }
+
+        var guestCart = cartOpt.get();
+        var userCart = userCartOpt.get();
+
+        if (Objects.equals(guestCart.getId(), userCart.getId())) {
+            log.debug(
+                    "Guest cart {} already belongs to user {}",
+                    guestCart.getPublicCartId(),
+                    publicUserId
+            );
+            return;
+        }
+        mergeCarts(cartOpt.get(), userCart);
+        cartItemRepository.deleteAllByCartId(cartOpt.get().getId());
+        cartRepository.delete(cartOpt.get());
     }
 
     @Transactional

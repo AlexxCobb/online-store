@@ -14,7 +14,7 @@
            style="color: #337ab7; text-decoration: none;">← Вернуться назад</a>
 
         <a th:unless="${previousUrl}"
-           th:href="@{/api/users/home}"
+           th:href="@{/api/users/products}"
            style="color: #337ab7; text-decoration: none;">← Вернуться на главную</a>
 
         <a sec:authorize="hasRole('ROLE_ADMIN')"
