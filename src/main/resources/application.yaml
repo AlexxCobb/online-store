@@ -43,6 +43,8 @@ spring:
     exchange-name: product.events.exchange
   data:
     redis:
+      repositories:
+        enabled: false
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
       timeout: 5000ms

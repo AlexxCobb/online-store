@@ -54,6 +54,7 @@ public class UserRegistrationController {
             return "add-user";
         }
         var user = userService.createUser(userMapper.toUserRegistrationDetails(userRegistrationDto));
+        cartService.updateCartWithRegisteredUser(user.publicUserId(), publicCartId);
         redirectAttributes.addFlashAttribute("successMessage", "ПОЛЬЗОВАТЕЛЬ " + user.name() + " " + user.lastname()
                 + " УСПЕШНО ЗАРЕГИСТРИРОВАН");
         try {
